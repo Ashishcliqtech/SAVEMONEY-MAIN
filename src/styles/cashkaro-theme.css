@@ -1,0 +1,370 @@
+/* CashKaro-inspired theme styles */
+
+:root {
+  --primary-orange: #ff6b35;
+  --primary-orange-dark: #e55a2b;
+  --primary-orange-light: #ffb8a1;
+  --secondary-blue: #3b82f6;
+  --success-green: #10b981;
+  --warning-yellow: #f59e0b;
+  --error-red: #ef4444;
+  --gray-50: #f8fafc;
+  --gray-100: #f1f5f9;
+  --gray-200: #e2e8f0;
+  --gray-300: #cbd5e1;
+  --gray-400: #94a3b8;
+  --gray-500: #64748b;
+  --gray-600: #475569;
+  --gray-700: #334155;
+  --gray-800: #1e293b;
+  --gray-900: #0f172a;
+}
+
+/* CashKaro-style gradients */
+.cashkaro-gradient {
+  background: linear-gradient(135deg, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+}
+
+.cashkaro-gradient-light {
+  background: linear-gradient(135deg, #fff7ed 0%, var(--primary-orange-light) 100%);
+}
+
+/* CashKaro-style full-width carousel */
+.cashkaro-carousel {
+  background: linear-gradient(135deg, var(--primary-orange) 0%, var(--error-red) 100%);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(255, 107, 53, 0.3);
+}
+
+.cashkaro-carousel-content {
+  backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced offer cards */
+.offer-card-cashkaro {
+  position: relative;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border: 1px solid #f1f5f9;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.offer-card-cashkaro:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  border-color: var(--primary-orange-light);
+}
+
+/* CashKaro-style buttons with enhanced styling */
+.btn-cashkaro {
+  background: linear-gradient(135deg, var(--primary-orange) 0%, var(--primary-orange-dark) 100%);
+  color: white;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-radius: 12px;
+  padding: 16px 32px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 24px rgba(255, 107, 53, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-cashkaro::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.btn-cashkaro:hover::before {
+  left: 100%;
+}
+
+.btn-cashkaro:hover {
+  background: linear-gradient(135deg, var(--primary-orange-dark) 0%, var(--error-red) 100%);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(255, 107, 53, 0.5);
+}
+
+/* CashKaro-style cards */
+.card-cashkaro {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.card-cashkaro:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  border-color: var(--primary-orange-light);
+}
+
+/* Enhanced badges */
+.badge-exclusive {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  font-weight: 800;
+  font-size: 11px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.badge-hot {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  font-weight: 800;
+  font-size: 11px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+.badge-cashback {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 25px;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.offer-card-cashkaro::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-orange) 0%, var(--secondary-blue) 100%);
+}
+
+/* CashKaro-style store logos */
+.store-logo-cashkaro {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: white;
+  padding: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+/* CashKaro-style price display */
+.price-display-cashkaro {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.price-current {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--gray-900);
+}
+
+.price-original {
+  font-size: 14px;
+  color: var(--gray-500);
+  text-decoration: line-through;
+}
+
+.price-discount {
+  background: var(--success-green);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+/* CashKaro-style coupon code */
+.coupon-code-cashkaro {
+  background: #fef3c7;
+  border: 2px dashed var(--warning-yellow);
+  color: #92400e;
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.coupon-code-cashkaro:hover {
+  background: #fde68a;
+  border-color: #d97706;
+}
+
+/* Progress bar animation */
+.progress-bar-cashkaro {
+  height: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+.progress-fill-cashkaro {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-orange), var(--warning-yellow));
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(255, 107, 53, 0.6);
+}
+
+/* CashKaro-style animations */
+@keyframes cashkaro-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes cashkaro-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.animate-cashkaro-bounce {
+  animation: cashkaro-bounce 2s infinite;
+}
+
+.animate-cashkaro-pulse {
+  animation: cashkaro-pulse 2s infinite;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .cashkaro-carousel {
+    border-radius: 12px;
+  }
+  
+  .btn-cashkaro {
+    padding: 12px 24px;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+  }
+  
+  .badge-cashback {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+}
+
+/* CashKaro-style responsive design */
+@media (max-width: 768px) {
+  .offer-card-cashkaro {
+    margin-bottom: 16px;
+  }
+  
+  .price-current {
+    font-size: 18px;
+  }
+  
+  .btn-cashkaro {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+}
+
+/* CashKaro-style loading states */
+.loading-shimmer {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* CashKaro-style form inputs */
+.input-cashkaro {
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.input-cashkaro:focus {
+  border-color: var(--primary-orange);
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+  outline: none;
+}
+
+/* CashKaro-style notifications */
+.notification-cashkaro {
+  background: white;
+  border-left: 4px solid var(--primary-orange);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 12px;
+}
+
+/* CashKaro-style stats */
+.stat-card-cashkaro {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f1f5f9;
+  transition: all 0.3s ease;
+}
+
+.stat-card-cashkaro:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--gray-900);
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  color: var(--gray-600);
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.stat-trend {
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.stat-trend.positive {
+  color: var(--success-green);
+}
+
+.stat-trend.negative {
+  color: var(--error-red);
+}

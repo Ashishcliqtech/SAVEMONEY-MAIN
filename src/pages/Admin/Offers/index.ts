@@ -1,0 +1,1 @@
+export { OfferManagement } from './OfferManagement';

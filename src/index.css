@@ -1,0 +1,39 @@
+@import './styles/cashkaro-theme.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+/* CashKaro-inspired custom styles */
+.embla {
+  overflow: hidden;
+}
+
+.embla__container {
+  display: flex;
+}
+
+.embla__slide {
+  flex: 0 0 100%;
+  min-width: 0;
+}
+
+@media (min-width: 640px) {
+  .embla__slide {
+    flex: 0 0 50%;
+  }
+}
+
+@media (min-width: 1024px) {
+  .embla__slide {
+    flex: 0 0 33.333%;
+  }
+}
+
+@media (min-width: 1280px) {
+  .embla__slide {
+    flex: 0 0 25%;
+  }
+}

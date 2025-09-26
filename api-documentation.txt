@@ -1,0 +1,1942 @@
+SAVEMONEY CASHBACK PLATFORM - API DOCUMENTATION
+=================================================
+
+Base URL: https://api.savemoney.com/v1
+Content-Type: application/json
+Authorization: Bearer {token}
+
+=================================================
+TABLE OF CONTENTS
+=================================================
+
+1. AUTHENTICATION ENDPOINTS
+2. USER MANAGEMENT ENDPOINTS
+3. STORE MANAGEMENT ENDPOINTS
+4. CATEGORY MANAGEMENT ENDPOINTS
+5. OFFER MANAGEMENT ENDPOINTS
+6. WALLET & TRANSACTION ENDPOINTS
+7. REFERRAL ENDPOINTS
+8. NOTIFICATION ENDPOINTS
+9. CONTENT MANAGEMENT ENDPOINTS
+10. ADMIN ENDPOINTS
+11. ANALYTICS ENDPOINTS
+12. SUPPORT ENDPOINTS
+13. SEARCH ENDPOINTS
+14. FILE UPLOAD ENDPOINTS (CLOUDINARY)
+15. ERROR CODES & RESPONSES
+
+=================================================
+1. AUTHENTICATION ENDPOINTS
+=================================================
+
+POST /auth/signup
+Description: Register a new user account
+Payload:
+{
+  "name": "John Doe",
+  "email": "john.doe@example.com",
+  "phone": "+91 9876543210",
+  "password": "securePassword123",
+  "referralCode": "SAVE123" // Optional
+}
+
+Response (201):
+{
+  "success": true,
+  "message": "Account created successfully",
+  "data": {
+    "user": {
+      "id": "user_123",
+      "name": "John Doe",
+      "email": "john.doe@example.com",
+      "phone": "+91 9876543210",
+      "avatar": null,
+      "referralCode": "JOHN123",
+      "totalCashback": 0,
+      "availableCashback": 0,
+      "pendingCashback": 0,
+      "isVerified": false,
+      "createdAt": "2025-01-22T10:30:00Z"
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "refresh_token_here"
+  }
+}
+
+---
+
+POST /auth/login
+Description: Login with email and password
+Payload:
+{
+  "email": "john.doe@example.com",
+  "password": "securePassword123"
+}
+
+Response (200):
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "user": { /* User object */ },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "refresh_token_here"
+  }
+}
+
+---
+
+POST /auth/verify-otp
+Description: Verify phone number with OTP
+Payload:
+{
+  "phone": "+91 9876543210",
+  "otp": "123456"
+}
+
+Response (200):
+{
+  "success": true,
+  "message": "Phone verified successfully",
+  "data": {
+    "user": { /* Updated user object with isVerified: true */ }
+  }
+}
+
+---
+
+POST /auth/refresh
+Description: Refresh access token
+Payload:
+{
+  "refreshToken": "refresh_token_here"
+}
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "token": "new_access_token",
+    "refreshToken": "new_refresh_token"
+  }
+}
+
+---
+
+POST /auth/logout
+Description: Logout user and invalidate tokens
+Headers: Authorization: Bearer {token}
+
+Response (200):
+{
+  "success": true,
+  "message": "Logged out successfully"
+}
+
+---
+
+POST /auth/forgot-password
+Description: Send password reset email
+Payload:
+{
+  "email": "john.doe@example.com"
+}
+
+Response (200):
+{
+  "success": true,
+  "message": "Password reset email sent"
+}
+
+---
+
+POST /auth/reset-password
+Description: Reset password with token
+Payload:
+{
+  "token": "reset_token_from_email",
+  "password": "newSecurePassword123"
+}
+
+Response (200):
+{
+  "success": true,
+  "message": "Password reset successfully"
+}
+
+=================================================
+2. USER MANAGEMENT ENDPOINTS
+=================================================
+
+GET /users/profile
+Description: Get current user profile
+Headers: Authorization: Bearer {token}
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "user": {
+      "id": "user_123",
+      "name": "John Doe",
+      "email": "john.doe@example.com",
+      "phone": "+91 9876543210",
+      "avatar": "https://res.cloudinary.com/savemoney/image/upload/v1234567890/avatars/user_123.jpg",
+      "referralCode": "JOHN123",
+      "totalCashback": 15420,
+      "availableCashback": 8750,
+      "pendingCashback": 2340,
+      "isVerified": true,
+      "createdAt": "2025-01-15T00:00:00Z"
+    }
+  }
+}
+
+---
+
+PUT /users/profile
+Description: Update user profile
+Headers: Authorization: Bearer {token}
+Payload:
+{
+  "name": "John Smith",
+  "phone": "+91 9876543211",
+  "avatar": "cloudinary_image_url" // Optional
+}
+
+Response (200):
+{
+  "success": true,
+  "message": "Profile updated successfully",
+  "data": {
+    "user": { /* Updated user object */ }
+  }
+}
+
+---
+
+GET /users/dashboard
+Description: Get user dashboard data
+Headers: Authorization: Bearer {token}
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "stats": {
+      "totalEarnings": 15420,
+      "availableCashback": 8750,
+      "pendingCashback": 2340,
+      "totalTransactions": 45,
+      "totalReferrals": 12
+    },
+    "recentTransactions": [
+      {
+        "id": "txn_123",
+        "store": {
+          "id": "store_1",
+          "name": "Amazon",
+          "logo": "cloudinary_logo_url"
+        },
+        "amount": 15000,
+        "cashbackEarned": 750,
+        "status": "confirmed",
+        "date": "2025-01-20T10:30:00Z",
+        "orderId": "AMZ123456789"
+      }
+    ],
+    "featuredOffers": [ /* Array of featured offers */ ]
+  }
+}
+
+=================================================
+3. STORE MANAGEMENT ENDPOINTS
+=================================================
+
+GET /stores
+Description: Get all stores with pagination and filters
+Query Parameters:
+- page: number (default: 1)
+- limit: number (default: 12)
+- category: string (optional)
+- search: string (optional)
+- sortBy: string (name|cashback|popularity)
+- sortOrder: string (asc|desc)
+- isPopular: boolean (optional)
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "stores": [
+      {
+        "id": "store_1",
+        "name": "Amazon",
+        "logo": "https://res.cloudinary.com/savemoney/image/upload/v1234567890/stores/amazon_logo.jpg",
+        "banner": "https://res.cloudinary.com/savemoney/image/upload/v1234567890/stores/amazon_banner.jpg",
+        "description": "World's largest online marketplace",
+        "cashbackRate": 5,
+        "category": "Electronics",
+        "isPopular": true,
+        "totalOffers": 234,
+        "website": "https://amazon.com",
+        "rating": 4.5,
+        "createdAt": "2024-01-01T00:00:00Z"
+      }
+    ],
+    "pagination": {
+      "total": 524,
+      "page": 1,
+      "limit": 12,
+      "totalPages": 44
+    }
+  }
+}
+
+---
+
+GET /stores/{id}
+Description: Get single store details
+Path Parameters:
+- id: string (store ID)
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "store": { /* Complete store object */ },
+    "offers": [ /* Array of store offers */ ],
+    "stats": {
+      "totalOrders": 12450,
+      "totalCashback": 245000,
+      "avgOrderValue": 2500,
+      "conversionRate": 3.2
+    }
+  }
+}
+
+---
+
+POST /stores (Admin Only)
+Description: Create new store
+Headers: Authorization: Bearer {admin_token}
+Payload:
+{
+  "name": "New Store",
+  "logo": "cloudinary_image_url",
+  "banner": "cloudinary_image_url",
+  "description": "Store description",
+  "cashbackRate": 8,
+  "category": "Fashion",
+  "website": "https://newstore.com",
+  "isPopular": false,
+  "commissionRate": 2.5,
+  "trackingUrl": "https://tracking.newstore.com"
+}
+
+Response (201):
+{
+  "success": true,
+  "message": "Store created successfully",
+  "data": {
+    "store": { /* Created store object */ }
+  }
+}
+
+---
+
+PUT /stores/{id} (Admin Only)
+Description: Update store
+Headers: Authorization: Bearer {admin_token}
+Payload: Same as POST /stores
+
+Response (200):
+{
+  "success": true,
+  "message": "Store updated successfully",
+  "data": {
+    "store": { /* Updated store object */ }
+  }
+}
+
+---
+
+DELETE /stores/{id} (Admin Only)
+Description: Delete store
+Headers: Authorization: Bearer {admin_token}
+
+Response (200):
+{
+  "success": true,
+  "message": "Store deleted successfully"
+}
+
+---
+
+GET /stores/popular
+Description: Get popular stores
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "stores": [ /* Array of popular stores */ ]
+  }
+}
+
+=================================================
+4. CATEGORY MANAGEMENT ENDPOINTS
+=================================================
+
+GET /categories
+Description: Get all categories
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "categories": [
+      {
+        "id": "cat_1",
+        "name": "Fashion",
+        "icon": "shirt",
+        "description": "Clothing, shoes, and accessories",
+        "storeCount": 45,
+        "offerCount": 234,
+        "imageUrl": "https://res.cloudinary.com/savemoney/image/upload/v1234567890/categories/fashion.jpg",
+        "isActive": true,
+        "sortOrder": 1
+      }
+    ]
+  }
+}
+
+---
+
+GET /categories/{id}
+Description: Get category details with stores and offers
+Path Parameters:
+- id: string (category ID)
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "category": { /* Category object */ },
+    "stores": [ /* Array of stores in category */ ],
+    "offers": [ /* Array of offers in category */ ],
+    "stats": {
+      "totalStores": 45,
+      "totalOffers": 234,
+      "avgCashback": 8.5
+    }
+  }
+}
+
+---
+
+POST /categories (Admin Only)
+Description: Create new category
+Headers: Authorization: Bearer {admin_token}
+Payload:
+{
+  "name": "New Category",
+  "icon": "icon-name",
+  "description": "Category description",
+  "imageUrl": "cloudinary_image_url",
+  "sortOrder": 10,
+  "isActive": true
+}
+
+Response (201):
+{
+  "success": true,
+  "message": "Category created successfully",
+  "data": {
+    "category": { /* Created category object */ }
+  }
+}
+
+=================================================
+5. OFFER MANAGEMENT ENDPOINTS
+=================================================
+
+GET /offers
+Description: Get all offers with pagination and filters
+Query Parameters:
+- page: number (default: 1)
+- limit: number (default: 12)
+- category: string (optional)
+- storeId: string (optional)
+- offerType: string (cashback|coupon|deal)
+- minCashback: number (optional)
+- maxCashback: number (optional)
+- search: string (optional)
+- sortBy: string (cashback|expiry|popularity)
+- sortOrder: string (asc|desc)
+- isExclusive: boolean (optional)
+- isTrending: boolean (optional)
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "offers": [
+      {
+        "id": "offer_1",
+        "title": "Flat 50% Off + 15% Cashback",
+        "description": "Get additional savings on electronics",
+        "store": {
+          "id": "store_1",
+          "name": "Amazon",
+          "logo": "cloudinary_logo_url"
+        },
+        "cashbackRate": 15,
+        "originalPrice": 50000,
+        "discountedPrice": 25000,
+        "couponCode": "SAVE50",
+        "offerType": "deal",
+        "category": "Electronics",
+        "expiryDate": "2025-02-15T23:59:59Z",
+        "isExclusive": true,
+        "isTrending": true,
+        "imageUrl": "https://res.cloudinary.com/savemoney/image/upload/v1234567890/offers/offer_1.jpg",
+        "terms": ["Valid on electronics only", "Minimum order ₹10,000"],
+        "minOrderValue": 10000,
+        "clickCount": 1250,
+        "conversionRate": 3.2,
+        "createdAt": "2025-01-01T00:00:00Z"
+      }
+    ],
+    "pagination": {
+      "total": 1293,
+      "page": 1,
+      "limit": 12,
+      "totalPages": 108
+    }
+  }
+}
+
+---
+
+GET /offers/{id}
+Description: Get single offer details
+Path Parameters:
+- id: string (offer ID)
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "offer": { /* Complete offer object */ },
+    "similarOffers": [ /* Array of similar offers */ ],
+    "stats": {
+      "totalClicks": 1250,
+      "totalConversions": 40,
+      "conversionRate": 3.2,
+      "totalCashbackPaid": 45000
+    }
+  }
+}
+
+---
+
+POST /offers (Admin Only)
+Description: Create new offer
+Headers: Authorization: Bearer {admin_token}
+Payload:
+{
+  "title": "New Offer Title",
+  "description": "Offer description",
+  "storeId": "store_1",
+  "cashbackRate": 15,
+  "originalPrice": 50000, // Optional
+  "discountedPrice": 25000, // Optional
+  "couponCode": "SAVE50", // Optional
+  "offerType": "deal",
+  "category": "Electronics",
+  "expiryDate": "2025-02-15T23:59:59Z",
+  "isExclusive": true,
+  "isTrending": false,
+  "imageUrl": "cloudinary_image_url",
+  "terms": ["Term 1", "Term 2"],
+  "minOrderValue": 10000,
+  "trackingUrl": "https://tracking.store.com",
+  "isActive": true,
+  "sortOrder": 1
+}
+
+Response (201):
+{
+  "success": true,
+  "message": "Offer created successfully",
+  "data": {
+    "offer": { /* Created offer object */ }
+  }
+}
+
+---
+
+PUT /offers/{id} (Admin Only)
+Description: Update offer
+Headers: Authorization: Bearer {admin_token}
+Payload: Same as POST /offers
+
+Response (200):
+{
+  "success": true,
+  "message": "Offer updated successfully",
+  "data": {
+    "offer": { /* Updated offer object */ }
+  }
+}
+
+---
+
+DELETE /offers/{id} (Admin Only)
+Description: Delete offer
+Headers: Authorization: Bearer {admin_token}
+
+Response (200):
+{
+  "success": true,
+  "message": "Offer deleted successfully"
+}
+
+---
+
+GET /offers/trending
+Description: Get trending offers
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "offers": [ /* Array of trending offers */ ]
+  }
+}
+
+---
+
+GET /offers/featured
+Description: Get featured offers
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "offers": [ /* Array of featured offers */ ]
+  }
+}
+
+---
+
+POST /offers/{id}/track
+Description: Track offer click
+Headers: Authorization: Bearer {token}
+Path Parameters:
+- id: string (offer ID)
+
+Response (200):
+{
+  "success": true,
+  "message": "Click tracked successfully",
+  "data": {
+    "trackingUrl": "https://partner.store.com/redirect?ref=savemoney&user=123"
+  }
+}
+
+=================================================
+6. WALLET & TRANSACTION ENDPOINTS
+=================================================
+
+GET /wallet
+Description: Get user wallet data
+Headers: Authorization: Bearer {token}
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "wallet": {
+      "totalCashback": 15420,
+      "availableCashback": 8750,
+      "pendingCashback": 2340,
+      "withdrawnCashback": 4330,
+      "lifetimeEarnings": 15420,
+      "thisMonthEarnings": 2450
+    }
+  }
+}
+
+---
+
+GET /wallet/transactions
+Description: Get user transactions
+Headers: Authorization: Bearer {token}
+Query Parameters:
+- page: number (default: 1)
+- limit: number (default: 20)
+- status: string (pending|confirmed|cancelled)
+- startDate: string (ISO date)
+- endDate: string (ISO date)
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "transactions": [
+      {
+        "id": "txn_123",
+        "store": {
+          "id": "store_1",
+          "name": "Amazon",
+          "logo": "cloudinary_logo_url"
+        },
+        "amount": 15000,
+        "cashbackEarned": 750,
+        "cashbackRate": 5,
+        "status": "confirmed",
+        "date": "2025-01-20T10:30:00Z",
+        "orderId": "AMZ123456789",
+        "trackingId": "track_456",
+        "confirmedAt": "2025-01-21T08:15:00Z"
+      }
+    ],
+    "pagination": {
+      "total": 45,
+      "page": 1,
+      "limit": 20,
+      "totalPages": 3
+    }
+  }
+}
+
+---
+
+POST /wallet/withdraw
+Description: Create withdrawal request
+Headers: Authorization: Bearer {token}
+Payload:
+{
+  "amount": 5000,
+  "method": "upi", // upi|bank|paytm|voucher
+  "accountDetails": "john@paytm", // UPI ID, Account Number, etc.
+  "bankDetails": { // Required for bank method
+    "accountNumber": "1234567890",
+    "ifscCode": "HDFC0001234",
+    "accountHolderName": "John Doe"
+  }
+}
+
+Response (201):
+{
+  "success": true,
+  "message": "Withdrawal request submitted successfully",
+  "data": {
+    "withdrawal": {
+      "id": "withdraw_123",
+      "amount": 5000,
+      "method": "upi",
+      "accountDetails": "john@paytm",
+      "status": "pending",
+      "requestDate": "2025-01-22T10:30:00Z",
+      "estimatedProcessingTime": "24 hours"
+    }
+  }
+}
+
+---
+
+GET /wallet/withdrawals
+Description: Get user withdrawal history
+Headers: Authorization: Bearer {token}
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "withdrawals": [
+      {
+        "id": "withdraw_123",
+        "amount": 5000,
+        "method": "upi",
+        "accountDetails": "john@paytm",
+        "status": "completed",
+        "requestDate": "2025-01-10T00:00:00Z",
+        "completedDate": "2025-01-12T00:00:00Z",
+        "transactionId": "TXN789123456"
+      }
+    ]
+  }
+}
+
+=================================================
+7. REFERRAL ENDPOINTS
+=================================================
+
+GET /referrals
+Description: Get user referral data
+Headers: Authorization: Bearer {token}
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "referralData": {
+      "totalEarnings": 2500,
+      "totalReferrals": 12,
+      "pendingEarnings": 400,
+      "referralCode": "JOHN123",
+      "referralLink": "https://savemoney.com/ref/JOHN123",
+      "bonusPerReferral": 100,
+      "recentReferrals": [
+        {
+          "id": "ref_1",
+          "name": "Alice Johnson",
+          "email": "alice@example.com",
+          "earnings": 200,
+          "status": "completed",
+          "joinedDate": "2025-01-15T00:00:00Z",
+          "firstPurchaseDate": "2025-01-16T00:00:00Z"
+        }
+      ]
+    }
+  }
+}
+
+---
+
+POST /referrals/generate-link
+Description: Generate new referral link
+Headers: Authorization: Bearer {token}
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "link": "https://savemoney.com/ref/JOHN123",
+    "code": "JOHN123",
+    "qrCode": "https://res.cloudinary.com/savemoney/image/upload/v1234567890/qr/JOHN123.png"
+  }
+}
+
+=================================================
+8. NOTIFICATION ENDPOINTS
+=================================================
+
+GET /notifications
+Description: Get user notifications
+Headers: Authorization: Bearer {token}
+Query Parameters:
+- page: number (default: 1)
+- limit: number (default: 20)
+- isRead: boolean (optional)
+- type: string (deal|cashback|withdrawal|referral|support)
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "notifications": [
+      {
+        "id": "notif_1",
+        "type": "cashback",
+        "title": "Cashback Earned!",
+        "message": "You earned ₹150 cashback from your Amazon purchase",
+        "isRead": false,
+        "createdAt": "2025-01-22T10:30:00Z",
+        "actionUrl": "/wallet",
+        "imageUrl": "cloudinary_image_url", // Optional
+        "metadata": {
+          "amount": 150,
+          "store": "Amazon",
+          "orderId": "AMZ123456789"
+        }
+      }
+    ],
+    "pagination": {
+      "total": 25,
+      "page": 1,
+      "limit": 20,
+      "totalPages": 2
+    },
+    "unreadCount": 5
+  }
+}
+
+---
+
+PUT /notifications/{id}/read
+Description: Mark notification as read
+Headers: Authorization: Bearer {token}
+Path Parameters:
+- id: string (notification ID)
+
+Response (200):
+{
+  "success": true,
+  "message": "Notification marked as read"
+}
+
+---
+
+PUT /notifications/mark-all-read
+Description: Mark all notifications as read
+Headers: Authorization: Bearer {token}
+
+Response (200):
+{
+  "success": true,
+  "message": "All notifications marked as read"
+}
+
+---
+
+DELETE /notifications/{id}
+Description: Delete notification
+Headers: Authorization: Bearer {token}
+Path Parameters:
+- id: string (notification ID)
+
+Response (200):
+{
+  "success": true,
+  "message": "Notification deleted successfully"
+}
+
+=================================================
+9. CONTENT MANAGEMENT ENDPOINTS (Admin Only)
+=================================================
+
+GET /admin/content/sections
+Description: Get all homepage content sections
+Headers: Authorization: Bearer {admin_token}
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "sections": [
+      {
+        "id": "section_1",
+        "name": "Hero Section",
+        "type": "hero",
+        "status": "active",
+        "content": {
+          "title": "Save Money on Every Purchase",
+          "subtitle": "Get cashback and exclusive deals",
+          "description": "Join millions of users...",
+          "imageUrl": "https://res.cloudinary.com/savemoney/image/upload/v1234567890/content/hero.jpg",
+          "buttonText": "Start Saving Now",
+          "buttonLink": "/offers"
+        },
+        "position": 1,
+        "devices": ["desktop", "tablet", "mobile"],
+        "scheduledDate": null,
+        "isActive": true,
+        "createdAt": "2025-01-01T00:00:00Z",
+        "updatedAt": "2025-01-22T10:30:00Z"
+      }
+    ]
+  }
+}
+
+---
+
+POST /admin/content/sections
+Description: Create new content section
+Headers: Authorization: Bearer {admin_token}
+Payload:
+{
+  "name": "New Section",
+  "type": "featured", // hero|featured|highlighted|banner|testimonial
+  "content": {
+    "title": "Section Title",
+    "subtitle": "Section Subtitle",
+    "description": "Section Description",
+    "imageUrl": "cloudinary_image_url",
+    "buttonText": "Action Text",
+    "buttonLink": "/link"
+  },
+  "position": 5,
+  "devices": ["desktop", "tablet", "mobile"],
+  "scheduledDate": "2025-02-01T00:00:00Z", // Optional
+  "isActive": true
+}
+
+Response (201):
+{
+  "success": true,
+  "message": "Content section created successfully",
+  "data": {
+    "section": { /* Created section object */ }
+  }
+}
+
+---
+
+GET /admin/content/featured-offers
+Description: Get featured offers configuration
+Headers: Authorization: Bearer {admin_token}
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "featuredOffers": [
+      {
+        "id": "featured_1",
+        "offerId": "offer_1",
+        "position": 1,
+        "isActive": true,
+        "startDate": "2025-01-01T00:00:00Z",
+        "endDate": "2025-02-01T00:00:00Z",
+        "offer": { /* Complete offer object */ }
+      }
+    ]
+  }
+}
+
+---
+
+POST /admin/content/featured-offers
+Description: Add offer to featured section
+Headers: Authorization: Bearer {admin_token}
+Payload:
+{
+  "offerId": "offer_1",
+  "position": 1,
+  "startDate": "2025-01-22T00:00:00Z",
+  "endDate": "2025-02-22T00:00:00Z",
+  "isActive": true
+}
+
+Response (201):
+{
+  "success": true,
+  "message": "Offer added to featured section",
+  "data": {
+    "featuredOffer": { /* Created featured offer object */ }
+  }
+}
+
+=================================================
+10. ADMIN ENDPOINTS
+=================================================
+
+GET /admin/stats
+Description: Get admin dashboard statistics
+Headers: Authorization: Bearer {admin_token}
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "stats": {
+      "totalUsers": 2847,
+      "activeUsers": 2156,
+      "newUsersToday": 47,
+      "totalStores": 524,
+      "activeStores": 498,
+      "totalOffers": 1293,
+      "activeOffers": 1156,
+      "totalCashbackPaid": 1240000,
+      "pendingWithdrawals": 47,
+      "pendingWithdrawalAmount": 125000,
+      "monthlyRevenue": 280000,
+      "conversionRate": 3.2,
+      "avgOrderValue": 2500
+    },
+    "charts": {
+      "userGrowth": [
+        { "date": "2025-01-01", "users": 2500 },
+        { "date": "2025-01-02", "users": 2520 }
+      ],
+      "revenueGrowth": [
+        { "date": "2025-01-01", "revenue": 25000 },
+        { "date": "2025-01-02", "revenue": 26000 }
+      ]
+    }
+  }
+}
+
+---
+
+GET /admin/users
+Description: Get all users for admin management
+Headers: Authorization: Bearer {admin_token}
+Query Parameters:
+- page: number (default: 1)
+- limit: number (default: 20)
+- search: string (optional)
+- status: string (active|inactive|banned)
+- sortBy: string (name|email|joinDate|cashback)
+- sortOrder: string (asc|desc)
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "users": [
+      {
+        "id": "user_123",
+        "name": "John Doe",
+        "email": "john.doe@example.com",
+        "phone": "+91 9876543210",
+        "avatar": "cloudinary_avatar_url",
+        "status": "active",
+        "totalCashback": 15420,
+        "totalTransactions": 45,
+        "totalReferrals": 12,
+        "joinedDate": "2024-01-15T00:00:00Z",
+        "lastLogin": "2025-01-22T08:30:00Z",
+        "isVerified": true,
+        "role": "user" // user|admin|moderator
+      }
+    ],
+    "pagination": {
+      "total": 2847,
+      "page": 1,
+      "limit": 20,
+      "totalPages": 143
+    }
+  }
+}
+
+---
+
+PUT /admin/users/{id}/status
+Description: Update user status
+Headers: Authorization: Bearer {admin_token}
+Payload:
+{
+  "status": "banned", // active|inactive|banned
+  "reason": "Violation of terms" // Optional
+}
+
+Response (200):
+{
+  "success": true,
+  "message": "User status updated successfully"
+}
+
+---
+
+GET /admin/withdrawals
+Description: Get all withdrawal requests for admin
+Headers: Authorization: Bearer {admin_token}
+Query Parameters:
+- page: number (default: 1)
+- limit: number (default: 20)
+- status: string (pending|processing|completed|failed)
+- method: string (upi|bank|paytm|voucher)
+- minAmount: number (optional)
+- maxAmount: number (optional)
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "withdrawals": [
+      {
+        "id": "withdraw_123",
+        "user": {
+          "id": "user_123",
+          "name": "John Doe",
+          "email": "john.doe@example.com"
+        },
+        "amount": 5000,
+        "method": "upi",
+        "accountDetails": "john@paytm",
+        "status": "pending",
+        "requestDate": "2025-01-22T10:30:00Z",
+        "processedBy": null,
+        "processedAt": null,
+        "transactionId": null,
+        "adminNotes": null
+      }
+    ],
+    "pagination": {
+      "total": 47,
+      "page": 1,
+      "limit": 20,
+      "totalPages": 3
+    }
+  }
+}
+
+---
+
+PUT /admin/withdrawals/{id}/approve
+Description: Approve withdrawal request
+Headers: Authorization: Bearer {admin_token}
+Payload:
+{
+  "transactionId": "TXN789123456", // Optional
+  "adminNotes": "Approved after verification" // Optional
+}
+
+Response (200):
+{
+  "success": true,
+  "message": "Withdrawal approved successfully",
+  "data": {
+    "withdrawal": { /* Updated withdrawal object */ }
+  }
+}
+
+---
+
+PUT /admin/withdrawals/{id}/reject
+Description: Reject withdrawal request
+Headers: Authorization: Bearer {admin_token}
+Payload:
+{
+  "reason": "Insufficient balance",
+  "adminNotes": "Account verification required"
+}
+
+Response (200):
+{
+  "success": true,
+  "message": "Withdrawal rejected successfully"
+}
+
+=================================================
+11. ANALYTICS ENDPOINTS (Admin Only)
+=================================================
+
+GET /admin/analytics/overview
+Description: Get analytics overview
+Headers: Authorization: Bearer {admin_token}
+Query Parameters:
+- period: string (7d|30d|90d|1y)
+- startDate: string (ISO date)
+- endDate: string (ISO date)
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "overview": {
+      "totalRevenue": 1240000,
+      "totalUsers": 2847,
+      "totalOrders": 8924,
+      "conversionRate": 3.2,
+      "avgOrderValue": 2500,
+      "topStores": [
+        {
+          "storeId": "store_1",
+          "storeName": "Amazon",
+          "revenue": 420000,
+          "orders": 1234,
+          "growth": 15
+        }
+      ],
+      "topCategories": [
+        {
+          "categoryId": "cat_1",
+          "categoryName": "Electronics",
+          "percentage": 35,
+          "revenue": 434000
+        }
+      ]
+    }
+  }
+}
+
+---
+
+GET /admin/analytics/users
+Description: Get user analytics
+Headers: Authorization: Bearer {admin_token}
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "userAnalytics": {
+      "totalUsers": 2847,
+      "activeUsers": 2156,
+      "newUsersThisMonth": 234,
+      "userRetentionRate": 78.5,
+      "avgLifetimeValue": 5420,
+      "userGrowthChart": [
+        { "date": "2025-01-01", "users": 2500, "newUsers": 45 }
+      ],
+      "userSegments": {
+        "premium": 456,
+        "regular": 2156,
+        "inactive": 235
+      }
+    }
+  }
+}
+
+=================================================
+12. SUPPORT ENDPOINTS
+=================================================
+
+GET /support/tickets
+Description: Get user support tickets
+Headers: Authorization: Bearer {token}
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "tickets": [
+      {
+        "id": "TKT-001",
+        "subject": "Cashback not credited",
+        "message": "I made a purchase but didn't receive cashback",
+        "priority": "high", // low|medium|high|urgent
+        "status": "open", // open|in-progress|resolved|closed
+        "category": "cashback", // cashback|withdrawal|account|technical|general
+        "createdAt": "2025-01-22T10:30:00Z",
+        "updatedAt": "2025-01-22T10:30:00Z",
+        "responses": []
+      }
+    ]
+  }
+}
+
+---
+
+POST /support/tickets
+Description: Create support ticket
+Headers: Authorization: Bearer {token}
+Payload:
+{
+  "subject": "Issue subject",
+  "message": "Detailed issue description",
+  "priority": "medium",
+  "category": "cashback",
+  "attachments": ["cloudinary_file_url"] // Optional
+}
+
+Response (201):
+{
+  "success": true,
+  "message": "Support ticket created successfully",
+  "data": {
+    "ticket": { /* Created ticket object */ }
+  }
+}
+
+---
+
+GET /admin/support/tickets
+Description: Get all support tickets for admin
+Headers: Authorization: Bearer {admin_token}
+Query Parameters:
+- page: number (default: 1)
+- limit: number (default: 20)
+- status: string (open|in-progress|resolved|closed)
+- priority: string (low|medium|high|urgent)
+- category: string (cashback|withdrawal|account|technical|general)
+- assignedTo: string (admin user ID)
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "tickets": [
+      {
+        "id": "TKT-001",
+        "subject": "Cashback not credited",
+        "message": "Issue description",
+        "user": {
+          "id": "user_123",
+          "name": "John Doe",
+          "email": "john.doe@example.com"
+        },
+        "priority": "high",
+        "status": "open",
+        "category": "cashback",
+        "assignedTo": "admin_1",
+        "createdAt": "2025-01-22T10:30:00Z",
+        "updatedAt": "2025-01-22T10:30:00Z",
+        "responses": [
+          {
+            "id": "resp_1",
+            "message": "We're looking into this issue",
+            "author": "Support Agent",
+            "createdAt": "2025-01-22T11:00:00Z"
+          }
+        ]
+      }
+    ],
+    "pagination": {
+      "total": 156,
+      "page": 1,
+      "limit": 20,
+      "totalPages": 8
+    }
+  }
+}
+
+---
+
+POST /admin/support/tickets/{id}/respond
+Description: Respond to support ticket
+Headers: Authorization: Bearer {admin_token}
+Payload:
+{
+  "message": "Response message",
+  "status": "in-progress", // Optional: update status
+  "attachments": ["cloudinary_file_url"] // Optional
+}
+
+Response (201):
+{
+  "success": true,
+  "message": "Response added successfully",
+  "data": {
+    "response": { /* Created response object */ }
+  }
+}
+
+=================================================
+13. SEARCH ENDPOINTS
+=================================================
+
+GET /search
+Description: Global search across stores, offers, categories
+Query Parameters:
+- q: string (search query)
+- type: string (stores|offers|categories|all)
+- limit: number (default: 10)
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "results": {
+      "stores": [
+        {
+          "id": "store_1",
+          "name": "Amazon",
+          "logo": "cloudinary_logo_url",
+          "cashbackRate": 5,
+          "type": "store"
+        }
+      ],
+      "offers": [
+        {
+          "id": "offer_1",
+          "title": "50% Off Electronics",
+          "store": "Amazon",
+          "cashbackRate": 15,
+          "type": "offer"
+        }
+      ],
+      "categories": [
+        {
+          "id": "cat_1",
+          "name": "Electronics",
+          "storeCount": 45,
+          "type": "category"
+        }
+      ]
+    },
+    "totalResults": 25
+  }
+}
+
+---
+
+GET /search/suggestions
+Description: Get search suggestions
+Query Parameters:
+- q: string (partial search query)
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "suggestions": [
+      {
+        "id": "store_1",
+        "title": "Amazon",
+        "type": "store",
+        "image": "cloudinary_logo_url"
+      },
+      {
+        "id": "offer_1",
+        "title": "Electronics Sale",
+        "type": "offer",
+        "image": "cloudinary_image_url"
+      }
+    ]
+  }
+}
+
+=================================================
+14. FILE UPLOAD ENDPOINTS (CLOUDINARY)
+=================================================
+
+POST /upload/image
+Description: Upload image to Cloudinary
+Headers: 
+- Authorization: Bearer {token}
+- Content-Type: multipart/form-data
+Payload:
+{
+  "file": File, // Image file
+  "folder": "avatars", // avatars|stores|offers|banners|categories
+  "transformation": "w_400,h_400,c_fill" // Optional Cloudinary transformation
+}
+
+Response (200):
+{
+  "success": true,
+  "message": "Image uploaded successfully",
+  "data": {
+    "url": "https://res.cloudinary.com/savemoney/image/upload/v1234567890/avatars/user_123.jpg",
+    "publicId": "avatars/user_123",
+    "width": 400,
+    "height": 400,
+    "format": "jpg",
+    "size": 45678
+  }
+}
+
+---
+
+DELETE /upload/image
+Description: Delete image from Cloudinary
+Headers: Authorization: Bearer {token}
+Payload:
+{
+  "publicId": "avatars/user_123"
+}
+
+Response (200):
+{
+  "success": true,
+  "message": "Image deleted successfully"
+}
+
+---
+
+POST /upload/bulk-images
+Description: Upload multiple images
+Headers: 
+- Authorization: Bearer {admin_token}
+- Content-Type: multipart/form-data
+Payload:
+{
+  "files": File[], // Array of image files
+  "folder": "offers",
+  "transformation": "w_800,h_400,c_fill"
+}
+
+Response (200):
+{
+  "success": true,
+  "message": "Images uploaded successfully",
+  "data": {
+    "images": [
+      {
+        "url": "cloudinary_url_1",
+        "publicId": "offers/image_1"
+      },
+      {
+        "url": "cloudinary_url_2",
+        "publicId": "offers/image_2"
+      }
+    ]
+  }
+}
+
+=================================================
+15. ADMIN NOTIFICATION MANAGEMENT
+=================================================
+
+POST /admin/notifications/send
+Description: Send notification to users
+Headers: Authorization: Bearer {admin_token}
+Payload:
+{
+  "title": "Flash Sale Alert",
+  "message": "70% off on fashion items + 20% cashback",
+  "type": "deal",
+  "targetAudience": "all", // all|active|inactive|premium|new
+  "channels": ["push", "email", "in-app"], // push|email|sms|in-app
+  "scheduledDate": "2025-01-25T09:00:00Z", // Optional
+  "imageUrl": "cloudinary_image_url", // Optional
+  "actionUrl": "/offers", // Optional
+  "metadata": {
+    "offerId": "offer_1",
+    "storeId": "store_1"
+  }
+}
+
+Response (201):
+{
+  "success": true,
+  "message": "Notification sent successfully",
+  "data": {
+    "notification": {
+      "id": "notif_123",
+      "sentCount": 2847,
+      "estimatedDelivery": "2025-01-22T10:35:00Z"
+    }
+  }
+}
+
+---
+
+GET /admin/notifications/analytics
+Description: Get notification analytics
+Headers: Authorization: Bearer {admin_token}
+Query Parameters:
+- period: string (7d|30d|90d)
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "analytics": {
+      "totalSent": 1247,
+      "avgOpenRate": 72,
+      "avgClickRate": 34,
+      "bestPerformingType": "deal",
+      "bestPerformingTime": "09:00",
+      "channelPerformance": {
+        "push": { "sent": 1247, "opened": 896, "clicked": 304 },
+        "email": { "sent": 1247, "opened": 823, "clicked": 267 },
+        "sms": { "sent": 456, "opened": 398, "clicked": 123 }
+      }
+    }
+  }
+}
+
+=================================================
+16. ADMIN REPORTS & ANALYTICS
+=================================================
+
+POST /admin/reports/generate
+Description: Generate custom report
+Headers: Authorization: Bearer {admin_token}
+Payload:
+{
+  "reportType": "financial", // financial|user|store|offer|transaction
+  "dateRange": {
+    "from": "2025-01-01T00:00:00Z",
+    "to": "2025-01-31T23:59:59Z"
+  },
+  "format": "pdf", // pdf|excel|csv
+  "filters": {
+    "storeIds": ["store_1", "store_2"], // Optional
+    "categoryIds": ["cat_1"], // Optional
+    "userSegment": "premium" // Optional
+  },
+  "includeCharts": true,
+  "emailReport": true // Send via email
+}
+
+Response (201):
+{
+  "success": true,
+  "message": "Report generation started",
+  "data": {
+    "reportId": "report_123",
+    "estimatedTime": "5 minutes",
+    "downloadUrl": null // Will be available when ready
+  }
+}
+
+---
+
+GET /admin/reports/{id}/status
+Description: Check report generation status
+Headers: Authorization: Bearer {admin_token}
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "report": {
+      "id": "report_123",
+      "status": "completed", // generating|completed|failed
+      "downloadUrl": "https://res.cloudinary.com/savemoney/raw/upload/v1234567890/reports/financial_report_123.pdf",
+      "fileSize": "2.4 MB",
+      "generatedAt": "2025-01-22T10:35:00Z"
+    }
+  }
+}
+
+=================================================
+17. SYSTEM SETTINGS ENDPOINTS (Admin Only)
+=================================================
+
+GET /admin/settings
+Description: Get all system settings
+Headers: Authorization: Bearer {admin_token}
+
+Response (200):
+{
+  "success": true,
+  "data": {
+    "settings": {
+      "general": {
+        "siteName": "SaveMoney",
+        "siteDescription": "Your trusted cashback partner",
+        "supportEmail": "support@savemoney.com",
+        "maintenanceMode": false
+      },
+      "payments": {
+        "minWithdrawalUPI": 10,
+        "minWithdrawalBank": 50,
+        "minWithdrawalPaytm": 10,
+        "minWithdrawalVoucher": 100,
+        "maxCashbackRate": 25,
+        "autoApproveLimit": 1000
+      },
+      "referrals": {
+        "bonusAmount": 100,
+        "friendBonusAmount": 50,
+        "maxReferrals": 100
+      },
+      "notifications": {
+        "emailEnabled": true,
+        "smsEnabled": true,
+        "pushEnabled": true
+      }
+    }
+  }
+}
+
+---
+
+PUT /admin/settings
+Description: Update system settings
+Headers: Authorization: Bearer {admin_token}
+Payload:
+{
+  "general": {
+    "siteName": "SaveMoney",
+    "siteDescription": "Updated description",
+    "supportEmail": "support@savemoney.com",
+    "maintenanceMode": false
+  },
+  "payments": {
+    "minWithdrawalUPI": 10,
+    "maxCashbackRate": 25
+  }
+  // ... other setting categories
+}
+
+Response (200):
+{
+  "success": true,
+  "message": "Settings updated successfully"
+}
+
+=================================================
+18. ERROR CODES & RESPONSES
+=================================================
+
+Standard Error Response Format:
+{
+  "success": false,
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human readable error message",
+    "details": "Additional error details", // Optional
+    "field": "fieldName" // For validation errors
+  }
+}
+
+Common Error Codes:
+
+400 - Bad Request
+- INVALID_PAYLOAD: Request payload is invalid
+- VALIDATION_ERROR: Field validation failed
+- MISSING_REQUIRED_FIELD: Required field is missing
+
+401 - Unauthorized
+- INVALID_TOKEN: JWT token is invalid or expired
+- TOKEN_EXPIRED: Access token has expired
+- UNAUTHORIZED: User not authorized for this action
+
+403 - Forbidden
+- INSUFFICIENT_PERMISSIONS: User lacks required permissions
+- ADMIN_ONLY: Endpoint requires admin access
+- ACCOUNT_SUSPENDED: User account is suspended
+
+404 - Not Found
+- USER_NOT_FOUND: User does not exist
+- STORE_NOT_FOUND: Store does not exist
+- OFFER_NOT_FOUND: Offer does not exist
+- RESOURCE_NOT_FOUND: Requested resource not found
+
+409 - Conflict
+- EMAIL_ALREADY_EXISTS: Email is already registered
+- PHONE_ALREADY_EXISTS: Phone number is already registered
+- DUPLICATE_ENTRY: Resource already exists
+
+422 - Unprocessable Entity
+- INSUFFICIENT_BALANCE: Not enough cashback to withdraw
+- EXPIRED_OFFER: Offer has expired
+- INVALID_COUPON: Coupon code is invalid
+- MINIMUM_ORDER_NOT_MET: Order doesn't meet minimum value
+
+429 - Too Many Requests
+- RATE_LIMIT_EXCEEDED: Too many requests from this IP
+- OTP_LIMIT_EXCEEDED: Too many OTP requests
+
+500 - Internal Server Error
+- INTERNAL_ERROR: Something went wrong on our end
+- DATABASE_ERROR: Database operation failed
+- EXTERNAL_SERVICE_ERROR: Third-party service error
+
+=================================================
+19. WEBHOOK ENDPOINTS
+=================================================
+
+POST /webhooks/store-transaction
+Description: Receive transaction confirmation from partner stores
+Headers: 
+- X-Store-Signature: {signature}
+- Content-Type: application/json
+Payload:
+{
+  "storeId": "store_1",
+  "orderId": "AMZ123456789",
+  "userId": "user_123",
+  "amount": 15000,
+  "currency": "INR",
+  "status": "completed", // completed|cancelled|returned
+  "timestamp": "2025-01-22T10:30:00Z",
+  "trackingId": "track_456",
+  "products": [
+    {
+      "id": "prod_1",
+      "name": "iPhone 15",
+      "category": "Electronics",
+      "price": 15000,
+      "quantity": 1
+    }
+  ]
+}
+
+Response (200):
+{
+  "success": true,
+  "message": "Transaction processed successfully"
+}
+
+=================================================
+20. RATE LIMITING & PAGINATION
+=================================================
+
+Rate Limiting:
+- General API: 1000 requests per hour per IP
+- Authentication: 10 requests per minute per IP
+- File Upload: 50 requests per hour per user
+- Admin API: 5000 requests per hour per admin
+
+Pagination:
+- Default limit: 20 items
+- Maximum limit: 100 items
+- Use 'page' and 'limit' query parameters
+
+Standard Pagination Response:
+{
+  "pagination": {
+    "total": 1293,
+    "page": 1,
+    "limit": 20,
+    "totalPages": 65,
+    "hasNext": true,
+    "hasPrev": false
+  }
+}
+
+=================================================
+21. CLOUDINARY INTEGRATION
+=================================================
+
+Image Upload Configuration:
+- Folder Structure:
+  - avatars/ - User profile pictures
+  - stores/ - Store logos and banners
+  - offers/ - Offer images
+  - categories/ - Category images
+  - banners/ - Promotional banners
+  - content/ - Homepage content images
+  - reports/ - Generated report files
+
+Transformations:
+- Avatar: w_200,h_200,c_fill,f_auto,q_auto
+- Store Logo: w_400,h_400,c_fit,f_auto,q_auto
+- Store Banner: w_1200,h_400,c_fill,f_auto,q_auto
+- Offer Image: w_800,h_400,c_fill,f_auto,q_auto
+- Category Image: w_600,h_300,c_fill,f_auto,q_auto
+
+Security:
+- Signed uploads for admin operations
+- Restricted file types: jpg, png, webp
+- Maximum file size: 10MB
+- Automatic optimization and compression
+
+=================================================
+22. REAL-TIME FEATURES
+=================================================
+
+WebSocket Events:
+- Connection: wss://api.savemoney.com/ws
+- Authentication: Send token after connection
+
+Events:
+- cashback_earned: Real-time cashback notifications
+- withdrawal_approved: Withdrawal status updates
+- new_offer: New offer notifications
+- system_maintenance: System status updates
+
+WebSocket Message Format:
+{
+  "event": "cashback_earned",
+  "data": {
+    "amount": 150,
+    "store": "Amazon",
+    "orderId": "AMZ123456789"
+  },
+  "timestamp": "2025-01-22T10:30:00Z"
+}
+
+=================================================
+23. SECURITY & COMPLIANCE
+=================================================
+
+Security Headers:
+- X-API-Key: Required for some endpoints
+- X-Request-ID: Unique request identifier
+- X-User-Agent: Client application identifier
+
+Data Protection:
+- All sensitive data encrypted at rest
+- PII data masked in logs
+- GDPR compliance for EU users
+- Data retention policies implemented
+
+API Versioning:
+- Current version: v1
+- Version header: X-API-Version: v1
+- Backward compatibility maintained
+
+=================================================
+END OF DOCUMENTATION
+=================================================
+
+For technical support or API questions:
+Email: developers@savemoney.com
+Documentation: https://docs.savemoney.com
+Status Page: https://status.savemoney.com
+
+Last Updated: January 22, 2025
+Version: 1.0.0

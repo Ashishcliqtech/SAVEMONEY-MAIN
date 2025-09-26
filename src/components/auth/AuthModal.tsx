@@ -22,7 +22,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [otp, setOtp] = useState('');
   const [tempEmail, setTempEmail] = useState('');
-  
+
   const [loginData, setLoginData] = useState({
     email: '',
     password: '',
@@ -38,7 +38,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     acceptTerms: false,
   });
 
-  const { login, signup, loginWithGoogle, loginWithFacebook, verifyOTP, sendOTP, resetPassword } = useAuth();
+  const { login, signup, loginWithGoogle, loginWithFacebook, verifyOTP, sendOTP, resetPassword, completeSignupAfterOTP } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,15 +56,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (signupData.password.length < 8) {
+      toast.error('Password must be at least 8 characters long');
+      return;
+    }
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(signupData.password)) {
+      toast.error('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character');
+      return;
+    }
     if (signupData.password !== signupData.confirmPassword) {
       toast.error('Passwords do not match');
       return;
     }
     setLoading(true);
     try {
-      await signup(signupData);
+      await signup(signupData); // Only sends OTP and stores signup data in Redis
       setTempEmail(signupData.email);
-      await sendOTP(signupData.email, signupData.name);
       setMode('otp');
     } catch (error: any) {
       toast.error(error.message || 'Signup failed');
@@ -78,10 +85,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       toast.error('Please enter a valid 6-digit OTP');
       return;
     }
-    
     setLoading(true);
     try {
-      await verifyOTP(tempEmail, otp);
+      await completeSignupAfterOTP(tempEmail, otp); // Only create user after OTP is verified
       onClose();
     } catch (error: any) {
       toast.error(error.message || 'OTP verification failed');
@@ -112,7 +118,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       toast.error('Please enter your email address');
       return;
     }
-    
+
     setLoading(true);
     try {
       await resetPassword(tempEmail);
@@ -441,7 +447,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 value={otp}
                 onChange={setOtp}
                 numInputs={6}
-                separator={<span className="mx-2"></span>}
+                renderSeparator={<span className="mx-2"></span>}
+                renderInput={(props) => <input {...props} />}
                 inputStyle={{
                   width: '3rem',
                   height: '3rem',
@@ -452,11 +459,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   textAlign: 'center',
                   outline: 'none',
                 }}
-                focusStyle={{
-                  border: '2px solid #f97316',
-                  boxShadow: '0 0 0 3px rgba(249, 115, 22, 0.1)',
-                }}
-                isInputNum
               />
             </div>
 

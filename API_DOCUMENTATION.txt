@@ -1,0 +1,125 @@
+API DOCUMENTATION FOR SAVEMONEY FRONTEND
+=========================================
+
+This document describes the API endpoints and expected request/response formats for the SaveMoney frontend to work with a custom Node.js + Supabase backend.
+
+---
+
+# 1. AUTHENTICATION & SIGNUP FLOW
+
+## 1.1. Signup (Send OTP)
+- **Endpoint:** POST /auth/send-otp
+- **Description:** Initiates signup, sends OTP to email, and stores signup data + OTP in Redis (or similar store) until verification.
+- **Request Body:**
+  {
+    "name": "string",
+    "email": "string",
+    "phone": "string",
+    "password": "string",
+    "referralCode": "string (optional)"
+  }
+- **Response:**
+  { "success": true, "message": "OTP sent" }
+
+## 1.2. Verify OTP & Complete Signup
+- **Endpoint:** POST /auth/verify-otp
+- **Description:** Verifies OTP, then creates user in Supabase Auth and user profile in DB.
+- **Request Body:**
+  {
+    "email": "string",
+    "otp": "string"
+  }
+- **Response:**
+  { "success": true, "user": { ...userData }, "token": "jwt", "refreshToken": "jwt" }
+
+## 1.3. Login
+- **Endpoint:** POST /auth/login
+- **Request Body:**
+  {
+    "email": "string",
+    "password": "string"
+  }
+- **Response:**
+  { "success": true, "user": { ...userData }, "token": "jwt", "refreshToken": "jwt" }
+
+## 1.4. Forgot Password
+- **Endpoint:** POST /auth/forgot-password
+- **Request Body:**
+  { "email": "string" }
+- **Response:**
+  { "success": true, "message": "Reset link sent" }
+
+## 1.5. Reset Password
+- **Endpoint:** POST /auth/reset-password
+- **Request Body:**
+  { "token": "string", "password": "string" }
+- **Response:**
+  { "success": true, "message": "Password reset" }
+
+---
+
+# 2. USER PROFILE
+
+## 2.1. Get Current User
+- **Endpoint:** GET /user/me
+- **Headers:** Authorization: Bearer <token>
+- **Response:**
+  { "success": true, "user": { ...userData } }
+
+## 2.2. Update Profile
+- **Endpoint:** PATCH /user/me
+- **Headers:** Authorization: Bearer <token>
+- **Request Body:**
+  { "name": "string", "phone": "string", ... }
+- **Response:**
+  { "success": true, "user": { ...userData } }
+
+---
+
+# 3. OFFERS & STORES
+
+## 3.1. Get All Stores
+- **Endpoint:** GET /stores
+- **Response:**
+  { "success": true, "stores": [ ... ] }
+
+## 3.2. Get All Offers
+- **Endpoint:** GET /offers
+- **Query Params:** (optional) store, category, trending, featured
+- **Response:**
+  { "success": true, "offers": [ ... ] }
+
+## 3.3. Get Offer Details
+- **Endpoint:** GET /offers/:id
+- **Response:**
+  { "success": true, "offer": { ... } }
+
+---
+
+# 4. CONTENT SECTIONS
+
+## 4.1. Get Content Sections
+- **Endpoint:** GET /content-sections
+- **Response:**
+  { "success": true, "sections": [ ... ] }
+
+---
+
+# 5. ADMIN (if needed)
+
+- Endpoints for admin user management, offer creation, etc. can be added as needed.
+
+---
+
+# 6. GENERAL NOTES
+- All endpoints return JSON.
+- Authenticated endpoints require JWT in Authorization header.
+- OTP and signup data are stored in Redis until verification.
+- User is only created in Supabase after OTP is verified.
+- Email sending uses Brevo (Sendinblue) API.
+- Adjust endpoints as needed for your backend implementation.
+
+---
+
+# 7. CONTACT
+For any questions, contact the SaveMoney backend team.

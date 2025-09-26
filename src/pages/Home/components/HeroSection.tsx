@@ -48,7 +48,7 @@ export const HeroSection: React.FC = () => {
                 size="lg"
                 icon={ArrowRight}
                 iconPosition="right"
-                className="bg-white text-purple-600 hover:bg-gray-100 font-bold px-8"
+                className="bg-black text-purple-600 hover:bg-gray-100 font-bold px-8"
                 onClick={() => document.getElementById('recommended-offers')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 Start Saving Now

@@ -321,7 +321,7 @@ export const Home: React.FC = () => {
                 <Button
                   variant="secondary"
                   size="lg"
-                  className="bg-white text-purple-600 hover:bg-gray-100"
+                  className="bg-black text-purple-600 hover:bg-gray-100"
                 >
                   Get Started Free
                 </Button>

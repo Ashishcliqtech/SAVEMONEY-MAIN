@@ -1,6 +1,6 @@
 # SaveMoney - CashKaro-Style Cashback Platform
 
-A modern, responsive cashback and coupon platform built with React, TypeScript, Tailwind CSS, and Supabase.
+A modern, responsive cashback and coupon platform built with React, TypeScript, Tailwind CSS.
 
 ## 🚀 Features
 
@@ -37,7 +37,6 @@ A modern, responsive cashback and coupon platform built with React, TypeScript, 
 ## 🏗️ **Tech Stack**
 
 - **Frontend**: React 18, TypeScript, Tailwind CSS
-- **Backend**: Supabase (PostgreSQL, Auth, Storage)
 - **UI Components**: Custom components with Framer Motion
 - **Authentication**: Supabase Auth with OAuth
 - **Email**: Mailtrap for OTP and notifications
@@ -88,17 +87,12 @@ A modern, responsive cashback and coupon platform built with React, TypeScript, 
    - Cloudinary credentials
    - Mailtrap credentials
 
-3. **Database Setup**
-   - Connect to Supabase
-   - Migrations will run automatically
-   - Sample data included
-
-4. **OAuth Setup**
+3. **OAuth Setup**
    - Configure Google OAuth in Supabase
    - Configure Facebook OAuth in Supabase
    - Add redirect URLs
 
-5. **Email Setup**
+4. **Email Setup**
    - Create Mailtrap account
    - Add SMTP credentials to environment
 

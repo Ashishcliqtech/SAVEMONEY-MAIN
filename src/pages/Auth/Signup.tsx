@@ -7,10 +7,12 @@ import { Button, Input, Card } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../constants';
+import OtpInput from 'react-otp-input';
+import toast from 'react-hot-toast';
 
 export const Signup: React.FC = () => {
   const { t } = useTranslation();
-  const { signup, loginWithGoogle, loginWithFacebook } = useAuth();
+  const { signup, loginWithGoogle, loginWithFacebook, sendOTP, verifyOTP, completeSignupAfterOTP } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -23,28 +25,101 @@ export const Signup: React.FC = () => {
     acceptTerms: false,
   });
   const [loading, setLoading] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [showOtp, setShowOtp] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (formData.password.length < 8) {
+      toast.error('Password must be at least 8 characters long');
+      return;
+    }
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(formData.password)) {
+      toast.error('Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character');
+      return;
+    }
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match');
+      toast.error('Passwords do not match');
       return;
     }
     setLoading(true);
     try {
-      await signup({
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        password: formData.password,
-      });
-      navigate(ROUTES.DASHBOARD);
+      await signup(formData); // Only sends OTP and stores signup data in Redis
+      setShowOtp(true);
     } catch (error) {
       console.error('Signup error:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  const handleOtpSubmit = async () => {
+    setLoading(true);
+    try {
+      await completeSignupAfterOTP(formData.email, otp); // Only create user after OTP is verified
+      navigate(ROUTES.DASHBOARD);
+    } catch (error) {
+      console.error('OTP verification error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (showOtp) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-teal-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-md w-full"
+      >
+        <Card padding="lg">
+        <div className="text-center mb-6">
+          <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Mail className="w-8 h-8 text-orange-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Verify Your Email</h2>
+          <p className="text-gray-600">
+            We've sent a 6-digit code to <strong>{formData.email}</strong>
+          </p>
+        </div>
+
+        <div className="mb-6">
+        <OtpInput
+                value={otp}
+                onChange={setOtp}
+                numInputs={6}
+                renderSeparator={<span className="mx-2"></span>}
+                renderInput={(props) => <input {...props} />}
+                inputStyle={{
+                  width: '3rem',
+                  height: '3rem',
+                  margin: '0 0.25rem',
+                  fontSize: '1.5rem',
+                  borderRadius: '0.5rem',
+                  border: '2px solid #e5e7eb',
+                  textAlign: 'center',
+                  outline: 'none',
+                }}
+              />
+        </div>
+
+        <Button
+          variant="primary"
+          size="lg"
+          fullWidth
+          onClick={handleOtpSubmit}
+          loading={loading}
+          disabled={otp.length !== 6}
+          className="bg-orange-500 hover:bg-orange-600 font-bold mb-4"
+        >
+          Verify Email
+        </Button>
+        </Card>
+        </motion.div>
+        </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-teal-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -59,7 +134,7 @@ export const Signup: React.FC = () => {
             <ArrowLeft className="w-4 h-4" />
             <span className="text-sm font-medium">Back to Home</span>
           </Link>
-          
+
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">

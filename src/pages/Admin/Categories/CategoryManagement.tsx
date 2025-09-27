@@ -20,11 +20,11 @@ import {
   Heart,
 } from 'lucide-react';
 import { Card, Button, Badge, Input, Modal, Pagination } from '../../../components/ui';
-import { useCategories } from '../../../hooks/useApi'; // updated import
+import { useCategories } from '../../../hooks/useApi';
 import toast from 'react-hot-toast';
 
 export const CategoryManagement: React.FC = () => {
-  const { data: categories = [], isLoading } = useCategories(); // No more mock data
+  const { data: categories = [], isLoading } = useCategories();
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
@@ -146,7 +146,7 @@ export const CategoryManagement: React.FC = () => {
 
             return (
               <motion.div
-                key={category._id} // FIX: Changed from id to _id
+                key={category._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
@@ -201,7 +201,7 @@ export const CategoryManagement: React.FC = () => {
                       variant="ghost"
                       size="sm"
                       icon={Trash2}
-                      onClick={() => handleDelete(category._id)} // FIX: Changed from id to _id
+                      onClick={() => handleDelete(category._id)}
                       className="text-red-600 hover:text-red-700"
                     />
                   </div>

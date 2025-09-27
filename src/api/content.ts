@@ -1,11 +1,9 @@
 import { apiClient } from './client';
 import { ContentSection } from '../types';
 
-// The backend expects multipart/form-data, so we need to build it manually
 const buildFormData = (data: Partial<ContentSection>, imageFile?: File): FormData => {
   const formData = new FormData();
 
-  // Flatten the nested 'content' object as the backend expects
   Object.entries(data).forEach(([key, value]) => {
     if (key === 'content' && typeof value === 'object' && value !== null) {
       Object.entries(value).forEach(([contentKey, contentValue]) => {
@@ -14,9 +12,8 @@ const buildFormData = (data: Partial<ContentSection>, imageFile?: File): FormDat
         }
       });
     } else if (Array.isArray(value)) {
-        value.forEach(item => formData.append(`${key}[]`, item));
-    }
-    else if (value !== null && value !== undefined) {
+      value.forEach(item => formData.append(`${key}[]`, item));
+    } else if (value !== null && value !== undefined) {
       formData.append(key, String(value));
     }
   });
@@ -41,9 +38,8 @@ export const contentApi = {
 
   updateContentSection: (id: string, data: Partial<ContentSection>, imageFile?: File): Promise<ContentSection> => {
     const formData = buildFormData(data, imageFile);
-    // Use POST for updates if the backend requires multipart/form-data, or PUT if configured
     return apiClient.put(`/content/${id}`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { 'Content-Type': 'multipart/form-data' },
     }).then(res => res.data);
   },
 

@@ -7,7 +7,7 @@ export const useContentSections = () => {
   return useQuery<ContentSection[], Error>({
     queryKey: ['contentSections'],
     queryFn: contentApi.getContentSections,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 };
 

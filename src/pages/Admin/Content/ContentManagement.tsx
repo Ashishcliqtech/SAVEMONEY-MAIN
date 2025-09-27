@@ -14,30 +14,13 @@ import {
   Smartphone,
   Monitor,
   Tablet,
+  Trash2,
 } from 'lucide-react';
 import { Card, Button, Input, Modal, Badge, ImageUpload } from '../../../components/ui';
 import toast from 'react-hot-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../../api';
-
-interface ContentSection {
-  _id: string;
-  name: string;
-  type: 'hero' | 'featured' | 'highlighted' | 'banner' | 'testimonial';
-  status: 'active' | 'inactive' | 'scheduled';
-  content: {
-    title?: string;
-    subtitle?: string;
-    description?: string;
-    imageUrl?: string;
-    buttonText?: string;
-    buttonLink?: string;
-  };
-  position: number;
-  devices: ('desktop' | 'tablet' | 'mobile')[];
-  scheduledDate?: string;
-  lastModified: string;
-}
+import { ContentSection } from '../../../types';
 
 const fetchContentSections = async (): Promise<ContentSection[]> => {
   const { data } = await apiClient.get('/content');
@@ -356,7 +339,7 @@ export const ContentManagement: React.FC = () => {
                 </select>
               </div>
             </div>
-            <ImageUpload onUpload={(url) => setSelectedSection(prev => prev ? { ...prev, content: { ...prev.content, imageUrl: url } } : null)} />
+            <ImageUpload onFileSelect={(file) => setImageFile(file)} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Title"

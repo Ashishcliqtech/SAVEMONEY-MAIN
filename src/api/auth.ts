@@ -41,10 +41,6 @@ export const authApi = {
   getProfile: (): Promise<User> =>
     apiClient.get('/user/profile').then(res => res.data),
 
-  // Send OTP for verification
-  sendOTP: (email: string): Promise<{ msg: string }> =>
-    apiClient.post('/auth/send-otp', { email }).then(res => res.data),
-
   // Logs out the user (client-side only for this setup)
   logout: (): Promise<void> => {
     localStorage.removeItem('auth_token');

@@ -1,13 +1,23 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ExternalLink } from 'lucide-react';
-import { Card } from '../../../components/ui';
+import { Card, LoadingCard } from '../../../components/ui';
 import { usePopularStores } from '../../../hooks/useSupabase';
 
 export const StoreCarousel: React.FC = () => {
-  const { data: stores } = usePopularStores();
+  const { data: stores, isLoading } = usePopularStores();
 
-  if (!stores) return null;
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-4 sm:gap-6">
+        {Array.from({ length: 8 }).map((_, index) => (
+          <LoadingCard key={index} height="h-32" />
+        ))}
+      </div>
+    );
+  }
+
+  if (!stores || stores.length === 0) return null;
 
   return (
     <div className="relative">

@@ -10,11 +10,11 @@ import {
   BookOpen,
   Heart,
 } from 'lucide-react';
-import { Card } from '../../../components/ui';
+import { Card, LoadingCard } from '../../../components/ui';
 import { useCategories } from '../../../hooks/useSupabase';
 
 export const CategoryGrid: React.FC = () => {
-  const { data: categories } = useCategories();
+  const { data: categories, isLoading } = useCategories();
 
   const iconMap = {
     shirt: Shirt,
@@ -49,8 +49,17 @@ export const CategoryGrid: React.FC = () => {
     'text-red-600',
   ];
 
-  if (!categories) return null;
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 sm:gap-6">
+        {Array.from({ length: 8 }).map((_, index) => (
+          <LoadingCard key={index} height="h-32" />
+        ))}
+      </div>
+    );
+  }
 
+  if (!categories || categories.length === 0) return null;
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 sm:gap-6">
       {categories.map((category, index) => {

@@ -65,8 +65,8 @@ export const RecommendedOffersCarousel: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="animate-pulse">
-        <div className="w-full h-96 bg-gray-200 rounded-2xl"></div>
+      <div className="flex justify-center py-16">
+        <LoadingSpinner size="xl" text="Loading exclusive offers..." color="text-orange-500" />
       </div>
     );
   }

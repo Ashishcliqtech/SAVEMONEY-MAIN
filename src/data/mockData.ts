@@ -6,12 +6,13 @@ export const mockUser: User = {
   id: '1',
   email: 'john.doe@example.com',
   name: 'John Doe',
-  avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
+  avatar: 'https://ui-avatars.com/api/?name=John+Doe&background=f97316&color=fff',
   phone: '+91 9876543210',
   referralCode: 'JOHN123',
   totalCashback: 15420,
   availableCashback: 8750,
   pendingCashback: 2340,
+  role: 'user',
   createdAt: '2024-01-15T00:00:00Z',
 };
 

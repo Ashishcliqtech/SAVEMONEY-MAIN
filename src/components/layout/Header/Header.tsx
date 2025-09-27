@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Menu, ChevronDown, Globe, ShoppingBag, Wallet, CircleUser as UserCircle, LogOut, Settings, Bell, Search } from 'lucide-react';
+import { User, Menu, ChevronDown, Globe, ShoppingBag, Wallet, CircleUser as UserCircle, LogOut, Settings, Bell, Search, Loader } from 'lucide-react';
 import { Button, SearchBar, NotificationDropdown } from '../../ui';
 import { useLanguage } from '../../../hooks';
 import { useAuth } from '../../../hooks/useAuth';
@@ -21,7 +21,7 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const { t } = useTranslation();
   const { language, changeLanguage } = useLanguage();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, isLoading } = useAuth();
   const location = useLocation();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isLanguageMenuOpen, setIsLanguageMenuOpen] = useState(false);
@@ -131,14 +131,19 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
 
             {/* User Menu or Auth Buttons */}
-            {isAuthenticated ? (
+            {isLoading ? (
+              <div className="flex items-center space-x-2">
+                <Loader className="w-4 h-4 animate-spin text-orange-500" />
+                <span className="text-sm text-gray-600">Loading...</span>
+              </div>
+            ) : isAuthenticated ? (
               <div className="relative">
                 <button
                   onClick={toggleUserMenu}
                   className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
                 >
                   <img
-                    src={user?.avatar || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop'}
+                    src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.name}&background=f97316&color=fff`}
                     alt={user.name}
                     className="w-8 h-8 rounded-full object-cover"
                   />

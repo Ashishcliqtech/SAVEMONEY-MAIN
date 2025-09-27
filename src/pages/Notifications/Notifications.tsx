@@ -94,7 +94,7 @@ export const Notifications: React.FC = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <LoadingSpinner size="lg" />
+        <LoadingSpinner size="xl" text="Loading notifications..." color="text-orange-500" />
       </div>
     );
   }

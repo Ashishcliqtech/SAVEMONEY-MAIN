@@ -3,14 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, Chrome, Facebook, ArrowLeft } from 'lucide-react';
-import { Button, Input, Card } from '../../components/ui';
+import { Button, Input, Card, LoadingSpinner } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../constants';
 
 export const Login: React.FC = () => {
   const { t } = useTranslation();
-  const { login } = useAuth(); 
+  const { login, loginWithGoogle, loginWithFacebook } = useAuth(); 
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -24,7 +24,7 @@ export const Login: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await login(formData); 
+      await login(formData.email, formData.password); 
       navigate(ROUTES.DASHBOARD);
     } catch (error) {
       // Error is already handled by toast in the api client
@@ -36,6 +36,14 @@ export const Login: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-teal-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      {loading && (
+        <LoadingSpinner 
+          size="xl" 
+          text="Signing you in..." 
+          fullScreen 
+          color="text-orange-500"
+        />
+      )}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

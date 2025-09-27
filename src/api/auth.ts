@@ -16,6 +16,7 @@ export interface SignupRequest {
 
 export interface AuthResponse {
   token: string;
+  user?: User;
 }
 
 export interface OTPRequest {
@@ -26,7 +27,7 @@ export interface OTPRequest {
 export const authApi = {
   // Initiates signup and sends OTP
   signup: (data: SignupRequest): Promise<{ msg: string }> =>
-    apiClient.post('/auth/signup', data),
+    apiClient.post('/auth/send-otp', data),
 
   // Verifies OTP and completes signup
   verifyOTP: (data: OTPRequest): Promise<AuthResponse> =>
@@ -38,7 +39,11 @@ export const authApi = {
 
   // Fetches the current user's profile
   getProfile: (): Promise<User> =>
-    apiClient.get('/user/profile'),
+    apiClient.get('/user/me'),
+
+  // Send OTP for verification
+  sendOTP: (email: string): Promise<{ msg: string }> =>
+    apiClient.post('/auth/send-otp', { email }),
 
   // Logs out the user (client-side only for this setup)
   logout: (): Promise<void> => {

@@ -7,11 +7,15 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (data: LoginRequest) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   signup: (data: SignupRequest) => Promise<void>;
   verifyOTP: (email: string, otp: string) => Promise<void>;
+  completeSignupAfterOTP: (email: string, otp: string) => Promise<void>;
+  sendOTP: (email: string) => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
+  loginWithFacebook: () => Promise<void>;
   logout: () => void;
-  // Add other functions like loginWithGoogle if you implement them in the backend
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -43,17 +47,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     loadUser();
   }, []);
 
-  const login = async (loginData: LoginRequest) => {
+  const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const { token } = await authApi.login(loginData);
+      const { token } = await authApi.login({ email, password });
       localStorage.setItem('auth_token', token);
       const userData = await authApi.getProfile();
       setUser(userData);
       toast.success('Welcome back!');
     } catch (error) {
       console.error('Login failed:', error);
-      throw error; // Re-throw to be caught in the component
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -79,7 +83,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       localStorage.setItem('auth_token', token);
       const userData = await authApi.getProfile();
       setUser(userData);
-      toast.success('Account created successfully!');
+      toast.success('Account verified successfully!');
     } catch (error) {
       console.error('OTP verification failed:', error);
       throw error;
@@ -88,11 +92,54 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const completeSignupAfterOTP = async (email: string, otp: string) => {
+    await verifyOTP(email, otp);
+  };
+
+  const sendOTP = async (email: string) => {
+    try {
+      await authApi.sendOTP(email);
+      toast.success('OTP sent successfully!');
+    } catch (error) {
+      console.error('Failed to send OTP:', error);
+      throw error;
+    }
+  };
+
+  const resetPassword = async (email: string) => {
+    try {
+      await authApi.forgotPassword(email);
+      toast.success('Password reset link sent to your email!');
+    } catch (error) {
+      console.error('Failed to send reset email:', error);
+      throw error;
+    }
+  };
+
+  const loginWithGoogle = async () => {
+    try {
+      toast.info('Google login will be implemented with your backend');
+      // Implement Google OAuth with your backend
+    } catch (error) {
+      console.error('Google login failed:', error);
+      toast.error('Google login failed');
+    }
+  };
+
+  const loginWithFacebook = async () => {
+    try {
+      toast.info('Facebook login will be implemented with your backend');
+      // Implement Facebook OAuth with your backend
+    } catch (error) {
+      console.error('Facebook login failed:', error);
+      toast.error('Facebook login failed');
+    }
+  };
+
   const logout = () => {
     authApi.logout();
     setUser(null);
     toast.success('Logged out successfully');
-    // Redirect to home page
     window.location.href = '/';
   };
   
@@ -103,12 +150,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     signup,
     verifyOTP,
+    completeSignupAfterOTP,
+    sendOTP,
+    resetPassword,
+    loginWithGoogle,
+    loginWithFacebook,
     logout,
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {!isLoading ? children : null /* Or a loading spinner */}
+      {children}
     </AuthContext.Provider>
   );
 };

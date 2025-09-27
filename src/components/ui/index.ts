@@ -4,6 +4,7 @@ export { Input } from './Input';
 export { Card } from './Card';
 export { Badge } from './Badge';
 export { LoadingSpinner } from './LoadingSpinner';
+export { LoadingCard } from './LoadingCard';
 export { SearchBar } from './SearchBar';
 export { Pagination } from './Pagination';
 export { StatsCard } from './StatsCard';

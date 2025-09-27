@@ -43,8 +43,8 @@ export const Offers: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" />
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <LoadingSpinner size="xl" text="Loading offers..." color="text-orange-500" />
       </div>
     );
   }

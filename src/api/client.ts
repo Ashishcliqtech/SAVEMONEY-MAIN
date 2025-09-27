@@ -2,11 +2,11 @@ import axios, { AxiosResponse } from 'axios';
 import toast from 'react-hot-toast';
 
 // The base URL for your backend API
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'https://updatedbackendcashkro.onrender.com/api';
+const baseURL = import.meta.env.VITE_API_BASE_URL || 'https://api.savemoney.com/api';
 
 const apiClientInstance = axios.create({
   baseURL,
-  timeout: 30000,
+  timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -36,7 +36,7 @@ apiClientInstance.interceptors.response.use(
       }
     }
 
-    const message = error.response?.data?.msg || error.message || 'Something went wrong';
+    const message = error.response?.data?.message || error.response?.data?.msg || error.message || 'Something went wrong';
     toast.error(message);
 
     return Promise.reject(error);

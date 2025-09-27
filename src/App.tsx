@@ -3,6 +3,7 @@ import { Toaster } from 'react-hot-toast';
 import { AppRouter } from './routes';
 import { AuthProvider } from './hooks/useAuth';
 import { GlobalStyles } from './styles/GlobalStyles';
+import { LoadingSpinner } from './components/ui';
 import './utils/i18n';
 
 function App() {
@@ -10,7 +11,18 @@ function App() {
     <AuthProvider>
       <div className="overflow-x-hidden w-full max-w-full">
         <GlobalStyles />
-        <AppRouter />
+        <React.Suspense 
+          fallback={
+            <LoadingSpinner 
+              size="xl" 
+              text="Loading SaveMoney..." 
+              fullScreen 
+              color="text-orange-500"
+            />
+          }
+        >
+          <AppRouter />
+        </React.Suspense>
         <Toaster
           position="top-right"
           toastOptions={{

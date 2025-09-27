@@ -87,7 +87,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
     setLoading(true);
     try {
-      await completeSignupAfterOTP(tempEmail, otp); // Only create user after OTP is verified
+      await completeSignupAfterOTP(tempEmail, otp);
       onClose();
     } catch (error: any) {
       toast.error(error.message || 'OTP verification failed');
@@ -106,7 +106,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       }
       onClose();
     } catch (error: any) {
-      // Error is already handled in the auth hook
+      console.error(`${provider} login failed:`, error);
     } finally {
       setLoading(false);
     }

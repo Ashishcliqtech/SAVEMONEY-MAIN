@@ -160,7 +160,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) 
             <div className="border-t border-gray-200 p-4">
               <div className="flex items-center space-x-3">
                 <img
-                  src={user.avatar || `https://ui-avatars.com/api/?name=${user.name}&background=random`}
+                  src={user.avatar || `https://ui-avatars.com/api/?name=${user.name}&background=f97316&color=fff`}
                   alt={user.name}
                   className="w-10 h-10 rounded-full object-cover"
                 />

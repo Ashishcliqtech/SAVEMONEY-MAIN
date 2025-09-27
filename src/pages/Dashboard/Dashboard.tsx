@@ -11,7 +11,7 @@ import {
   ArrowRight,
   Star,
 } from 'lucide-react';
-import { Card, Button, Badge } from '../../components/ui';
+import { Card, Button, Badge, LoadingSpinner } from '../../components/ui';
 import { useWallet, useTransactions } from '../../hooks/useSupabase';
 import { useAuth } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
@@ -20,8 +20,8 @@ import { ROUTES } from '../../constants';
 export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { data: walletData } = useWallet(user?.id);
-  const { data: transactionsData } = useTransactions(user?.id, 1, 5);
+  const { data: walletData, isLoading: walletLoading } = useWallet(user?.id);
+  const { data: transactionsData, isLoading: transactionsLoading } = useTransactions(user?.id, 1, 5);
 
   const quickActions = [
     {
@@ -73,6 +73,14 @@ export const Dashboard: React.FC = () => {
       bgColor: 'bg-orange-100',
     },
   ];
+
+  if (walletLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <LoadingSpinner size="xl" text="Loading your dashboard..." color="text-orange-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -157,7 +165,12 @@ export const Dashboard: React.FC = () => {
                 </Link>
               </div>
 
-              <div className="space-y-4">
+              {transactionsLoading ? (
+                <div className="flex justify-center py-8">
+                  <LoadingSpinner size="md" color="text-orange-500" />
+                </div>
+              ) : (
+                <div className="space-y-4">
                 {transactionsData?.transactions.map((transaction, index) => (
                   <motion.div
                     key={transaction.id}
@@ -219,6 +232,7 @@ export const Dashboard: React.FC = () => {
                   </div>
                 )}
               </div>
+              )}
             </Card>
           </div>
         </div>

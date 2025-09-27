@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Mail, Lock, User, Phone, Eye, EyeOff, ArrowLeft } from 'lucide-react';
-import { Button, Input, Card } from '../../components/ui';
+import { Button, Input, Card, LoadingSpinner } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 import { ROUTES } from '../../constants';
 import OtpInput from 'react-otp-input';
@@ -11,7 +11,7 @@ import toast from 'react-hot-toast';
 
 export const Signup: React.FC = () => {
   const { t } = useTranslation();
-  const { signup, verifyOTP } = useAuth();
+  const { signup, completeSignupAfterOTP } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -58,7 +58,7 @@ export const Signup: React.FC = () => {
     }
     setLoading(true);
     try {
-      await verifyOTP(formData.email, otp);
+      await completeSignupAfterOTP(formData.email, otp);
       navigate(ROUTES.DASHBOARD);
     } catch (error) {
       console.error('OTP verification error:', error);
@@ -71,6 +71,14 @@ export const Signup: React.FC = () => {
   if (showOtp) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-teal-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        {loading && (
+          <LoadingSpinner 
+            size="xl" 
+            text="Verifying OTP..." 
+            fullScreen 
+            color="text-orange-500"
+          />
+        )}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -126,6 +134,14 @@ export const Signup: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-teal-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      {loading && (
+        <LoadingSpinner 
+          size="xl" 
+          text="Creating your account..." 
+          fullScreen 
+          color="text-orange-500"
+        />
+      )}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

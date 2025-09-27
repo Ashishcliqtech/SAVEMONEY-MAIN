@@ -10,6 +10,8 @@ export interface User {
   pendingCashback: number;
   role?: 'user' | 'admin' | 'moderator';
   createdAt: string;
+  isVerified?: boolean;
+  isActive?: boolean;
 }
 
 export interface Store {

@@ -15,11 +15,13 @@ import {
   Monitor,
   Tablet,
 } from 'lucide-react';
-import { Card, Button, Input, Modal, Badge } from '../../../components/ui';
+import { Card, Button, Input, Modal, Badge, ImageUpload } from '../../../components/ui';
 import toast from 'react-hot-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiClient } from '../../../api';
 
 interface ContentSection {
-  id: string;
+  _id: string;
   name: string;
   type: 'hero' | 'featured' | 'highlighted' | 'banner' | 'testimonial';
   status: 'active' | 'inactive' | 'scheduled';
@@ -37,70 +39,77 @@ interface ContentSection {
   lastModified: string;
 }
 
+const fetchContentSections = async (): Promise<ContentSection[]> => {
+  const { data } = await apiClient.get('/content');
+  return data;
+};
+
+const createContentSection = async (formData: FormData): Promise<ContentSection> => {
+  const { data } = await apiClient.post('/content', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return data;
+};
+
+const updateContentSection = async ({ id, formData }: { id: string, formData: FormData }): Promise<ContentSection> => {
+  const { data } = await apiClient.put(`/content/${id}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return data;
+};
+
+const deleteContentSection = async (id: string): Promise<void> => {
+  await apiClient.delete(`/content/${id}`);
+};
+
 export const ContentManagement: React.FC = () => {
-  const [sections, setSections] = useState<ContentSection[]>([
-    {
-      id: '1',
-      name: 'Hero Section',
-      type: 'hero',
-      status: 'active',
-      content: {
-        title: 'Save Money on Every Purchase',
-        subtitle: 'Get cashback and exclusive deals from top brands',
-        buttonText: 'Start Saving Now',
-        buttonLink: '/offers',
-        imageUrl: 'https://images.pexels.com/photos/259200/pexels-photo-259200.jpeg?auto=compress&cs=tinysrgb&w=800&h=400&fit=crop',
-      },
-      position: 1,
-      devices: ['desktop', 'tablet', 'mobile'],
-      lastModified: '2025-01-22T10:30:00Z',
+  const queryClient = useQueryClient();
+  const { data: sections = [], isLoading } = useQuery({ queryKey: ['contentSections'], queryFn: fetchContentSections });
+
+  const createMutation = useMutation({
+    mutationFn: createContentSection,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contentSections'] });
+      toast.success('Content section created successfully!');
+      setShowModal(false);
     },
-    {
-      id: '2',
-      name: 'Featured Deals Section',
-      type: 'featured',
-      status: 'active',
-      content: {
-        title: 'Featured Deals',
-        description: 'Limited time exclusive offers just for you',
-      },
-      position: 2,
-      devices: ['desktop', 'tablet', 'mobile'],
-      lastModified: '2025-01-21T14:15:00Z',
+    onError: () => {
+      toast.error('Failed to create content section.');
     },
-    {
-      id: '3',
-      name: 'Highlighted Stores',
-      type: 'highlighted',
-      status: 'active',
-      content: {
-        title: 'Top Stores',
-        description: 'Shop from your favorite brands and earn cashback',
-      },
-      position: 3,
-      devices: ['desktop', 'tablet'],
-      lastModified: '2025-01-20T09:45:00Z',
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: updateContentSection,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contentSections'] });
+      toast.success('Content section updated successfully!');
+      setShowModal(false);
     },
-    {
-      id: '4',
-      name: 'Special Banner',
-      type: 'banner',
-      status: 'scheduled',
-      content: {
-        title: 'Festival Sale Coming Soon!',
-        subtitle: 'Get ready for the biggest sale of the year',
-        imageUrl: 'https://images.pexels.com/photos/1303081/pexels-photo-1303081.jpeg?auto=compress&cs=tinysrgb&w=800&h=300&fit=crop',
-      },
-      position: 4,
-      devices: ['desktop', 'tablet', 'mobile'],
-      scheduledDate: '2025-02-01T00:00:00Z',
-      lastModified: '2025-01-19T16:20:00Z',
+    onError: () => {
+      toast.error('Failed to update content section.');
     },
-  ]);
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteContentSection,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['contentSections'] });
+      toast.success('Content section deleted successfully!');
+    },
+    onError: () => {
+      toast.error('Failed to delete content section.');
+    },
+  });
+
 
   const [showModal, setShowModal] = useState(false);
   const [selectedSection, setSelectedSection] = useState<ContentSection | null>(null);
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const handleEdit = (section: ContentSection) => {
     setSelectedSection(section);
@@ -108,17 +117,37 @@ export const ContentManagement: React.FC = () => {
   };
 
   const handleSave = () => {
-    toast.success('Content section updated successfully!');
-    setShowModal(false);
-    setSelectedSection(null);
+    const formData = new FormData();
+    if (selectedSection) {
+      Object.entries(selectedSection).forEach(([key, value]) => {
+        if (key === 'content') {
+          formData.append(key, JSON.stringify(value));
+        } else if (Array.isArray(value)) {
+          value.forEach(item => formData.append(key, item));
+        } else if (value !== null && value !== undefined) {
+          formData.append(key, String(value));
+        }
+      });
+    }
+
+
+    if (imageFile) {
+      formData.append('imageUrl', imageFile);
+    }
+
+    if (selectedSection?._id) {
+      updateMutation.mutate({ id: selectedSection._id, formData });
+    } else {
+      createMutation.mutate(formData);
+    }
   };
 
-  const handleStatusChange = (sectionId: string, newStatus: 'active' | 'inactive') => {
-    setSections(sections.map(section => 
-      section.id === sectionId ? { ...section, status: newStatus } : section
-    ));
-    toast.success(`Section ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully!`);
+  const handleDelete = (id: string) => {
+    if (window.confirm('Are you sure you want to delete this section?')) {
+      deleteMutation.mutate(id);
+    }
   };
+
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -181,7 +210,10 @@ export const ContentManagement: React.FC = () => {
                 );
               })}
             </div>
-            <Button variant="primary" icon={Plus}>
+            <Button variant="primary" icon={Plus} onClick={() => {
+              setSelectedSection(null);
+              setShowModal(true);
+            }}>
               Add Section
             </Button>
           </div>
@@ -191,7 +223,7 @@ export const ContentManagement: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {sections.map((section, index) => (
             <motion.div
-              key={section.id}
+              key={section._id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
@@ -266,30 +298,21 @@ export const ContentManagement: React.FC = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      icon={Eye}
-                    >
-                      Preview
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
                       icon={Edit}
                       onClick={() => handleEdit(section)}
                     >
                       Edit
                     </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      icon={Trash2}
+                      onClick={() => handleDelete(section._id)}
+                      className="text-red-500"
+                    >
+                      Delete
+                    </Button>
                   </div>
-                  
-                  <Button
-                    variant={section.status === 'active' ? 'outline' : 'primary'}
-                    size="sm"
-                    onClick={() => handleStatusChange(
-                      section.id, 
-                      section.status === 'active' ? 'inactive' : 'active'
-                    )}
-                  >
-                    {section.status === 'active' ? 'Deactivate' : 'Activate'}
-                  </Button>
                 </div>
 
                 {/* Last Modified */}
@@ -313,6 +336,7 @@ export const ContentManagement: React.FC = () => {
               <Input
                 label="Section Name"
                 value={selectedSection?.name || ''}
+                onChange={(e) => setSelectedSection(prev => prev ? { ...prev, name: e.target.value } : null)}
                 placeholder="Enter section name"
               />
               <div>
@@ -321,6 +345,7 @@ export const ContentManagement: React.FC = () => {
                 </label>
                 <select
                   value={selectedSection?.type || 'featured'}
+                  onChange={(e) => setSelectedSection(prev => prev ? { ...prev, type: e.target.value as any } : null)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="hero">Hero Section</option>
@@ -331,16 +356,18 @@ export const ContentManagement: React.FC = () => {
                 </select>
               </div>
             </div>
-
+            <ImageUpload onUpload={(url) => setSelectedSection(prev => prev ? { ...prev, content: { ...prev.content, imageUrl: url } } : null)} />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Title"
                 value={selectedSection?.content.title || ''}
+                onChange={(e) => setSelectedSection(prev => prev ? { ...prev, content: { ...prev.content, title: e.target.value } } : null)}
                 placeholder="Enter title"
               />
               <Input
                 label="Subtitle"
                 value={selectedSection?.content.subtitle || ''}
+                onChange={(e) => setSelectedSection(prev => prev ? { ...prev, content: { ...prev.content, subtitle: e.target.value } } : null)}
                 placeholder="Enter subtitle"
               />
             </div>
@@ -351,61 +378,12 @@ export const ContentManagement: React.FC = () => {
               </label>
               <textarea
                 value={selectedSection?.content.description || ''}
+                onChange={(e) => setSelectedSection(prev => prev ? { ...prev, content: { ...prev.content, description: e.target.value } } : null)}
                 rows={4}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
                 placeholder="Enter description..."
               />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label="Image URL"
-                value={selectedSection?.content.imageUrl || ''}
-                placeholder="https://example.com/image.jpg"
-              />
-              <Input
-                label="Button Text"
-                value={selectedSection?.content.buttonText || ''}
-                placeholder="Call to action text"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label="Button Link"
-                value={selectedSection?.content.buttonLink || ''}
-                placeholder="/offers"
-              />
-              <Input
-                label="Position"
-                type="number"
-                value={selectedSection?.position || 1}
-                placeholder="1"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">
-                Device Support
-              </label>
-              <div className="flex space-x-4">
-                {['desktop', 'tablet', 'mobile'].map((device) => {
-                  const IconComponent = getDeviceIcon(device);
-                  return (
-                    <label key={device} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={selectedSection?.devices.includes(device as any) || false}
-                        className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                      />
-                      <IconComponent className="w-4 h-4 ml-2 mr-1" />
-                      <span className="text-sm text-gray-700 capitalize">{device}</span>
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-
             <div className="flex space-x-4">
               <Button
                 variant="outline"

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Layout } from '../components/layout';
 import { LoadingSpinner } from '../components/ui';
@@ -32,6 +32,7 @@ import {
   Analytics, 
   Settings as AdminSettings 
 } from '../pages/Admin';
+import { useAuth } from '../hooks/useAuth';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -39,10 +40,29 @@ const queryClient = new QueryClient({
       retry: 2,
       refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000, // 5 minutes
-      cacheTime: 10 * 60 * 1000, // 10 minutes
     },
   },
 });
+
+// A component to protect routes that require admin privileges
+const ProtectedRoute: React.FC = () => {
+  const { user, isLoading, isAuthenticated } = useAuth();
+
+  if (isLoading) {
+    return <LoadingSpinner size="xl" text="Checking authentication..." fullScreen />;
+  }
+
+  // If user is authenticated and is an admin, allow access. Otherwise, redirect.
+  if (!isAuthenticated) {
+     return <Navigate to={ROUTES.LOGIN} replace />;
+  }
+  
+  if (user?.role !== 'admin') {
+     return <Navigate to={ROUTES.DASHBOARD} replace />;
+  }
+  
+  return <Outlet />;
+};
 
 export const AppRouter: React.FC = () => {
   return (
@@ -80,20 +100,22 @@ export const AppRouter: React.FC = () => {
               <Route path="/notifications" element={<Notifications />} />
             </Route>
 
-            {/* Admin Routes (with layout) */}
-            <Route element={<Layout />}>
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/users" element={<UserManagement />} />
-              <Route path="/admin/stores" element={<StoreManagement />} />
-              <Route path="/admin/categories" element={<CategoryManagement />} />
-              <Route path="/admin/offers" element={<OfferManagement />} />
-              <Route path="/admin/withdrawals" element={<WithdrawalManagement />} />
-              <Route path="/admin/content" element={<ContentManagement />} />
-              <Route path="/admin/notifications" element={<NotificationManagement />} />
-              <Route path="/admin/reports" element={<ReportManagement />} />
-              <Route path="/admin/support" element={<SupportManagement />} />
-              <Route path="/admin/analytics" element={<Analytics />} />
-              <Route path="/admin/settings" element={<AdminSettings />} />
+            {/* Admin Routes (with layout and protection) */}
+            <Route element={<ProtectedRoute />}>
+               <Route element={<Layout />}>
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/users" element={<UserManagement />} />
+                <Route path="/admin/stores" element={<StoreManagement />} />
+                <Route path="/admin/categories" element={<CategoryManagement />} />
+                <Route path="/admin/offers" element={<OfferManagement />} />
+                <Route path="/admin/withdrawals" element={<WithdrawalManagement />} />
+                <Route path="/admin/content" element={<ContentManagement />} />
+                <Route path="/admin/notifications" element={<NotificationManagement />} />
+                <Route path="/admin/reports" element={<ReportManagement />} />
+                <Route path="/admin/support" element={<SupportManagement />} />
+                <Route path="/admin/analytics" element={<Analytics />} />
+                <Route path="/admin/settings" element={<AdminSettings />} />
+              </Route>
             </Route>
             
             {/* Catch all route */}
@@ -104,3 +126,4 @@ export const AppRouter: React.FC = () => {
     </QueryClientProvider>
   );
 };
+

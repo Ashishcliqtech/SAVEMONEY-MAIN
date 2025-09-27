@@ -1,5 +1,6 @@
 export interface User {
-  id: string;
+  id: string; // From JWT, can remain 'id'
+  _id: string; // From database
   email: string;
   name: string;
   avatar?: string;
@@ -15,7 +16,7 @@ export interface User {
 }
 
 export interface Store {
-  id: string;
+  _id: string;
   name: string;
   logo: string;
   banner?: string;
@@ -28,7 +29,7 @@ export interface Store {
 }
 
 export interface Offer {
-  id: string;
+  _id: string;
   title: string;
   description: string;
   store: Store;
@@ -47,7 +48,7 @@ export interface Offer {
 }
 
 export interface Transaction {
-  id: string;
+  _id: string;
   store: Store;
   amount: number;
   cashbackEarned: number;
@@ -57,7 +58,7 @@ export interface Transaction {
 }
 
 export interface WithdrawalRequest {
-  id: string;
+  _id: string;
   amount: number;
   method: 'upi' | 'bank' | 'paytm' | 'voucher';
   accountDetails: string;
@@ -67,7 +68,7 @@ export interface WithdrawalRequest {
 }
 
 export interface Category {
-  id: string;
+  _id: string;
   name: string;
   icon: string;
   description: string;
@@ -82,7 +83,7 @@ export interface ReferralData {
   referralCode: string;
   referralLink: string;
   recentReferrals: Array<{
-    id: string;
+    _id: string;
     name: string;
     email: string;
     earnings: number;
@@ -92,7 +93,7 @@ export interface ReferralData {
 }
 
 export interface NotificationData {
-  id: string;
+  _id: string;
   type: 'deal' | 'cashback' | 'withdrawal' | 'referral' | 'support';
   title: string;
   message: string;

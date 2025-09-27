@@ -1,12 +1,11 @@
-import React from 'react';
+import React, { ElementType } from 'react';
 import { motion } from 'framer-motion';
-import { DivideIcon as LucideIcon } from 'lucide-react';
 import { Card } from '../Card';
 
 interface FeatureCardProps {
   title: string;
   description: string;
-  icon: LucideIcon;
+  icon: ElementType;
   color: string;
   bgColor: string;
   delay?: number;
@@ -40,3 +39,4 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
     </motion.div>
   );
 };
+

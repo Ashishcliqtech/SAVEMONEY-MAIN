@@ -27,7 +27,7 @@ export interface OTPRequest {
 export const authApi = {
   // Initiates signup and sends OTP
   signup: (data: SignupRequest): Promise<{ msg: string }> =>
-    apiClient.post('/auth/send-otp', data),
+    apiClient.post('/auth/signup', data),
 
   // Verifies OTP and completes signup
   verifyOTP: (data: OTPRequest): Promise<AuthResponse> =>
@@ -39,7 +39,7 @@ export const authApi = {
 
   // Fetches the current user's profile
   getProfile: (): Promise<User> =>
-    apiClient.get('/user/me'),
+    apiClient.get('/user/profile'),
 
   // Send OTP for verification
   sendOTP: (email: string): Promise<{ msg: string }> =>

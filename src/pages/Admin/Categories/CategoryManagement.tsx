@@ -20,11 +20,11 @@ import {
   Heart,
 } from 'lucide-react';
 import { Card, Button, Badge, Input, Modal, Pagination } from '../../../components/ui';
-import { mockCategories } from '../../../data/mockData';
+import { useCategories } from '../../../hooks/useApi'; // updated import
 import toast from 'react-hot-toast';
 
 export const CategoryManagement: React.FC = () => {
-  const [categories, setCategories] = useState(mockCategories);
+  const { data: categories = [], isLoading } = useCategories(); // No more mock data
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
@@ -53,12 +53,13 @@ export const CategoryManagement: React.FC = () => {
 
   const handleDelete = (categoryId: string) => {
     if (confirm('Are you sure you want to delete this category?')) {
-      setCategories(categories.filter(cat => cat.id !== categoryId));
+      // Replace with your delete mutation hook
       toast.success('Category deleted successfully!');
     }
   };
 
   const handleSave = () => {
+    // Replace with your create/update mutation hook
     toast.success('Category saved successfully!');
     setShowModal(false);
     setSelectedCategory(null);
@@ -117,7 +118,7 @@ export const CategoryManagement: React.FC = () => {
               <TrendingUp className="w-6 h-6 text-blue-600" />
             </div>
             <div className="text-2xl font-bold text-gray-900">
-              {Math.round(categories.reduce((sum, cat) => sum + cat.offerCount, 0) / categories.length)}
+              {categories.length > 0 ? Math.round(categories.reduce((sum, cat) => sum + cat.offerCount, 0) / categories.length) : 0}
             </div>
             <div className="text-gray-600">Avg Offers/Category</div>
           </Card>
@@ -145,7 +146,7 @@ export const CategoryManagement: React.FC = () => {
 
             return (
               <motion.div
-                key={category.id}
+                key={category._id} // FIX: Changed from id to _id
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
@@ -200,7 +201,7 @@ export const CategoryManagement: React.FC = () => {
                       variant="ghost"
                       size="sm"
                       icon={Trash2}
-                      onClick={() => handleDelete(category.id)}
+                      onClick={() => handleDelete(category._id)} // FIX: Changed from id to _id
                       className="text-red-600 hover:text-red-700"
                     />
                   </div>
@@ -214,7 +215,7 @@ export const CategoryManagement: React.FC = () => {
         <Modal
           isOpen={showModal}
           onClose={() => setShowModal(false)}
-          title={selectedCategory ? 'Edit Category' : 'Add Category'}
+          title={selectedCategory?._id ? 'Edit Category' : 'Add Category'}
           size="lg"
         >
           <div className="space-y-6">
@@ -266,7 +267,7 @@ export const CategoryManagement: React.FC = () => {
                 fullWidth
                 onClick={handleSave}
               >
-                {selectedCategory ? 'Update' : 'Create'} Category
+                {selectedCategory?._id ? 'Update' : 'Create'} Category
               </Button>
             </div>
           </div>

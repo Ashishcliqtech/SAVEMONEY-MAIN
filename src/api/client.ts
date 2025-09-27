@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from 'axios';
 import toast from 'react-hot-toast';
 
 // The base URL for your backend API
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'https://api.savemoney.com/api';
+const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 const apiClientInstance = axios.create({
   baseURL,

@@ -7,9 +7,9 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<any>;
   signup: (data: SignupRequest) => Promise<void>;
-  verifyOTP: (email: string, otp: string) => Promise<void>;
+  verifyOTP: (email: string, otp: string) => Promise<any>;
   completeSignupAfterOTP: (email: string, otp: string) => Promise<void>;
   sendOTP: (email: string) => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -28,15 +28,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Effect to handle session management on app load
   useEffect(() => {
     const loadUser = async () => {
       const token = localStorage.getItem('auth_token');
       if (token) {
         try {
+          // If token exists, fetch user profile
           const userData = await authApi.getProfile();
           setUser(userData);
         } catch (error) {
           console.error("Failed to fetch profile, logging out.", error);
+          // If token is invalid, clear it
           localStorage.removeItem('auth_token');
           setUser(null);
         }
@@ -50,11 +53,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const { token } = await authApi.login({ email, password });
-      localStorage.setItem('auth_token', token);
+      const response = await authApi.login({ email, password });
+      localStorage.setItem('auth_token', response.token);
       const userData = await authApi.getProfile();
       setUser(userData);
       toast.success('Welcome back!');
+      return userData;
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
@@ -79,11 +83,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const verifyOTP = async (email: string, otp: string) => {
     setIsLoading(true);
     try {
-      const { token } = await authApi.verifyOTP({ email, otp });
-      localStorage.setItem('auth_token', token);
+      const response = await authApi.verifyOTP({ email, otp });
+      localStorage.setItem('auth_token', response.token);
       const userData = await authApi.getProfile();
       setUser(userData);
       toast.success('Account verified successfully!');
+      return userData;
     } catch (error) {
       console.error('OTP verification failed:', error);
       throw error;
@@ -91,9 +96,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(false);
     }
   };
-
+  
   const completeSignupAfterOTP = async (email: string, otp: string) => {
-    await verifyOTP(email, otp);
+     await verifyOTP(email, otp);
   };
 
   const sendOTP = async (email: string) => {
@@ -117,23 +122,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const loginWithGoogle = async () => {
-    try {
-      toast.info('Google login will be implemented with your backend');
-      // Implement Google OAuth with your backend
-    } catch (error) {
-      console.error('Google login failed:', error);
-      toast.error('Google login failed');
-    }
+    // This would redirect to your backend's Google OAuth endpoint
+    window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/google`;
   };
 
   const loginWithFacebook = async () => {
-    try {
-      toast.info('Facebook login will be implemented with your backend');
-      // Implement Facebook OAuth with your backend
-    } catch (error) {
-      console.error('Facebook login failed:', error);
-      toast.error('Facebook login failed');
-    }
+    toast.info('Facebook login is not yet implemented on the backend.');
   };
 
   const logout = () => {
@@ -172,3 +166,4 @@ export const useAuth = () => {
   }
   return context;
 };
+

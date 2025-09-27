@@ -17,7 +17,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) 
   const { user } = useAuth();
   const location = useLocation();
   
-  // This check now works correctly because the user object from useAuth contains the role
+  // Check if the current user is an admin
   const isAdmin = user?.role === 'admin';
 
   const navigationItems = [
@@ -48,7 +48,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) 
         { href: '/how-it-works', label: 'How It Works', icon: BookOpen },
       ]
     },
-    // The entire 'Admin' section is conditionally rendered here
+    // Conditionally render the 'Admin' section based on user role
     ...(isAdmin ? [{
       section: 'Admin',
       items: [

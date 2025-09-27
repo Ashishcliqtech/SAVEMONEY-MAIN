@@ -19,28 +19,28 @@ export const Footer: React.FC = () => {
     { href: ROUTES.STORES, label: t('navigation.stores') },
     { href: ROUTES.CATEGORIES, label: t('navigation.categories') },
     { href: ROUTES.OFFERS, label: t('navigation.offers') },
-    { href: '#', label: t('navigation.howItWorks') },
-    { href: '#', label: t('footer.aboutUs') },
-    { href: '#', label: t('footer.careers') },
+    { href: '/how-it-works', label: t('navigation.howItWorks') },
+    { href: '#about', label: t('footer.aboutUs') },
+    { href: '#careers', label: t('footer.careers') },
   ];
 
   const supportLinks = [
     { href: ROUTES.SUPPORT, label: t('navigation.help') },
-    { href: '#', label: t('support.faq') },
-    { href: '#', label: t('support.contactUs') },
-    { href: '#', label: t('support.liveChat') },
+    { href: '#faq', label: t('support.faq') },
+    { href: '#contact', label: t('support.contactUs') },
+    { href: '#chat', label: t('support.liveChat') },
   ];
 
   const legalLinks = [
-    { href: '#', label: t('footer.privacyPolicy') },
-    { href: '#', label: t('footer.termsOfService') },
+    { href: '#privacy', label: t('footer.privacyPolicy') },
+    { href: '#terms', label: t('footer.termsOfService') },
   ];
 
   const socialLinks = [
-    { href: '#', icon: Facebook, label: 'Facebook' },
-    { href: '#', icon: Twitter, label: 'Twitter' },
-    { href: '#', icon: Instagram, label: 'Instagram' },
-    { href: '#', icon: Youtube, label: 'YouTube' },
+    { href: '#facebook', icon: Facebook, label: 'Facebook' },
+    { href: '#twitter', icon: Twitter, label: 'Twitter' },
+    { href: '#instagram', icon: Instagram, label: 'Instagram' },
+    { href: '#youtube', icon: Youtube, label: 'YouTube' },
   ];
 
   return (
@@ -77,7 +77,7 @@ export const Footer: React.FC = () => {
             <h3 className="font-semibold text-lg mb-4">{t('footer.quickLinks')}</h3>
             <ul className="space-y-3">
               {quickLinks.map((link) => (
-                <li key={link.href}>
+                <li key={link.label}>
                   <Link
                     to={link.href}
                     className="text-gray-400 hover:text-white transition-colors duration-200"
@@ -94,7 +94,7 @@ export const Footer: React.FC = () => {
             <h3 className="font-semibold text-lg mb-4">{t('footer.support')}</h3>
             <ul className="space-y-3">
               {supportLinks.map((link) => (
-                <li key={link.href}>
+                <li key={link.label}>
                   <Link
                     to={link.href}
                     className="text-gray-400 hover:text-white transition-colors duration-200"
@@ -108,7 +108,7 @@ export const Footer: React.FC = () => {
               <h4 className="font-semibold text-lg mb-4">{t('footer.legal')}</h4>
               <ul className="space-y-3">
                 {legalLinks.map((link) => (
-                  <li key={link.href}>
+                  <li key={link.label}>
                     <Link
                       to={link.href}
                       className="text-gray-400 hover:text-white transition-colors duration-200"
@@ -155,3 +155,4 @@ export const Footer: React.FC = () => {
     </footer>
   );
 };
+

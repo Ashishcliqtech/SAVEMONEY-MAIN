@@ -1,12 +1,11 @@
-import React from 'react';
+import React, { ElementType } from 'react';
 import { motion } from 'framer-motion';
-import { DivideIcon as LucideIcon } from 'lucide-react';
 import { Card } from '../Card';
 
 interface StatsCardProps {
   title: string;
   value: string;
-  icon: LucideIcon;
+  icon: ElementType;
   color: string;
   bgColor: string;
   trend?: {
@@ -48,3 +47,4 @@ export const StatsCard: React.FC<StatsCardProps> = ({
     </motion.div>
   );
 };
+

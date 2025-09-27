@@ -1,5 +1,4 @@
-import React from 'react';
-import { Divide as LucideIcon } from 'lucide-react';
+import React, { ElementType } from 'react';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
 
@@ -9,7 +8,7 @@ interface ButtonProps {
   size?: 'sm' | 'md' | 'lg';
   disabled?: boolean;
   loading?: boolean;
-  icon?: LucideIcon;
+  icon?: ElementType;
   iconPosition?: 'left' | 'right';
   fullWidth?: boolean;
   onClick?: () => void;
@@ -53,7 +52,7 @@ export const Button: React.FC<ButtonProps> = ({
     baseClasses,
     variantClasses[variant],
     sizeClasses[size],
-    disabled && disabledClasses,
+    (disabled || loading) && disabledClasses,
     fullWidthClasses,
     className
   );
@@ -79,3 +78,4 @@ export const Button: React.FC<ButtonProps> = ({
     </motion.button>
   );
 };
+

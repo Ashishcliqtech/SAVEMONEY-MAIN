@@ -5,3 +5,4 @@ export * from './offers';
 export * from './wallet';
 export * from './referrals';
 export * from './categories';
+export * from './content'; 

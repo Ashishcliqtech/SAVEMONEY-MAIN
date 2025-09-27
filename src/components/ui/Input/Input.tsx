@@ -1,11 +1,10 @@
-import React, { forwardRef } from 'react';
-import { DivideIcon as LucideIcon } from 'lucide-react';
+import React, { forwardRef, ElementType } from 'react';
 import clsx from 'clsx';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
-  icon?: LucideIcon;
+  icon?: ElementType;
   iconPosition?: 'left' | 'right';
 }
 
@@ -49,3 +48,4 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 );
 
 Input.displayName = 'Input';
+

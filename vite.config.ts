@@ -23,6 +23,13 @@ export default defineConfig({
     exclude: ['lucide-react'],
   },
   server: {
+    proxy: {
+      '/api': {
+        target: 'https://updatedbackendcashkro.onrender.com', // Replace with your Render URL
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
     hmr: {
       overlay: false,
     },

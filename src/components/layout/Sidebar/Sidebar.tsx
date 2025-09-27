@@ -2,10 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    Home, Store, Grid3X3, Tag, Wallet, Users, User, HelpCircle, BookOpen, 
-    Settings, ShoppingBag, TrendingUp, MessageCircle, Bell, X, BarChart3, Globe 
-} from 'lucide-react';
+import { Home, Store, Grid3x3 as Grid3X3, Tag, Wallet, Users, User, HelpCircle, BookOpen, Settings, ShoppingBag, TrendingUp, MessageCircle, Bell, X, BarChart3, Globe } from 'lucide-react';
 import { ROUTES } from '../../../constants';
 import { useAuth } from '../../../hooks/useAuth';
 

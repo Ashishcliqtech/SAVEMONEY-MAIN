@@ -11,41 +11,44 @@ export interface SignupRequest {
   email: string;
   phone: string;
   password: string;
+  referralCode?: string;
 }
 
 export interface AuthResponse {
-  user: User;
   token: string;
-  refreshToken: string;
 }
 
 export interface OTPRequest {
-  phone: string;
+  email: string;
   otp: string;
 }
 
 export const authApi = {
+  // Initiates signup and sends OTP
+  signup: (data: SignupRequest): Promise<{ msg: string }> =>
+    apiClient.post('/auth/signup', data),
+
+  // Verifies OTP and completes signup
+  verifyOTP: (data: OTPRequest): Promise<AuthResponse> =>
+    apiClient.post('/auth/verify-otp', data),
+    
+  // Logs in a user
   login: (data: LoginRequest): Promise<AuthResponse> =>
     apiClient.post('/auth/login', data),
 
-  signup: (data: SignupRequest): Promise<AuthResponse> =>
-    apiClient.post('/auth/signup', data),
+  // Fetches the current user's profile
+  getProfile: (): Promise<User> =>
+    apiClient.get('/user/profile'),
 
-  verifyOTP: (data: OTPRequest): Promise<AuthResponse> =>
-    apiClient.post('/auth/verify-otp', data),
+  // Logs out the user (client-side only for this setup)
+  logout: (): Promise<void> => {
+    localStorage.removeItem('auth_token');
+    return Promise.resolve();
+  },
 
-  refreshToken: (refreshToken: string): Promise<AuthResponse> =>
-    apiClient.post('/auth/refresh', { refreshToken }),
-
-  logout: (): Promise<void> =>
-    apiClient.post('/auth/logout'),
-
-  forgotPassword: (email: string): Promise<void> =>
+  forgotPassword: (email: string): Promise<{ msg: string }> =>
     apiClient.post('/auth/forgot-password', { email }),
 
-  resetPassword: (token: string, password: string): Promise<void> =>
+  resetPassword: (token: string, password: string): Promise<{ msg: string }> =>
     apiClient.post('/auth/reset-password', { token, password }),
-
-  socialLogin: (provider: string, token: string): Promise<AuthResponse> =>
-    apiClient.post('/auth/social', { provider, token }),
 };

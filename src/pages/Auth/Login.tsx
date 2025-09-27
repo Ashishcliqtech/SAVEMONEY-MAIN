@@ -10,7 +10,7 @@ import { ROUTES } from '../../constants';
 
 export const Login: React.FC = () => {
   const { t } = useTranslation();
-  const { login, loginWithGoogle, loginWithFacebook } = useAuth();
+  const { login } = useAuth(); 
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -24,9 +24,10 @@ export const Login: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await login(formData.email, formData.password);
+      await login(formData); 
       navigate(ROUTES.DASHBOARD);
     } catch (error) {
+      // Error is already handled by toast in the api client
       console.error('Login error:', error);
     } finally {
       setLoading(false);

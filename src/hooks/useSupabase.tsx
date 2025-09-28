@@ -45,6 +45,8 @@ interface OfferFilters {
   search?: string;
   offerType?: string;
   category?: string;
+  limit?: number;
+  featured?: boolean;
 }
 
 interface WithdrawalData {
@@ -180,16 +182,17 @@ export const useTrendingOffers = () => {
   });
 };
 
-export const useFeaturedOffers = () => {
+export const useFeaturedOffers = (limit?: number) => {
   return useQuery({
-    queryKey: ['offers', 'featured'],
+    queryKey: ['offers', 'featured', limit],
     queryFn: async () => {
       try {
-        const { data } = await apiClient.get('/offers/featured');
+        const { data } = await apiClient.get('/offers/featured', { params: { limit } });
         return data;
       } catch (error) {
         console.error("Failed to fetch featured offers. Using placeholder data.", error);
-        return placeholderOffers.filter(offer => offer.isExclusive);
+        const placeholder = placeholderOffers.filter(offer => offer.isExclusive);
+        return limit ? placeholder.slice(0, limit) : placeholder;
       }
     },
     staleTime: 10 * 60 * 1000,

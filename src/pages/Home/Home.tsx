@@ -16,7 +16,7 @@ import { placeholderOffers, placeholderStores, placeholderCategories } from '../
 export const Home: React.FC = () => {
   const { t } = useTranslation();
 
-  const { data: featuredOffers, error: featuredError } = useFeaturedOffers();
+  const { data: featuredOffers, error: featuredError } = useFeaturedOffers(4);
   const { data: trendingOffers, error: trendingError } = useTrendingOffers();
   const { data: popularStores, error: popularError } = usePopularStores();
 
@@ -336,13 +336,13 @@ export const Home: React.FC = () => {
                   Get Started Free
                 </Button>
               </Link>
-              <Button
+              {/* <Button
                 variant="outline"
                 size="lg"
                 className="border-white/30 text-white hover:bg-white/10"
               >
                 Download App
-              </Button>
+              </Button> */}
             </div>
           </motion.div>
         </div>

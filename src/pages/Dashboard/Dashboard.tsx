@@ -10,7 +10,6 @@ import {
   ShoppingBag,
   ArrowRight,
   Star,
-  Briefcase,
 } from 'lucide-react';
 import {
   Card,
@@ -26,103 +25,66 @@ import { useAuth } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../../constants';
 import { placeholderOffers, placeholderTransactions, placeholderWalletData } from '../../data/placeholderData';
+import { Offer, Transaction } from '../../types';
 
 export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
+
+  // Data fetching
   const { data: walletData, isLoading: walletLoading, error: walletError } = useWallet(user?.id);
-  const { data: transactionsData, isLoading: transactionsLoading, error: transactionsError } = useTransactions(user?.id, 1, 5);
+  const { data: transactionsResponse, isLoading: transactionsLoading, error: transactionsError } = useTransactions(user?.id, 1, 5);
   const { data: offersData, isLoading: offersLoading, error: offersError } = useOffers({ limit: 3, featured: true });
 
-  // Use placeholder data when API fails or returns empty results
+  // --- Robust Data Handling ---
   const finalWalletData = walletError || !walletData ? placeholderWalletData : walletData;
-  const finalOffers = offersError || !offersData || offersData.length === 0 ? placeholderOffers.slice(0, 3) : offersData;
-  const finalTransactions = transactionsError || !transactionsData?.transactions || transactionsData.transactions.length === 0 
-    ? placeholderTransactions.slice(0, 5) 
-    : transactionsData.transactions;
+
+  const finalOffers: Offer[] = (offersError || !Array.isArray(offersData) || offersData.length === 0)
+    ? placeholderOffers.slice(0, 3)
+    : offersData;
+    
+  const finalTransactions: Transaction[] = (transactionsError || !transactionsResponse?.transactions || !Array.isArray(transactionsResponse.transactions) || transactionsResponse.transactions.length === 0)
+    ? placeholderTransactions.slice(0, 5)
+    : transactionsResponse.transactions;
 
   const quickActions = [
-    {
-      icon: Wallet,
-      label: t('dashboard.viewWallet'),
-      href: ROUTES.WALLET,
-      color: 'bg-purple-500',
-    },
-    {
-      icon: ShoppingBag,
-      label: t('dashboard.browseOffers'),
-      href: ROUTES.OFFERS,
-      color: 'bg-teal-500',
-    },
-    {
-      icon: Users,
-      label: t('dashboard.invite'),
-      href: ROUTES.REFERRALS,
-      color: 'bg-orange-500',
-    },
-    {
-      icon: Gift,
-      label: t('dashboard.support'),
-      href: ROUTES.SUPPORT,
-      color: 'bg-green-500',
-    },
+    { icon: Wallet, label: t('dashboard.viewWallet'), href: ROUTES.WALLET, color: 'bg-purple-500' },
+    { icon: ShoppingBag, label: t('dashboard.browseOffers'), href: ROUTES.OFFERS, color: 'bg-teal-500' },
+    { icon: Users, label: t('dashboard.invite'), href: ROUTES.REFERRALS, color: 'bg-orange-500' },
+    { icon: Gift, label: t('dashboard.support'), href: ROUTES.SUPPORT, color: 'bg-green-500' },
   ];
 
   const stats = [
-    {
-      label: t('dashboard.totalEarnings'),
-      value: `₹${finalWalletData?.totalCashback?.toLocaleString() || '0'}`,
-      icon: TrendingUp,
-      color: 'text-green-600',
-      bgColor: 'bg-green-100',
-    },
-    {
-      label: t('dashboard.availableCashback'),
-      value: `₹${finalWalletData?.availableCashback?.toLocaleString() || '0'}`,
-      icon: Wallet,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-100',
-    },
-    {
-      label: t('dashboard.pendingCashback'),
-      value: `₹${finalWalletData?.pendingCashback?.toLocaleString() || '0'}`,
-      icon: Clock,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-100',
-    },
+    { label: t('dashboard.totalEarnings'), value: `₹${finalWalletData?.totalCashback?.toLocaleString() || '0'}`, icon: TrendingUp, color: 'text-green-600', bgColor: 'bg-green-100' },
+    { label: t('dashboard.availableCashback'), value: `₹${finalWalletData?.availableCashback?.toLocaleString() || '0'}`, icon: Wallet, color: 'text-purple-600', bgColor: 'bg-purple-100' },
+    { label: t('dashboard.pendingCashback'), value: `₹${finalWalletData?.pendingCashback?.toLocaleString() || '0'}`, icon: Clock, color: 'text-orange-600', bgColor: 'bg-orange-100' },
   ];
 
   if (walletLoading) {
     return <LoadingSpinner size="xl" text="Loading your dashboard..." fullScreen color="text-orange-500" />;
   }
 
+  // Show a full-page error if wallet data (critical for stats) fails to load
+  if (walletError) {
+    return <ErrorState title="Failed to Load Dashboard" message="We couldn't fetch your essential dashboard data. Please try again later." fullScreen />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {t('dashboard.welcome')}, {user?.name || 'User'}! 👋
-          </h1>
-          <p className="text-gray-600">
-            Here's your cashback summary and recent activity
-          </p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('dashboard.welcome')}, {user?.name || 'User'}! 👋</h1>
+          <p className="text-gray-600">Here's your cashback summary and recent activity</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {stats.map((stat, index) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
+            <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}>
               <Card className="text-center" hover>
                 <div className={`w-16 h-16 ${stat.bgColor} rounded-2xl flex items-center justify-center mx-auto mb-4`}>
                   <stat.icon className={`w-8 h-8 ${stat.color}`} />
                 </div>
-                <div className="text-2xl font-bold text-gray-900 mb-1">
-                  {stat.value}
-                </div>
+                <div className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</div>
                 <div className="text-gray-600">{stat.label}</div>
               </Card>
             </motion.div>
@@ -132,27 +94,16 @@ export const Dashboard: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-1">
             <Card>
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                {t('dashboard.quickActions')}
-              </h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('dashboard.quickActions')}</h2>
               <div className="space-y-4">
                 {quickActions.map((action, index) => (
-                  <motion.div
-                    key={action.label}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
+                  <motion.div key={action.label} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: index * 0.1 }}>
                     <Link to={action.href}>
                       <div className="flex items-center p-4 rounded-xl hover:bg-gray-50 transition-colors group cursor-pointer">
                         <div className={`w-12 h-12 ${action.color} rounded-xl flex items-center justify-center mr-4`}>
                           <action.icon className="w-6 h-6 text-white" />
                         </div>
-                        <div className="flex-1">
-                          <div className="font-medium text-gray-900 group-hover:text-purple-600 transition-colors">
-                            {action.label}
-                          </div>
-                        </div>
+                        <div className="flex-1"><div className="font-medium text-gray-900 group-hover:text-purple-600 transition-colors">{action.label}</div></div>
                         <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600 transition-colors" />
                       </div>
                     </Link>
@@ -165,63 +116,26 @@ export const Dashboard: React.FC = () => {
           <div className="lg:col-span-2">
             <Card>
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  {t('dashboard.recentActivity')}
-                </h2>
-                <Link to={ROUTES.WALLET}>
-                  <Button variant="ghost" size="sm" icon={ArrowRight} iconPosition="right">
-                    View All
-                  </Button>
-                </Link>
+                <h2 className="text-xl font-semibold text-gray-900">{t('dashboard.recentActivity')}</h2>
+                <Link to={ROUTES.WALLET}><Button variant="ghost" size="sm" icon={ArrowRight} iconPosition="right">View All</Button></Link>
               </div>
-
-              {transactionsLoading ? (
-                <LoadingCard count={3} />
-              ) : (
+              {transactionsLoading ? <LoadingCard count={3} /> : transactionsError ? <ErrorState title="Could Not Load Activity" message="There was a problem fetching your recent transactions."/> : (
                 <div className="space-y-4">
-                  {finalTransactions.map((transaction, index) => (
-                    <motion.div
-                      key={transaction.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="flex items-center p-4 bg-gray-50 rounded-xl"
-                    >
-                      <img
-                        src={transaction.store.logo}
-                        alt={transaction.store.name}
-                        className="w-12 h-12 rounded-xl object-cover mr-4"
-                      />
+                  {finalTransactions.length > 0 ? finalTransactions.map((transaction, index) => (
+                    <motion.div key={transaction.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} className="flex items-center p-4 bg-gray-50 rounded-xl">
+                      <img src={transaction.store.logo} alt={transaction.store.name} className="w-12 h-12 rounded-xl object-cover mr-4" />
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-gray-900">
-                          {transaction.store.name}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          Order #{transaction.orderId}
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {new Date(transaction.date).toLocaleDateString()}
-                        </div>
+                        <div className="font-medium text-gray-900">{transaction.store.name}</div>
+                        <div className="text-sm text-gray-500">Order #{transaction.orderId}</div>
+                        <div className="text-sm text-gray-500">{new Date(transaction.date).toLocaleDateString()}</div>
                       </div>
                       <div className="text-right">
-                        <div className="font-semibold text-gray-900">
-                          ₹{transaction.amount.toLocaleString()}
-                        </div>
-                        <div className="text-sm text-green-600 font-medium">
-                          +₹{transaction.cashbackEarned}
-                        </div>
-                        <Badge
-                          variant={
-                            transaction.status === 'confirmed' ? 'success' :
-                            transaction.status === 'pending' ? 'warning' : 'danger'
-                          }
-                          size="sm"
-                        >
-                          {transaction.status}
-                        </Badge>
+                        <div className="font-semibold text-gray-900">₹{transaction.amount.toLocaleString()}</div>
+                        <div className="text-sm text-green-600 font-medium">+₹{transaction.cashbackEarned}</div>
+                        <Badge variant={transaction.status === 'confirmed' ? 'success' : transaction.status === 'pending' ? 'warning' : 'danger'} size="sm">{transaction.status}</Badge>
                       </div>
                     </motion.div>
-                  ))}
+                  )) : <EmptyState message="No recent activity to show."/>}
                 </div>
               )}
             </Card>
@@ -231,45 +145,22 @@ export const Dashboard: React.FC = () => {
         <div className="mt-8">
           <Card>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-gray-900">
-                Recommended for You
-              </h2>
-              <Link to={ROUTES.OFFERS}>
-                <Button variant="ghost" size="sm" icon={ArrowRight} iconPosition="right">
-                  View All
-                </Button>
-              </Link>
+              <h2 className="text-xl font-semibold text-gray-900">Recommended for You</h2>
+              <Link to={ROUTES.OFFERS}><Button variant="ghost" size="sm" icon={ArrowRight} iconPosition="right">View All</Button></Link>
             </div>
-
-            {offersLoading ? (
-              <LoadingCard count={3} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" />
-            ) : (
+            {offersLoading ? <LoadingCard count={3} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" /> : offersError ? <ErrorState title="Could Not Load Offers" message="We couldn't fetch recommendations for you right now."/> : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {finalOffers.map((offer, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="bg-gradient-to-br from-purple-500 to-teal-500 rounded-xl p-6 text-white relative overflow-hidden"
-                  >
-                    <div className="absolute top-2 right-2">
-                      <Star className="w-5 h-5 text-yellow-300 fill-current" />
-                    </div>
+                {finalOffers.length > 0 ? finalOffers.map((offer, index) => (
+                  <motion.div key={index} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} className="bg-gradient-to-br from-purple-500 to-teal-500 rounded-xl p-6 text-white relative overflow-hidden">
+                    <div className="absolute top-2 right-2"><Star className="w-5 h-5 text-yellow-300 fill-current" /></div>
                     <div className="mb-4">
                       <div className="text-sm opacity-90 mb-1">{offer.store.name}</div>
-                      <div className="text-lg font-semibold mb-2">
-                        {offer.title}
-                      </div>
-                      <div className="text-sm opacity-90">
-                        {offer.description}
-                      </div>
+                      <div className="text-lg font-semibold mb-2">{offer.title}</div>
+                      <div className="text-sm opacity-90">{offer.description}</div>
                     </div>
-                    <Button variant="secondary" size="sm">
-                      Shop Now
-                    </Button>
+                    <Button variant="secondary" size="sm">Shop Now</Button>
                   </motion.div>
-                ))}
+                )) : <EmptyState message="No recommended offers are available."/>}
               </div>
             )}
           </Card>

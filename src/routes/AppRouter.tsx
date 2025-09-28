@@ -44,23 +44,34 @@ const queryClient = new QueryClient({
   },
 });
 
+// A component to protect routes that require user authentication
+const UserProtectedRoute: React.FC = () => {
+  const { isLoading, isAuthenticated } = useAuth();
+
+  if (isLoading) {
+    return <LoadingSpinner size="xl" text="Checking authentication..." fullScreen />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to={ROUTES.LOGIN} replace />;
+  }
+
+  return <Outlet />;
+};
+
+
 // A component to protect routes that require admin privileges
-const ProtectedRoute: React.FC = () => {
+const AdminProtectedRoute: React.FC = () => {
   const { user, isLoading, isAuthenticated } = useAuth();
 
   if (isLoading) {
     return <LoadingSpinner size="xl" text="Checking authentication..." fullScreen />;
   }
 
-  // If user is authenticated and is an admin, allow access. Otherwise, redirect.
-  if (!isAuthenticated) {
-     return <Navigate to={ROUTES.LOGIN} replace />;
+  if (!isAuthenticated || user?.role !== 'admin') {
+    return <Navigate to={ROUTES.LOGIN} replace />;
   }
-  
-  if (user?.role !== 'admin') {
-     return <Navigate to={ROUTES.DASHBOARD} replace />;
-  }
-  
+
   return <Outlet />;
 };
 
@@ -79,11 +90,11 @@ export const AppRouter: React.FC = () => {
           }
         >
           <Routes>
-            {/* Auth Routes (without layout) */}
+            {/* Auth Routes */}
             <Route path={ROUTES.LOGIN} element={<Login />} />
             <Route path={ROUTES.SIGNUP} element={<Signup />} />
 
-            {/* Main App Routes (with layout) */}
+            {/* Public Routes */}
             <Route element={<Layout />}>
               <Route path={ROUTES.HOME} element={<Home />} />
               <Route path={ROUTES.STORES} element={<Stores />} />
@@ -92,16 +103,22 @@ export const AppRouter: React.FC = () => {
               <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/help" element={<Help />} />
-              <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
-              <Route path={ROUTES.WALLET} element={<Wallet />} />
-              <Route path={ROUTES.REFERRALS} element={<Referrals />} />
-              <Route path={ROUTES.PROFILE} element={<Profile />} />
-              <Route path={ROUTES.SUPPORT} element={<Support />} />
-              <Route path="/notifications" element={<Notifications />} />
             </Route>
 
-            {/* Admin Routes (with layout and protection) */}
-            <Route element={<ProtectedRoute />}>
+            {/* Protected User Routes */}
+            <Route element={<UserProtectedRoute />}>
+              <Route element={<Layout />}>
+                <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
+                <Route path={ROUTES.WALLET} element={<Wallet />} />
+                <Route path={ROUTES.REFERRALS} element={<Referrals />} />
+                <Route path={ROUTES.PROFILE} element={<Profile />} />
+                <Route path={ROUTES.SUPPORT} element={<Support />} />
+                <Route path="/notifications" element={<Notifications />} />
+              </Route>
+            </Route>
+
+            {/* Protected Admin Routes */}
+            <Route element={<AdminProtectedRoute />}>
                <Route element={<Layout />}>
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/admin/users" element={<UserManagement />} />
@@ -118,7 +135,7 @@ export const AppRouter: React.FC = () => {
               </Route>
             </Route>
             
-            {/* Catch all route */}
+            {/* Catch-all route */}
             <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
           </Routes>
         </React.Suspense>
@@ -126,4 +143,3 @@ export const AppRouter: React.FC = () => {
     </QueryClientProvider>
   );
 };
-

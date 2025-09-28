@@ -11,7 +11,7 @@ import {
   TrendingUp,
   Clock,
 } from 'lucide-react';
-import { Card, Button, Input, LoadingSpinner } from '../../components/ui';
+import { Card, Button, Input, LoadingSpinner, Badge } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 import { useReferrals } from '../../hooks/useApi';
 import toast from 'react-hot-toast';

@@ -1,0 +1,144 @@
+
+You are a backend developer. Your task is to create a backend for a cashback and coupon application.
+
+**Project Description:**
+
+The application allows users to browse offers and stores, earn cashback on their purchases, and withdraw their earnings. It also has a referral system and an admin panel for managing the application's content.
+
+**Database Schema:**
+
+You will need to create the following collections/tables in your database:
+
+*   **User:**
+    *   `name` (string, required)
+    *   `email` (string, required, unique)
+    *   `phone` (string, required, unique)
+    *   `password` (string, required)
+    *   `referralCode` (string, unique)
+    *   `referredBy` (ObjectId, ref: 'User')
+
+*   **Store:**
+    *   `name` (string, required)
+    *   `description` (string, required)
+    *   `category` (ObjectId, ref: 'Category', required)
+    *   `isPopular` (boolean, default: false)
+    *   `isFeatured` (boolean, default: false)
+    *   `logo` (string, required)
+    *   `url` (string, required)
+
+*   **Offer:**
+    *   `title` (string, required)
+    *   `description` (string, required)
+    *   `offerType` (string, enum: ['cashback', 'coupon', 'deal'], required)
+    *   `category` (ObjectId, ref: 'Category', required)
+    *   `isTrending` (boolean, default: false)
+    *   `isExclusive` (boolean, default: false)
+    *   `isFeatured` (boolean, default: false)
+    *   `cashbackRate` (number)
+    *   `couponCode` (string)
+    *   `store` (ObjectId, ref: 'Store', required)
+    *   `imageUrl` (string)
+    *   `expiryDate` (Date)
+    *   `originalPrice` (number)
+    *   `discountedPrice` (number)
+
+*   **Category:**
+    *   `name` (string, required, unique)
+    *   `description` (string)
+
+*   **Wallet:**
+    *   `user` (ObjectId, ref: 'User', required)
+    *   `totalCashback` (number, default: 0)
+    *   `availableCashback` (number, default: 0)
+    *   `pendingCashback` (number, default: 0)
+
+*   **Transaction:**
+    *   `user` (ObjectId, ref: 'User', required)
+    *   `amount` (number, required)
+    *   `type` (string, enum: ['credit', 'debit'], required)
+    *   `status` (string, enum: ['pending', 'confirmed', 'failed'], required)
+    *   `description` (string)
+    *   `createdAt` (Date, default: Date.now)
+
+*   **Referral:**
+    *   `user` (ObjectId, ref: 'User', required)
+    *   `referredUsers` (Array of ObjectId, ref: 'User')
+    *   `earnings` (number, default: 0)
+
+*   **ContentSection:**
+    *   `title` (string, required)
+    *   `content` (Object)
+    *   `imageUrl` (string)
+    *   `page` (string, required) // e.g., 'homepage', 'about'
+
+**API Endpoints:**
+
+You need to create the following API endpoints. Please ensure that the endpoints that require authentication are protected.
+
+**Authentication:**
+
+*   `POST /api/auth/send-otp`: Sends an OTP to the user's email for verification.
+*   `POST /api/auth/verify-otp`: Verifies the OTP and creates a new user. Returns a JWT token.
+*   `POST /api/auth/login`: Authenticates a user and returns a JWT token.
+*   `GET /api/user/profile`: Retrieves the profile of the authenticated user.
+*   `POST /api/auth/forgot-password`: Sends a password reset link to the user's email.
+*   `POST /api/auth/reset-password`: Resets the user's password.
+
+**Categories:**
+
+*   `GET /api/categories`: Retrieves all categories.
+*   `GET /api/categories/:id`: Retrieves a single category by its ID.
+*   `GET /api/categories/:id/offers`: Retrieves all offers for a specific category.
+*   `GET /api/categories/:id/stores`: Retrieves all stores for a specific category.
+*   `POST /api/categories`: Creates a new category (Admin only).
+*   `PUT /api/categories/:id`: Updates a category (Admin only).
+*   `DELETE /api/categories/:id`: Deletes a category (Admin only).
+
+**Content:**
+
+*   `GET /api/content`: Retrieves all content sections.
+*   `POST /api/content`: Creates a new content section (Admin only).
+*   `PUT /api/content/:id`: Updates a content section (Admin only).
+*   `DELETE /api/content/:id`: Deletes a content section (Admin only).
+
+**Offers:**
+
+*   `GET /api/offers`: Retrieves all offers with filtering and pagination.
+*   `GET /api/offers/trending`: Retrieves trending offers.
+*   `GET /api/offers/featured`: Retrieves featured offers.
+*   `GET /api/offers/exclusive`: Retrieves exclusive offers.
+*   `GET /api/offers/search`: Searches for offers.
+*   `GET /api/offers/:id`: Retrieves a single offer by its ID.
+*   `POST /api/offers`: Creates a new offer (Admin only).
+*   `PUT /api/offers/:id`: Updates an offer (Admin only).
+*   `DELETE /api/offers/:id`: Deletes an offer (Admin only).
+*   `POST /api/offers/:id/track`: Tracks a user's click on an offer.
+
+**Referrals:**
+
+*   `GET /api/referrals`: Retrieves referral data for the authenticated user.
+*   `POST /api/referrals/generate-link`: Generates a referral link for the authenticated user.
+*   `GET /api/referrals/history`: Retrieves the referral history for the authenticated user.
+
+**Stores:**
+
+*   `GET /api/stores`: Retrieves all stores with filtering and pagination.
+*   `GET /api/stores/popular`: Retrieves popular stores.
+*   `GET /api/stores/featured`: Retrieves featured stores.
+*   `GET /api/stores/search`: Searches for stores.
+*   `GET /api/stores/:id`: Retrieves a single store by its ID.
+*   `POST /api/stores`: Creates a new store (Admin only).
+*   `PUT /api/stores/:id`: Updates a store (Admin only).
+*   `DELETE /api/stores/:id`: Deletes a store (Admin only).
+
+**Wallet:**
+
+*   `GET /api/wallet`: Retrieves wallet data for the authenticated user.
+*   `GET /api/wallet/transactions`: Retrieves transaction history for the authenticated user.
+*   `POST /api/wallet/withdraw`: Creates a withdrawal request for the authenticated user.
+
+**Admin Panel:**
+
+You will also need to create an admin panel to manage users, stores, offers, categories, and content. The admin-only endpoints listed above will be used by the admin panel.
+
+Please use Node.js and Express.js for the backend, and MongoDB as the database.

@@ -1,3 +1,5 @@
+// Legacy dummy data - use placeholderData.ts for new implementations
+
 export const dummyOffers = [
   {
     id: 'dummy-1',

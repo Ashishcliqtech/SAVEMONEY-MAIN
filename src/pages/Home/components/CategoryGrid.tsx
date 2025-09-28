@@ -12,9 +12,18 @@ import {
 } from 'lucide-react';
 import { Card, LoadingCard } from '../../../components/ui';
 import { useCategories } from '../../../hooks/useSupabase';
+import { placeholderCategories } from '../../../data/placeholderData';
 
-export const CategoryGrid: React.FC = () => {
-  const { data: categories, isLoading } = useCategories();
+interface CategoryGridProps {
+  categories?: any[];
+}
+
+export const CategoryGrid: React.FC<CategoryGridProps> = ({ categories: propCategories }) => {
+  const { data: apiCategories, isLoading, error } = useCategories();
+  
+  // Use prop categories, API categories, or fallback to placeholder data
+  const categories = propCategories || 
+    (error || !apiCategories || apiCategories.length === 0 ? placeholderCategories : apiCategories);
 
   const iconMap = {
     shirt: Shirt,
@@ -59,7 +68,6 @@ export const CategoryGrid: React.FC = () => {
     );
   }
 
-  if (!categories || categories.length === 0) return null;
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 sm:gap-6">
       {categories.map((category, index) => {

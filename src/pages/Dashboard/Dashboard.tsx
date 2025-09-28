@@ -25,7 +25,7 @@ import { useWallet, useTransactions, useOffers } from '../../hooks/useSupabase.t
 import { useAuth } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../../constants';
-import { dummyOffers, dummyTransactions } from '../../data/dummyData.ts';
+import { placeholderOffers, placeholderTransactions, placeholderWalletData } from '../../data/placeholderData';
 
 export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -33,6 +33,13 @@ export const Dashboard: React.FC = () => {
   const { data: walletData, isLoading: walletLoading, error: walletError } = useWallet(user?.id);
   const { data: transactionsData, isLoading: transactionsLoading, error: transactionsError } = useTransactions(user?.id, 1, 5);
   const { data: offersData, isLoading: offersLoading, error: offersError } = useOffers({ limit: 3, featured: true });
+
+  // Use placeholder data when API fails or returns empty results
+  const finalWalletData = walletError || !walletData ? placeholderWalletData : walletData;
+  const finalOffers = offersError || !offersData || offersData.length === 0 ? placeholderOffers.slice(0, 3) : offersData;
+  const finalTransactions = transactionsError || !transactionsData?.transactions || transactionsData.transactions.length === 0 
+    ? placeholderTransactions.slice(0, 5) 
+    : transactionsData.transactions;
 
   const quickActions = [
     {
@@ -64,21 +71,21 @@ export const Dashboard: React.FC = () => {
   const stats = [
     {
       label: t('dashboard.totalEarnings'),
-      value: `₹${walletData?.totalCashback?.toLocaleString() || '0'}`,
+      value: `₹${finalWalletData?.totalCashback?.toLocaleString() || '0'}`,
       icon: TrendingUp,
       color: 'text-green-600',
       bgColor: 'bg-green-100',
     },
     {
       label: t('dashboard.availableCashback'),
-      value: `₹${walletData?.availableCashback?.toLocaleString() || '0'}`,
+      value: `₹${finalWalletData?.availableCashback?.toLocaleString() || '0'}`,
       icon: Wallet,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100',
     },
     {
       label: t('dashboard.pendingCashback'),
-      value: `₹${walletData?.pendingCashback?.toLocaleString() || '0'}`,
+      value: `₹${finalWalletData?.pendingCashback?.toLocaleString() || '0'}`,
       icon: Clock,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100',
@@ -88,10 +95,6 @@ export const Dashboard: React.FC = () => {
   if (walletLoading) {
     return <LoadingSpinner size="xl" text="Loading your dashboard..." fullScreen color="text-orange-500" />;
   }
-
-  const finalOffers = (offersError || !Array.isArray(offersData) || offersData.length === 0) ? dummyOffers : offersData;
-  const finalTransactions = (transactionsError || !transactionsData?.transactions || transactionsData.transactions.length === 0) ? dummyTransactions : transactionsData.transactions;
-
 
   return (
     <div className="min-h-screen bg-gray-50">

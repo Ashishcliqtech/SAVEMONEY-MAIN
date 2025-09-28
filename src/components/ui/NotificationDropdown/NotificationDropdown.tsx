@@ -18,16 +18,24 @@ import { useNotifications } from '../../../hooks/useSupabase';
 import { useAuth } from '../../../hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import { NotificationData } from '../../../types';
+import { placeholderNotifications } from '../../../data/placeholderData';
 
 export const NotificationDropdown: React.FC = () => {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const { data: notificationsData, markAsRead, markAllAsRead } = useNotifications(user?.id);
+  const { data: apiNotificationsData, error, markAsRead, markAllAsRead } = useNotifications(user?.id);
 
-  const notifications = notificationsData?.notifications.map(n => ({...n, id: n._id})) || [];
-  const unreadCount = notificationsData?.unreadCount || 0;
+  // Use placeholder data when API fails or returns empty results
+  const notifications = error || !apiNotificationsData?.notifications || apiNotificationsData.notifications.length === 0
+    ? placeholderNotifications.map(n => ({ ...n, id: n._id }))
+    : apiNotificationsData.notifications.map(n => ({ ...n, id: n._id }));
+    
+  const unreadCount = error || !apiNotificationsData 
+    ? placeholderNotifications.filter(n => !n.isRead).length
+    : apiNotificationsData.unreadCount || 0;
+    
   const recentNotifications = notifications.slice(0, 8);
 
   // Close dropdown when clicking outside

@@ -28,7 +28,7 @@ import { useWallet, useTransactions, useCreateWithdrawal } from '../../hooks/use
 import { useAuth } from '../../hooks/useAuth';
 import { WITHDRAWAL_METHODS } from '../../constants';
 import toast from 'react-hot-toast';
-import { dummyTransactions } from '../../data/dummyData.ts';
+import { placeholderTransactions, placeholderWalletData } from '../../data/placeholderData';
 
 export const Wallet: React.FC = () => {
   const { t } = useTranslation();
@@ -45,12 +45,13 @@ export const Wallet: React.FC = () => {
   const { data: transactionsData, isLoading: transactionsLoading, error: transactionsError } = useTransactions(user?.id);
   const withdrawMutation = useCreateWithdrawal();
   
+  // Use placeholder data when API fails or returns empty results
   const finalTransactions = (transactionsError || !transactionsData?.transactions || transactionsData.transactions.length === 0)
-    ? dummyTransactions
+    ? placeholderTransactions
     : transactionsData.transactions;
     
   const finalWalletData = walletError || !walletData 
-    ? { availableCashback: 1234.56, pendingCashback: 789.01, withdrawnCashback: 5432.10, totalCashback: 7455.67 }
+    ? placeholderWalletData
     : walletData;
 
   const handleWithdraw = async () => {

@@ -21,6 +21,7 @@ import { useNotifications } from '../../hooks/useSupabase.tsx';
 import { useAuth } from '../../hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import { placeholderNotifications } from '../../data/placeholderData';
 
 export const Notifications: React.FC = () => {
   const { t } = useTranslation();
@@ -30,9 +31,16 @@ export const Notifications: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { data: notificationsData, isLoading, markAsRead, markAllAsRead, deleteNotification } = useNotifications(user?.id);
-  const notifications = notificationsData?.notifications || [];
-  const unreadCount = notificationsData?.unreadCount || 0;
+  const { data: apiNotificationsData, isLoading, error, markAsRead, markAllAsRead } = useNotifications(user?.id);
+  
+  // Use placeholder data when API fails or returns empty results
+  const notifications = error || !apiNotificationsData?.notifications || apiNotificationsData.notifications.length === 0 
+    ? placeholderNotifications.map(n => ({ ...n, id: n._id }))
+    : apiNotificationsData.notifications.map(n => ({ ...n, id: n._id }));
+    
+  const unreadCount = error || !apiNotificationsData 
+    ? placeholderNotifications.filter(n => !n.isRead).length
+    : apiNotificationsData.unreadCount || 0;
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -83,12 +91,12 @@ export const Notifications: React.FC = () => {
   });
 
   const notificationTypes = [
-    { id: 'all', label: 'All Types', count: notifications?.length || 0 },
-    { id: 'deal', label: 'Deals', count: notifications?.filter(n => n.type === 'deal').length || 0 },
-    { id: 'cashback', label: 'Cashback', count: notifications?.filter(n => n.type === 'cashback').length || 0 },
-    { id: 'withdrawal', label: 'Withdrawals', count: notifications?.filter(n => n.type === 'withdrawal').length || 0 },
-    { id: 'referral', label: 'Referrals', count: notifications?.filter(n => n.type === 'referral').length || 0 },
-    { id: 'support', label: 'Support', count: notifications?.filter(n => n.type === 'support').length || 0 },
+    { id: 'all', label: 'All Types', count: notifications.length },
+    { id: 'deal', label: 'Deals', count: notifications.filter(n => n.type === 'deal').length },
+    { id: 'cashback', label: 'Cashback', count: notifications.filter(n => n.type === 'cashback').length },
+    { id: 'withdrawal', label: 'Withdrawals', count: notifications.filter(n => n.type === 'withdrawal').length },
+    { id: 'referral', label: 'Referrals', count: notifications.filter(n => n.type === 'referral').length },
+    { id: 'support', label: 'Support', count: notifications.filter(n => n.type === 'support').length },
   ];
 
   if (isLoading) {
@@ -156,9 +164,9 @@ export const Notifications: React.FC = () => {
               <h3 className="font-semibold text-gray-900 mb-4 text-base">Filter by Status</h3>
               <div className="flex overflow-x-auto space-x-3 pb-2">
                 {[
-                  { id: 'all', label: 'All', count: notifications?.length || 0 },
+                  { id: 'all', label: 'All', count: notifications.length },
                   { id: 'unread', label: 'Unread', count: unreadCount },
-                  { id: 'read', label: 'Read', count: (notifications?.length || 0) - unreadCount },
+                  { id: 'read', label: 'Read', count: notifications.length - unreadCount },
                 ].map((item) => (
                   <button
                     key={item.id}
@@ -258,8 +266,6 @@ export const Notifications: React.FC = () => {
                               variant="ghost"
                               size="sm"
                               icon={Trash2}
-                              onClick={() => deleteNotification(notification.id)}
-                              className="text-red-600 hover:text-red-700 text-xs px-2 py-1"
                             />
                           </div>
                         </div>

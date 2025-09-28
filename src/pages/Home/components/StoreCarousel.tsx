@@ -3,9 +3,18 @@ import { motion } from 'framer-motion';
 import { ExternalLink } from 'lucide-react';
 import { Card, LoadingCard } from '../../../components/ui';
 import { usePopularStores } from '../../../hooks/useSupabase';
+import { placeholderStores } from '../../../data/placeholderData';
 
-export const StoreCarousel: React.FC = () => {
-  const { data: stores, isLoading } = usePopularStores();
+interface StoreCarouselProps {
+  stores?: any[];
+}
+
+export const StoreCarousel: React.FC<StoreCarouselProps> = ({ stores: propStores }) => {
+  const { data: apiStores, isLoading, error } = usePopularStores();
+  
+  // Use prop stores, API stores, or fallback to placeholder data
+  const stores = propStores || 
+    (error || !apiStores || apiStores.length === 0 ? placeholderStores : apiStores);
 
   if (isLoading) {
     return (
@@ -16,8 +25,6 @@ export const StoreCarousel: React.FC = () => {
       </div>
     );
   }
-
-  if (!stores || stores.length === 0) return null;
 
   return (
     <div className="relative">

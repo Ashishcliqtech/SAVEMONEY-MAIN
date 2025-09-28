@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Search, Filter, Grid2x2 as Grid, List, ExternalLink, Star } from 'lucide-react';
 import { Card, Button, Badge, SearchBar, Pagination, LoadingSpinner } from '../../components/ui';
 import { useStores, useCategories } from '../../hooks/useSupabase.tsx';
-import { dummyStores } from '../../data/dummyStores.ts';
+import { placeholderStores, placeholderCategories } from '../../data/placeholderData';
 
 export const Stores: React.FC = () => {
   const { t } = useTranslation();
@@ -22,8 +22,12 @@ export const Stores: React.FC = () => {
   const { data: storesData, isLoading, error } = useStores(filters);
   const { data: categories } = useCategories();
   
-  const finalStores = (error || !storesData || storesData.stores.length === 0) ? dummyStores : storesData.stores;
-  const totalStores = (error || !storesData || storesData.stores.length === 0) ? dummyStores.length : storesData.total;
+  // Use placeholder data when API fails or returns empty results
+  const finalStores = (error || !storesData || storesData.stores.length === 0) ? placeholderStores : storesData.stores;
+  const totalStores = (error || !storesData || storesData.stores.length === 0) ? placeholderStores.length : storesData.total;
+  
+  // Use placeholder categories when API fails
+  const finalCategories = !categories || categories.length === 0 ? placeholderCategories : categories;
 
   const handleSearch = (query: string) => {
     setFilters(prev => ({ ...prev, search: query, page: 1 }));
@@ -81,7 +85,7 @@ export const Stores: React.FC = () => {
               className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
               <option value="">All Categories</option>
-              {categories?.map((category) => (
+              {finalCategories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
                 </option>

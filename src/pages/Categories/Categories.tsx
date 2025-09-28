@@ -5,6 +5,7 @@ import { ExternalLink, Shirt, Smartphone, Plane, Utensils, Sparkles, Home, BookO
 import { Card, Button, Badge, SearchBar, LoadingSpinner } from '../../components/ui';
 import { useCategories } from '../../hooks/useSupabase.tsx';
 import { Link } from 'react-router-dom';
+import { placeholderCategories } from '../../data/placeholderData';
 
 type SortByType = 'name' | 'stores' | 'offers';
 
@@ -14,7 +15,10 @@ export const Categories: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortByType>('name');
 
-  const { data: categories, isLoading } = useCategories();
+  const { data: apiCategories, isLoading, error } = useCategories();
+  
+  // Use placeholder data when API fails or returns empty results
+  const categories = error || !apiCategories || apiCategories.length === 0 ? placeholderCategories : apiCategories;
 
   const iconMap = {
     shirt: Shirt,
@@ -49,7 +53,7 @@ export const Categories: React.FC = () => {
     'text-red-600',
   ];
 
-  const filteredCategories = categories?.filter(category =>
+  const filteredCategories = categories.filter(category =>
     category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     category.description.toLowerCase().includes(searchQuery.toLowerCase())
   ).sort((a, b) => {
@@ -102,7 +106,7 @@ export const Categories: React.FC = () => {
               {t('categories.allCategories')}
             </h2>
             <p className="text-gray-600">
-              {filteredCategories?.length || 0} categories available
+              {filteredCategories.length} categories available
             </p>
           </div>
 
@@ -121,7 +125,7 @@ export const Categories: React.FC = () => {
 
         {/* Categories Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 mb-8">
-          {filteredCategories?.map((category, index) => {
+          {filteredCategories.map((category, index) => {
             const IconComponent = iconMap[category.icon as keyof typeof iconMap];
             const bgColor = bgColors[index % bgColors.length];
             const textColor = textColors[index % textColors.length];
@@ -196,7 +200,7 @@ export const Categories: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {filteredCategories?.slice(0, 3).map((category, index) => {
+            {filteredCategories.slice(0, 3).map((category, index) => {
               const IconComponent = iconMap[category.icon as keyof typeof iconMap];
               const bgColor = bgColors[index % bgColors.length];
               const textColor = textColors[index % textColors.length];

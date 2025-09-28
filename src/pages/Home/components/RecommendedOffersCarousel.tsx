@@ -7,8 +7,13 @@ import { Card, Button, Badge } from '../../../components/ui';
 import { LoadingSpinner } from '../../../components/ui/LoadingSpinner';
 import { useFeaturedOffers } from '../../../hooks/useSupabase';
 import toast from 'react-hot-toast';
+import { placeholderOffers } from '../../../data/placeholderData';
 
-export const RecommendedOffersCarousel: React.FC = () => {
+interface RecommendedOffersCarouselProps {
+  offers?: any[];
+}
+
+export const RecommendedOffersCarousel: React.FC<RecommendedOffersCarouselProps> = ({ offers: propOffers }) => {
   const autoplay = Autoplay({ delay: 5000, stopOnInteraction: false });
   const [emblaRef, emblaApi] = useEmblaCarousel({ 
     loop: true,
@@ -20,7 +25,11 @@ export const RecommendedOffersCarousel: React.FC = () => {
   const [nextBtnEnabled, setNextBtnEnabled] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
-  const { data: offers, isLoading } = useFeaturedOffers();
+  const { data: apiOffers, isLoading, error } = useFeaturedOffers();
+  
+  // Use prop offers, API offers, or fallback to placeholder data
+  const offers = propOffers || 
+    (error || !apiOffers || apiOffers.length === 0 ? placeholderOffers : apiOffers);
 
   const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi]);
@@ -70,10 +79,6 @@ export const RecommendedOffersCarousel: React.FC = () => {
         <LoadingSpinner size="xl" text="Loading exclusive offers..." color="text-orange-500" />
       </div>
     );
-  }
-
-  if (!offers || offers.length === 0) {
-    return null;
   }
 
   return (

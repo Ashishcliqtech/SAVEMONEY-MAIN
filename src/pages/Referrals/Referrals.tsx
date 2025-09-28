@@ -15,11 +15,15 @@ import { Card, Button, Input, LoadingSpinner } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 import { useReferrals } from '../../hooks/useApi';
 import toast from 'react-hot-toast';
+import { placeholderReferralData } from '../../data/placeholderData';
 
 export const Referrals: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { data: referralData, isLoading } = useReferrals(user?.id);
+  const { data: apiReferralData, isLoading, error } = useReferrals(user?.id);
+  
+  // Use placeholder data when API fails or returns empty results
+  const referralData = error || !apiReferralData ? placeholderReferralData : apiReferralData;
 
   const handleCopyLink = () => {
     if (referralData?.referralLink) {
@@ -43,7 +47,7 @@ export const Referrals: React.FC = () => {
   if (isLoading) {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
-            <LoadingSpinner size="xl" text="Loading referrals..." />
+            <LoadingSpinner size="xl" text="Loading referrals..." color="text-orange-500" />
         </div>
     );
   }

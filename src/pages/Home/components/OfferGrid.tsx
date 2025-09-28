@@ -1,47 +1,22 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Clock, Star, Copy, ExternalLink } from 'lucide-react';
-import { Card, Button, Badge, LoadingCard } from '../../../components/ui';
+import { Clock, Copy, ExternalLink } from 'lucide-react';
+import { Card, Button, Badge } from '../../../components/ui';
 import { useTranslation } from 'react-i18next';
-import { useFeaturedOffers, useTrendingOffers } from '../../../hooks/useSupabase';
 import toast from 'react-hot-toast';
 
 interface OfferGridProps {
-  featured?: boolean;
-  trending?: boolean;
+  offers: any[];
 }
 
-export const OfferGrid: React.FC<OfferGridProps> = ({ featured = false, trending = false }) => {
+export const OfferGrid: React.FC<OfferGridProps> = ({ offers }) => {
   const { t } = useTranslation();
-  
-  const { data: featuredOffers, isLoading: featuredLoading } = useFeaturedOffers();
-  const { data: trendingOffers, isLoading: trendingLoading } = useTrendingOffers();
-
-  let offers = [];
-  let isLoading = false;
-  
-  if (featured && featuredOffers) {
-    offers = featuredOffers.slice(0, 4);
-    isLoading = featuredLoading;
-  } else if (trending && trendingOffers) {
-    offers = trendingOffers.slice(0, 4);
-    isLoading = trendingLoading;
-  }
 
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
     toast.success('Coupon code copied!');
   };
 
-  if (isLoading) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {Array.from({ length: 4 }).map((_, index) => (
-          <LoadingCard key={index} height="h-64" />
-        ))}
-      </div>
-    );
-  }
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {offers.map((offer, index) => (

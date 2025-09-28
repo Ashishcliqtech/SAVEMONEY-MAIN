@@ -18,12 +18,13 @@ import {
 } from 'lucide-react';
 import { Card, StatsCard, Button, Badge } from '../../components/ui';
 import { Link } from 'react-router-dom';
+import { placeholderUsers } from '../../data/placeholderData';
 
 export const AdminDashboard: React.FC = () => {
   const stats = [
     {
       title: 'Total Users',
-      value: '2,847',
+      value: placeholderUsers.length.toLocaleString(),
       icon: Users,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100',
@@ -78,7 +79,7 @@ export const AdminDashboard: React.FC = () => {
       icon: Users,
       href: '/admin/users',
       color: 'bg-blue-500',
-      count: '2,847 users',
+      count: `${placeholderUsers.length} users`,
     },
     {
       title: 'Store Management',

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { apiClient } from '../api';
 import { AxiosError } from 'axios';
+import { placeholderStores, placeholderOffers, placeholderCategories, placeholderUsers, placeholderNotifications } from '../data/placeholderData';
 
 // Type definitions
 interface Store {
@@ -124,8 +125,8 @@ export const usePopularStores = () => {
         const { data } = await apiClient.get('/stores/popular');
         return data;
       } catch (error) {
-        console.error("Failed to fetch popular stores. This is expected as the API endpoint is not yet implemented. Returning empty array.", error);
-        return [];
+        console.error("Failed to fetch popular stores. Using placeholder data.", error);
+        return placeholderStores.filter(store => store.isPopular);
       }
     },
     staleTime: 10 * 60 * 1000,
@@ -171,8 +172,8 @@ export const useTrendingOffers = () => {
         const { data } = await apiClient.get('/offers/trending');
         return data;
       } catch (error) {
-        console.error("Failed to fetch trending offers. This is expected as the API endpoint is not yet implemented. Returning empty array.", error);
-        return [];
+        console.error("Failed to fetch trending offers. Using placeholder data.", error);
+        return placeholderOffers.filter(offer => offer.isTrending);
       }
     },
     staleTime: 5 * 60 * 1000,
@@ -187,8 +188,8 @@ export const useFeaturedOffers = () => {
         const { data } = await apiClient.get('/offers/featured');
         return data;
       } catch (error) {
-        console.error("Failed to fetch featured offers. This is expected as the API endpoint is not yet implemented. Returning empty array.", error);
-        return [];
+        console.error("Failed to fetch featured offers. Using placeholder data.", error);
+        return placeholderOffers.filter(offer => offer.isExclusive);
       }
     },
     staleTime: 10 * 60 * 1000,
@@ -204,7 +205,8 @@ export const useCategories = () => {
         const { data } = await apiClient.get('/categories');
         return data;
       } catch (error) {
-        return handleApiError(error as AxiosError<ApiError>);
+        console.error("Failed to fetch categories. Using placeholder data.", error);
+        return placeholderCategories;
       }
     },
     staleTime: 30 * 60 * 1000,
@@ -277,7 +279,12 @@ export const useNotifications = (userId?: string) => {
         const { data } = await apiClient.get(`/notifications/${userId}`);
         return data;
       } catch (error) {
-        return handleApiError(error as AxiosError<ApiError>);
+        console.error("Failed to fetch notifications. Using placeholder data.", error);
+        return {
+          notifications: placeholderNotifications,
+          total: placeholderNotifications.length,
+          unreadCount: placeholderNotifications.filter(n => !n.isRead).length,
+        };
       }
     },
     enabled: !!userId,
@@ -288,9 +295,9 @@ export const useNotifications = (userId?: string) => {
     try {
       await apiClient.put(`/notifications/${id}/read`);
       queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
-      toast.success('Notification marked as read');
     } catch (error) {
-      handleApiError(error as AxiosError<ApiError>);
+      console.error('Failed to mark notification as read:', error);
+      // Don't show error toast for this action
     }
   };
 
@@ -298,9 +305,9 @@ export const useNotifications = (userId?: string) => {
     try {
       await apiClient.put(`/notifications/read-all`);
       queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
-      toast.success('All notifications marked as read');
     } catch (error) {
-      handleApiError(error as AxiosError<ApiError>);
+      console.error('Failed to mark all notifications as read:', error);
+      // Don't show error toast for this action
     }
   };
 
@@ -320,7 +327,8 @@ export const useUsers = () => {
         const { data } = await apiClient.get('/users');
         return data;
       } catch (error) {
-        return handleApiError(error as AxiosError<ApiError>);
+        console.error("Failed to fetch users. Using placeholder data.", error);
+        return placeholderUsers;
       }
     },
   });

@@ -11,8 +11,7 @@ import { RecommendedOffersCarousel } from './components/RecommendedOffersCarouse
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../../constants';
 import { useFeaturedOffers, usePopularStores, useTrendingOffers } from '../../hooks/useSupabase';
-import { dummyOffers, dummyCategories } from '../../data/dummyData';
-import { dummyStores } from '../../data/dummyStores';
+import { placeholderOffers, placeholderStores, placeholderCategories } from '../../data/placeholderData';
 
 export const Home: React.FC = () => {
   const { t } = useTranslation();
@@ -21,9 +20,9 @@ export const Home: React.FC = () => {
   const { data: trendingOffers, error: trendingError } = useTrendingOffers();
   const { data: popularStores, error: popularError } = usePopularStores();
 
-  const finalFeaturedOffers = featuredError || !featuredOffers || featuredOffers.length === 0 ? dummyOffers : featuredOffers;
-  const finalTrendingOffers = trendingError || !trendingOffers || trendingOffers.length === 0 ? dummyOffers : trendingOffers;
-  const finalPopularStores = popularError || !popularStores || popularStores.length === 0 ? dummyStores : popularStores;
+  const finalFeaturedOffers = featuredError || !featuredOffers || featuredOffers.length === 0 ? placeholderOffers : featuredOffers;
+  const finalTrendingOffers = trendingError || !trendingOffers || trendingOffers.length === 0 ? placeholderOffers : trendingOffers;
+  const finalPopularStores = popularError || !popularStores || popularStores.length === 0 ? placeholderStores : popularStores;
 
   // Mock data
   const featuredStats = [
@@ -190,7 +189,7 @@ export const Home: React.FC = () => {
           <h2 className="text-3xl font-bold text-gray-900">{t('home.popularCategories')}</h2>
           <p className="text-gray-600 mt-2">Discover deals across all categories</p>
         </div>
-        <CategoryGrid categories={dummyCategories} />
+        <CategoryGrid categories={placeholderCategories} />
       </section>
 
       {/* How It Works */}

@@ -15,7 +15,7 @@ import {
 } from '../../components/ui';
 import { useOffers, useCategories } from '../../hooks/useSupabase.tsx';
 import toast from 'react-hot-toast';
-import { dummyOffers } from '../../data/dummyData.ts';
+import { placeholderOffers, placeholderCategories } from '../../data/placeholderData';
 
 const INITIAL_FILTERS = {
   category: '',
@@ -37,26 +37,18 @@ export const Offers: React.FC = () => {
   const { data: offersData, isLoading, error } = useOffers(filters);
   const { data: categories } = useCategories();
   
+  // Use placeholder data when API fails or returns empty results
   const finalOffers = (error || !offersData || offersData.offers.length === 0) 
-    ? dummyOffers.map(o => ({
+    ? placeholderOffers.map(o => ({
         ...o,
         id: o.id + filters.page, // Make key unique for pagination
-        imageUrl: `https://picsum.photos/seed/${o.id}/400/300`,
-        isExclusive: Math.random() > 0.7,
-        isTrending: Math.random() > 0.7,
-        cashbackRate: Math.floor(Math.random() * 20) + 5,
-        store: {
-            ...o.store,
-            logo: `https://via.placeholder.com/48x48.png/000000/FFFFFF?text=${o.store.name[0]}`,
-        },
-        originalPrice: Math.floor(Math.random() * 1000) + 500,
-        discountedPrice: Math.floor(Math.random() * 500) + 200,
-        expiryDate: new Date(Date.now() + Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
-        couponCode: Math.random() > 0.5 ? `DUMMY${Math.floor(Math.random() * 1000)}` : null
     })) 
     : offersData.offers;
 
-  const totalOffers = (error || !offersData || offersData.offers.length === 0) ? 25 : offersData.total;
+  const totalOffers = (error || !offersData || offersData.offers.length === 0) ? placeholderOffers.length : offersData.total;
+  
+  // Use placeholder categories when API fails
+  const finalCategories = !categories || categories.length === 0 ? placeholderCategories : categories;
 
 
   const handleSearch = (query: string) => {
@@ -111,7 +103,7 @@ export const Offers: React.FC = () => {
               className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
             >
               <option value="">All Categories</option>
-              {categories?.map((category) => (
+              {finalCategories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
                 </option>

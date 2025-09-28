@@ -4,6 +4,7 @@ import { Tag, Search, Plus, Trash2, Eye, Clock, Copy } from 'lucide-react';
 import { Card, Button, Badge, Input, Modal, Pagination, ImageUpload } from '../../../components/ui';
 import { useOffers, useStores, useCreateOffer, useUpdateOffer, useDeleteOffer } from '../../../hooks/useSupabase.tsx';
 import toast from 'react-hot-toast';
+import { placeholderOffers, placeholderStores } from '../../../data/placeholderData';
 
 interface Offer {
   id: string;
@@ -61,13 +62,16 @@ export const OfferManagement: React.FC = () => {
     limit: 9,
   });
   
-  const { data: stores } = useStores({ limit: 100 });
+  const { data: apiStores, error: storesError } = useStores({ limit: 100 });
+  
+  // Use placeholder data when API fails or returns empty results
+  const offers = !offersData?.offers || offersData.offers.length === 0 ? placeholderOffers : offersData.offers;
+  const totalPages = !offersData ? Math.ceil(placeholderOffers.length / 9) : offersData.totalPages || 1;
+  const stores = storesError || !apiStores?.stores || apiStores.stores.length === 0 ? placeholderStores : apiStores.stores;
+  
   const createOfferMutation = useCreateOffer();
   const updateOfferMutation = useUpdateOffer();
   const deleteOfferMutation = useDeleteOffer();
-
-  const offers = offersData?.offers || [];
-  const totalPages = offersData?.totalPages || 1;
 
   const handleEditOffer = (offer: Offer) => {
     setSelectedOffer(offer);
@@ -195,7 +199,7 @@ export const OfferManagement: React.FC = () => {
             </div>
 
             <div className="text-sm text-gray-600">
-              Showing {offers.length} of {offersData?.total || 0} offers
+              Showing {offers.length} of {offersData?.total || placeholderOffers.length} offers
             </div>
           </div>
         </Card>
@@ -359,7 +363,7 @@ export const OfferManagement: React.FC = () => {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="">Select Store</option>
-                  {stores?.stores.map(store => (
+                  {stores.map(store => (
                     <option key={store.id} value={store.id}>{store.name}</option>
                   ))}
                 </select>

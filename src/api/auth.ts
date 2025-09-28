@@ -27,7 +27,7 @@ export interface OTPRequest {
 export const authApi = {
   // Initiates signup and sends OTP
   signup: (data: SignupRequest): Promise<{ msg: string }> =>
-    apiClient.post('/auth/signup', data).then(res => res.data),
+    apiClient.post('/auth/send-otp', data).then(res => res.data),
 
   // Verifies OTP and completes signup
   verifyOTP: (data: OTPRequest): Promise<AuthResponse> =>

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Store, Search, Plus, Trash2, Eye, Star } from 'lucide-react';
 import { Card, Button, Badge, Input, Modal, Pagination, ImageUpload } from '../../../components/ui';
 import { useStores, useCategories, useCreateStore, useUpdateStore, useDeleteStore } from '../../../hooks/useSupabase.tsx';
+import { placeholderStores, placeholderCategories } from '../../../data/placeholderData';
 
 interface StoreType {
   id: string;
@@ -42,13 +43,16 @@ export const StoreManagement: React.FC = () => {
     limit: 9,
   });
   
-  const { data: categories } = useCategories();
+  const { data: apiCategories, error: categoriesError } = useCategories();
+  
+  // Use placeholder data when API fails or returns empty results
+  const stores = !storesData?.stores || storesData.stores.length === 0 ? placeholderStores : storesData.stores;
+  const totalPages = !storesData ? Math.ceil(placeholderStores.length / 9) : storesData.totalPages || 1;
+  const categories = categoriesError || !apiCategories || apiCategories.length === 0 ? placeholderCategories : apiCategories;
+  
   const createStoreMutation = useCreateStore();
   const updateStoreMutation = useUpdateStore();
   const deleteStoreMutation = useDeleteStore();
-
-  const stores = storesData?.stores || [];
-  const totalPages = storesData?.totalPages || 1;
 
   const handleEditStore = (store: StoreType) => {
     setSelectedStore(store);
@@ -149,7 +153,7 @@ export const StoreManagement: React.FC = () => {
             </div>
 
             <div className="text-sm text-gray-600">
-              Showing {stores.length} of {storesData?.total || 0} stores
+              Showing {stores.length} of {storesData?.total || placeholderStores.length} stores
             </div>
           </div>
         </Card>
@@ -285,7 +289,7 @@ export const StoreManagement: React.FC = () => {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="">Select Category</option>
-                  {categories?.map(category => (
+                  {categories.map(category => (
                     <option key={category.id} value={category.id}>{category.name}</option>
                   ))}
                 </select>

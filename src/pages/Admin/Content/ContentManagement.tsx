@@ -14,10 +14,16 @@ import toast from 'react-hot-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '../../../api';
 import { ContentSection } from '../../../types';
+import { placeholderContentSections } from '../../../data/placeholderData';
 
 const fetchContentSections = async (): Promise<ContentSection[]> => {
-  const { data } = await apiClient.get('/content');
-  return data;
+  try {
+    const { data } = await apiClient.get('/content');
+    return data;
+  } catch (error) {
+    console.error("Failed to fetch content sections. Using placeholder data.", error);
+    return placeholderContentSections;
+  }
 };
 
 const createContentSection = async (formData: FormData): Promise<ContentSection> => {

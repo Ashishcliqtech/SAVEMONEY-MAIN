@@ -1,0 +1,1464 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+		"name": "Cashback & Coupon API (Complete & Final)",
+		"description": "A complete and final Postman collection for the Cashback & Coupon application backend, including all user, admin, and public endpoints.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Send OTP for Registration",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"test@example.com\",\n    \"phone\": \"1234567890\",\n    \"password\": \"password123\",\n    \"referredByCode\": \"optional-referral-code\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/send-otp",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"send-otp"
+							]
+						},
+						"description": "**Description:** Sends an OTP to the user's email to begin the registration process.\n\n**Payload:**\n- `name` (string, required)\n- `email` (string, required)\n- `phone` (string, required)\n- `password` (string, required)\n- `referredByCode` (string, optional)\n\n**Response:**\n- `200 OK`: `{\"msg\": \"OTP has been sent to your email.\"}`\n- `400 Bad Request`: If user already exists."
+					},
+					"response": []
+				},
+				{
+					"name": "Verify OTP & Create User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\",\n    \"otp\": \"123456\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/verify-otp",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"verify-otp"
+							]
+						},
+						"description": "**Description:** Verifies the OTP and creates a new user account.\n\n**Payload:**\n- `email` (string, required)\n- `otp` (string, required)\n\n**Response:**\n- `201 Created`: `{\"token\": \"your_jwt_token\"}`\n- `400 Bad Request`: If OTP is invalid or expired."
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@example.com\",\n    \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "**Description:** Authenticates a user and returns a JWT token.\n\n**Payload:**\n- `email` (string, required)\n- `password` (string, required)\n\n**Response:**\n- `200 OK`: `{\"token\": \"your_jwt_token\"}`\n- `400 Bad Request`: If credentials are invalid."
+					},
+					"response": []
+				},
+				{
+					"name": "Forgot Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/forgot-password",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"forgot-password"
+							]
+						},
+						"description": "**Description:** Sends a password reset link to the user's email.\n\n**Payload:**\n- `email` (string, required)\n\n**Response:**\n- `200 OK`: `{\"msg\": \"If a user with that email exists, a password reset link has been sent.\"}`"
+					},
+					"response": []
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"token\": \"your_reset_token_from_email_link\",\n    \"password\": \"newPassword123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/reset-password",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"reset-password"
+							]
+						},
+						"description": "**Description:** Resets the user's password using the token from the reset link.\n\n**Payload:**\n- `token` (string, required)\n- `password` (string, required)\n\n**Response:**\n- `200 OK`: `{\"msg\": \"Password has been reset successfully.\"}`\n- `400 Bad Request`: If token is invalid or expired."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for user authentication."
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Get User Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/user/profile",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"profile"
+							]
+						},
+						"description": "**Description:** Retrieves the profile of the authenticated user. Requires a valid JWT token in the `Authorization` header.\n\n**Response:**\n- `200 OK`: Returns the user object (without the password)."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints related to user profiles."
+		},
+		{
+			"name": "Categories",
+			"item": [
+				{
+					"name": "Get All Categories",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/categories",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"categories"
+							]
+						},
+						"description": "**Description:** Retrieves a list of all categories.\n\n**Response:**\n- `200 OK`: Returns an array of category objects."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Category By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/categories/60c72b2f5f1b2c001f6e4d2a",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"categories",
+								"60c72b2f5f1b2c001f6e4d2a"
+							]
+						},
+						"description": "**Description:** Retrieves a single category by its ID.\n\n**Response:**\n- `200 OK`: Returns the category object.\n- `404 Not Found`: If category with the specified ID does not exist."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Offers By Category",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/categories/60c72b2f5f1b2c001f6e4d2a/offers",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"categories",
+								"60c72b2f5f1b2c001f6e4d2a",
+								"offers"
+							]
+						},
+						"description": "**Description:** Retrieves all offers belonging to a specific category.\n\n**Response:**\n- `200 OK`: Returns an array of offer objects."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Stores By Category",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/categories/60c72b2f5f1b2c001f6e4d2a/stores",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"categories",
+								"60c72b2f5f1b2c001f6e4d2a",
+								"stores"
+							]
+						},
+						"description": "**Description:** Retrieves all stores belonging to a specific category.\n\n**Response:**\n- `200 OK`: Returns an array of store objects."
+					},
+					"response": []
+				}
+			],
+			"description": "Public endpoints for retrieving category data."
+		},
+		{
+			"name": "Stores",
+			"item": [
+				{
+					"name": "Get All Stores",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores?page=1&limit=10&category=60c72b2f5f1b2c001f6e4d2a",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "category",
+									"value": "60c72b2f5f1b2c001f6e4d2a"
+								}
+							]
+						},
+						"description": "**Description:** Retrieves a paginated list of stores. Can be filtered by category.\n\n**Query Params:**\n- `page` (number, optional): Page number for pagination.\n- `limit` (number, optional): Number of items per page.\n- `category` (string, optional): Filter stores by category ID.\n\n**Response:**\n- `200 OK`: Returns an object with `stores`, `totalPages`, and `currentPage`."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Popular Stores",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/popular",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"popular"
+							]
+						},
+						"description": "**Description:** Retrieves a list of popular stores.\n\n**Response:**\n- `200 OK`: Returns an array of store objects."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Featured Stores",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/featured",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"featured"
+							]
+						},
+						"description": "**Description:** Retrieves a list of featured stores.\n\n**Response:**\n- `200 OK`: Returns an array of store objects."
+					},
+					"response": []
+				},
+				{
+					"name": "Search Stores",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/search?q=fashion",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "fashion"
+								}
+							]
+						},
+						"description": "**Description:** Searches for stores by name or description.\n\n**Query Params:**\n- `q` (string, required): The search query.\n\n**Response:**\n- `200 OK`: Returns an array of matching store objects."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Store By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/60c72b2f5f1b2c001f6e4d2b",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"60c72b2f5f1b2c001f6e4d2b"
+							]
+						},
+						"description": "**Description:** Retrieves a single store by its ID.\n\n**Response:**\n- `200 OK`: Returns the store object.\n- `404 Not Found`: If store does not exist."
+					},
+					"response": []
+				}
+			],
+			"description": "Public endpoints for retrieving store data."
+		},
+		{
+			"name": "Offers",
+			"item": [
+				{
+					"name": "Get All Offers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/offers?page=1&limit=12&category=60c72b2f5f1b2c001f6e4d2a&store=60c72b2f5f1b2c001f6e4d2b",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"offers"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "12"
+								},
+								{
+									"key": "category",
+									"value": "60c72b2f5f1b2c001f6e4d2a"
+								},
+								{
+									"key": "store",
+									"value": "60c72b2f5f1b2c001f6e4d2b"
+								}
+							]
+						},
+						"description": "**Description:** Retrieves a paginated list of offers. Can be filtered by category and store.\n\n**Query Params:**\n- `page` (number, optional): Page number.\n- `limit` (number, optional): Items per page.\n- `category` (string, optional): Filter by category ID.\n- `store` (string, optional): Filter by store ID.\n\n**Response:**\n- `200 OK`: Returns an object with `offers`, `totalPages`, and `currentPage`."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Trending Offers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/offers/trending",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"offers",
+								"trending"
+							]
+						},
+						"description": "**Description:** Retrieves a list of trending offers.\n\n**Response:**\n- `200 OK`: Returns an array of offer objects."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Featured Offers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/offers/featured",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"offers",
+								"featured"
+							]
+						},
+						"description": "**Description:** Retrieves a list of featured offers.\n\n**Response:**\n- `200 OK`: Returns an array of offer objects."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Exclusive Offers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/offers/exclusive",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"offers",
+								"exclusive"
+							]
+						},
+						"description": "**Description:** Retrieves a list of exclusive offers.\n\n**Response:**\n- `200 OK`: Returns an array of offer objects."
+					},
+					"response": []
+				},
+				{
+					"name": "Search Offers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/offers/search?q=discount",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"offers",
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "discount"
+								}
+							]
+						},
+						"description": "**Description:** Searches for offers by title or description.\n\n**Query Params:**\n- `q` (string, required): The search query.\n\n**Response:**\n- `200 OK`: Returns an array of matching offer objects."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Offer By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/offers/60c72b2f5f1b2c001f6e4d2c",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"offers",
+								"60c72b2f5f1b2c001f6e4d2c"
+							]
+						},
+						"description": "**Description:** Retrieves a single offer by its ID.\n\n**Response:**\n- `200 OK`: Returns the offer object.\n- `404 Not Found`: If offer does not exist."
+					},
+					"response": []
+				},
+				{
+					"name": "Track Offer Click",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/offers/60c72b2f5f1b2c001f6e4d2c/track",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"offers",
+								"60c72b2f5f1b2c001f6e4d2c",
+								"track"
+							]
+						},
+						"description": "**Description:** Tracks a user's click on an offer. This is used to calculate cashback. Requires authentication.\n\n**Response:**\n- `200 OK`: `{\"msg\": \"Offer click tracked successfully.\"}`"
+					},
+					"response": []
+				}
+			],
+			"description": "Public and authenticated endpoints for retrieving and interacting with offers."
+		},
+		{
+			"name": "Wallet",
+			"item": [
+				{
+					"name": "Get Wallet",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/wallet",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"wallet"
+							]
+						},
+						"description": "**Description:** Retrieves the wallet details for the authenticated user.\n\n**Response:**\n- `200 OK`: Returns the wallet object."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Transactions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/wallet/transactions?page=1&limit=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"wallet",
+								"transactions"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						},
+						"description": "**Description:** Retrieves a paginated list of transactions for the authenticated user.\n\n**Response:**\n- `200 OK`: Returns transaction data with pagination."
+					},
+					"response": []
+				},
+				{
+					"name": "Withdraw Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"amount\": 500,\n    \"paymentDetails\": {\n        \"method\": \"UPI\",\n        \"upiId\": \"user@okhdfcbank\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/wallet/withdraw",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"wallet",
+								"withdraw"
+							]
+						},
+						"description": "**Description:** Submits a withdrawal request from the user's available cashback.\n\n**Payload:**\n- `amount` (number, required)\n- `paymentDetails` (object, required)\n\n**Response:**\n- `200 OK`: `{\"msg\": \"Withdrawal request submitted successfully.\"}`\n- `400 Bad Request`: If balance is insufficient."
+					},
+					"response": []
+				}
+			],
+			"description": "Authenticated endpoints for managing user wallets."
+		},
+		{
+			"name": "Referrals",
+			"item": [
+				{
+					"name": "Get Referral Data",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/referrals",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"referrals"
+							]
+						},
+						"description": "**Description:** Gets the authenticated user's referral code, earnings, and count of referred users.\n\n**Response:**\n- `200 OK`: `{\"referralCode\": \"...\", \"earnings\": 0, \"referredUsersCount\": 0}`"
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Referral Link",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/referrals/generate-link",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"referrals",
+								"generate-link"
+							]
+						},
+						"description": "**Description:** Generates a unique referral link for the user to share.\n\n**Response:**\n- `200 OK`: `{\"referralLink\": \"http://frontend.url/signup?ref=...\"}`"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Referral History",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/referrals/history",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"referrals",
+								"history"
+							]
+						},
+						"description": "**Description:** Retrieves a list of users who signed up using the authenticated user's referral code.\n\n**Response:**\n- `200 OK`: Returns an array of user objects."
+					},
+					"response": []
+				}
+			],
+			"description": "Authenticated endpoints for the referral system."
+		},
+		{
+			"name": "Content",
+			"item": [
+				{
+					"name": "Get All Content",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/content?page=homepage",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"content"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "homepage"
+								}
+							]
+						},
+						"description": "**Description:** Retrieves all content sections, optionally filtered by page.\n\n**Query Params:**\n- `page` (string, optional): e.g., 'homepage', 'about'\n\n**Response:**\n- `200 OK`: Returns an array of content section objects."
+					},
+					"response": []
+				}
+			],
+			"description": "Public endpoints for retrieving website content."
+		},
+		{
+			"name": "Admin Panel",
+			"item": [
+				{
+					"name": "User Management",
+					"item": [
+						{
+							"name": "Get All Users",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/users",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"users"
+									]
+								},
+								"description": "**Description:** Retrieves a list of all users. Requires admin privileges."
+							},
+							"response": []
+						},
+						{
+							"name": "Get User By ID",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/users/60c72b2f5f1b2c001f6e4d29",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"users",
+										"60c72b2f5f1b2c001f6e4d29"
+									]
+								},
+								"description": "**Description:** Retrieves a single user by their ID. Requires admin privileges."
+							},
+							"response": []
+						},
+						{
+							"name": "Update User",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"role\": \"admin\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/users/60c72b2f5f1b2c001f6e4d29",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"users",
+										"60c72b2f5f1b2c001f6e4d29"
+									]
+								},
+								"description": "**Description:** Updates a user's role. Requires admin privileges."
+							},
+							"response": []
+						},
+						{
+							"name": "Delete User",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/users/60c72b2f5f1b2c001f6e4d29",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"users",
+										"60c72b2f5f1b2c001f6e4d29"
+									]
+								},
+								"description": "**Description:** Deletes a user and all their associated data. Requires admin privileges."
+							},
+							"response": []
+						}
+					],
+					"description": "Admin endpoints for managing users."
+				},
+				{
+					"name": "Store Management",
+					"item": [
+						{
+							"name": "Create Store",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "name",
+											"value": "New Awesome Store",
+											"type": "text"
+										},
+										{
+											"key": "description",
+											"value": "Your one-stop shop for awesome things.",
+											"type": "text"
+										},
+										{
+											"key": "url",
+											"value": "https://awesomestore.com",
+											"type": "text"
+										},
+										{
+											"key": "category",
+											"value": "60c72b2f5f1b2c001f6e4d2a",
+											"type": "text"
+										},
+										{
+											"key": "isPopular",
+											"value": "true",
+											"type": "text"
+										},
+										{
+											"key": "isFeatured",
+											"value": "false",
+											"type": "text"
+										},
+										{
+											"key": "logo",
+											"type": "file",
+											"src": []
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/stores",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"stores"
+									]
+								},
+								"description": "**Description:** Creates a new store. Requires admin privileges. Use form-data for the body to upload a logo."
+							},
+							"response": []
+						},
+						{
+							"name": "Update Store",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "name",
+											"value": "Updated Awesome Store Name",
+											"type": "text"
+										},
+										{
+											"key": "isPopular",
+											"value": "false",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/stores/60c72b2f5f1b2c001f6e4d2b",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"stores",
+										"60c72b2f5f1b2c001f6e4d2b"
+									]
+								},
+								"description": "**Description:** Updates an existing store. Requires admin privileges. You can optionally upload a new logo."
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Store",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/stores/60c72b2f5f1b2c001f6e4d2b",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"stores",
+										"60c72b2f5f1b2c001f6e4d2b"
+									]
+								},
+								"description": "**Description:** Deletes a store and its associated offers. Requires admin privileges."
+							},
+							"response": []
+						}
+					],
+					"description": "Admin endpoints for managing stores."
+				},
+				{
+					"name": "Offer Management",
+					"item": [
+						{
+							"name": "Create Offer",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "title",
+											"value": "Amazing New Offer",
+											"type": "text"
+										},
+										{
+											"key": "description",
+											"value": "Get 50% off on your next purchase!",
+											"type": "text"
+										},
+										{
+											"key": "offerType",
+											"value": "coupon",
+											"type": "text"
+										},
+										{
+											"key": "couponCode",
+											"value": "SAVE50",
+											"type": "text"
+										},
+										{
+											"key": "store",
+											"value": "60c72b2f5f1b2c001f6e4d2b",
+											"type": "text"
+										},
+										{
+											"key": "category",
+											"value": "60c72b2f5f1b2c001f6e4d2a",
+											"type": "text"
+										},
+										{
+											"key": "imageUrl",
+											"type": "file",
+											"src": []
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/offers",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"offers"
+									]
+								},
+								"description": "**Description:** Creates a new offer. Requires admin privileges. Use form-data for the body to upload an image."
+							},
+							"response": []
+						},
+						{
+							"name": "Update Offer",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "title",
+											"value": "Updated Amazing Offer Title",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/offers/60c72b2f5f1b2c001f6e4d2c",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"offers",
+										"60c72b2f5f1b2c001f6e4d2c"
+									]
+								},
+								"description": "**Description:** Updates an existing offer. Requires admin privileges."
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Offer",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/offers/60c72b2f5f1b2c001f6e4d2c",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"offers",
+										"60c72b2f5f1b2c001f6e4d2c"
+									]
+								},
+								"description": "**Description:** Deletes an offer. Requires admin privileges."
+							},
+							"response": []
+						}
+					],
+					"description": "Admin endpoints for managing offers."
+				},
+				{
+					"name": "Category Management",
+					"item": [
+						{
+							"name": "Create Category",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Electronics\",\n    \"description\": \"All kinds of electronic gadgets.\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/categories",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"categories"
+									]
+								},
+								"description": "**Description:** Creates a new category. Requires admin privileges."
+							},
+							"response": []
+						},
+						{
+							"name": "Update Category",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}",
+										"type": "text"
+									},
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"name\": \"Gadgets & Electronics\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/categories/60c72b2f5f1b2c001f6e4d2a",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"categories",
+										"60c72b2f5f1b2c001f6e4d2a"
+									]
+								},
+								"description": "**Description:** Updates an existing category. Requires admin privileges."
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Category",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/categories/60c72b2f5f1b2c001f6e4d2a",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"categories",
+										"60c72b2f5f1b2c001f6e4d2a"
+									]
+								},
+								"description": "**Description:** Deletes a category. Requires admin privileges."
+							},
+							"response": []
+						}
+					],
+					"description": "Admin endpoints for managing categories."
+				},
+				{
+					"name": "Content Management",
+					"item": [
+						{
+							"name": "Create Content Section",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "title",
+											"value": "Homepage Hero Banner",
+											"type": "text"
+										},
+										{
+											"key": "page",
+											"value": "homepage",
+											"type": "text"
+										},
+										{
+											"key": "content",
+											"value": "{\"mainText\":\"Welcome to Big Savings!\",\"subText\":\"Your #1 stop for coupons and cashback.\"}",
+											"type": "text"
+										},
+										{
+											"key": "imageUrl",
+											"type": "file",
+											"src": []
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/content",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"content"
+									]
+								},
+								"description": "**Description:** Creates a new content section. Requires admin privileges. The `content` field should be a stringified JSON object."
+							},
+							"response": []
+						},
+						{
+							"name": "Update Content Section",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "title",
+											"value": "Updated Homepage Hero Banner",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/content/60c72b2f5f1b2c001f6e4d2d",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"content",
+										"60c72b2f5f1b2c001f6e4d2d"
+									]
+								},
+								"description": "**Description:** Updates an existing content section. Requires admin privileges."
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Content Section",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{adminToken}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/admin/content/60c72b2f5f1b2c001f6e4d2d",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"admin",
+										"content",
+										"60c72b2f5f1b2c001f6e4d2d"
+									]
+								},
+								"description": "**Description:** Deletes a content section. Requires admin privileges."
+							},
+							"response": []
+						}
+					],
+					"description": "Admin endpoints for managing website content."
+				}
+			],
+			"description": "Admin-only endpoints for managing the application."
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000"
+		},
+		{
+			"key": "token",
+			"value": ""
+		},
+		{
+			"key": "adminToken",
+			"value": ""
+		}
+	]
+}
+

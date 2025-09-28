@@ -1,15 +1,37 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Tag, Search, Plus, CreditCard as Edit, Trash2, Eye, Clock, Copy, ExternalLink, Calendar } from 'lucide-react';
+import { Tag, Search, Plus, Trash2, Eye, Clock, Copy } from 'lucide-react';
 import { Card, Button, Badge, Input, Modal, Pagination, ImageUpload } from '../../../components/ui';
-import { useOffers, useStores, useCategories, useCreateOffer, useUpdateOffer, useDeleteOffer } from '../../../hooks/useSupabase';
+import { useOffers, useStores, useCreateOffer, useUpdateOffer, useDeleteOffer } from '../../../hooks/useSupabase.tsx';
 import toast from 'react-hot-toast';
+
+interface Offer {
+  id: string;
+  title: string;
+  description: string;
+  store_id: string;
+  category_id: string;
+  cashback_rate: number;
+  original_price: number;
+  discounted_price: number;
+  coupon_code: string;
+  offer_type: 'cashback' | 'coupon' | 'deal';
+  image_url: string;
+  terms: string[];
+  min_order_value: number;
+  expiry_date: string;
+  is_exclusive: boolean;
+  is_trending: boolean;
+  is_featured: boolean;
+  store: { name: string, logo_url: string };
+}
+
 
 export const OfferManagement: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [showOfferModal, setShowOfferModal] = useState(false);
-  const [selectedOffer, setSelectedOffer] = useState<any>(null);
+  const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [offerForm, setOfferForm] = useState({
     title: '',
@@ -40,7 +62,6 @@ export const OfferManagement: React.FC = () => {
   });
   
   const { data: stores } = useStores({ limit: 100 });
-  const { data: categories } = useCategories();
   const createOfferMutation = useCreateOffer();
   const updateOfferMutation = useUpdateOffer();
   const deleteOfferMutation = useDeleteOffer();
@@ -48,7 +69,7 @@ export const OfferManagement: React.FC = () => {
   const offers = offersData?.offers || [];
   const totalPages = offersData?.totalPages || 1;
 
-  const handleEditOffer = (offer: any) => {
+  const handleEditOffer = (offer: Offer) => {
     setSelectedOffer(offer);
     setOfferForm({
       title: offer.title,
@@ -104,6 +125,7 @@ export const OfferManagement: React.FC = () => {
     const offerData = {
       ...offerForm,
       expiry_date: offerForm.expiry_date ? new Date(offerForm.expiry_date).toISOString() : null,
+      offer_type: offerForm.offer_type as 'cashback' | 'coupon' | 'deal',
     };
 
     if (selectedOffer) {
@@ -180,7 +202,7 @@ export const OfferManagement: React.FC = () => {
 
         {/* Offers Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {offers.map((offer, index) => (
+          {offers.map((offer: Offer, index: number) => (
             <motion.div
               key={offer.id}
               initial={{ opacity: 0, y: 20 }}
@@ -277,15 +299,6 @@ export const OfferManagement: React.FC = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      icon={Edit}
-                      onClick={() => handleEditOffer(offer)}
-                      className="flex-1"
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
                       icon={Trash2}
                       onClick={() => handleDeleteOffer(offer.id)}
                       className="text-red-600 hover:text-red-700"
@@ -364,7 +377,7 @@ export const OfferManagement: React.FC = () => {
                 </label>
                 <select
                   value={offerForm.offer_type}
-                  onChange={(e) => setOfferForm(prev => ({ ...prev, offer_type: e.target.value as any }))}
+                  onChange={(e) => setOfferForm(prev => ({ ...prev, offer_type: e.target.value as 'cashback' | 'coupon' | 'deal' }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="">Select Type</option>

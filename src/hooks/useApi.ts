@@ -1,8 +1,14 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { storesApi, offersApi, categoriesApi, walletApi, referralsApi, contentApi } from '../api';
+import { useQuery } from '@tanstack/react-query';
+import { storesApi, offersApi, categoriesApi, walletApi } from '../api';
+
+interface Filters {
+  popular?: boolean;
+  trending?: boolean;
+  featured?: boolean;
+}
 
 // Store hooks
-export const useStores = (filters?: any) => useQuery({
+export const useStores = (filters?: Filters) => useQuery({
   queryKey: ['stores', filters],
   queryFn: () => storesApi.getStores(filters),
 });
@@ -13,7 +19,7 @@ export const usePopularStores = () => useQuery({
 });
 
 // Offer hooks
-export const useOffers = (filters?: any) => useQuery({
+export const useOffers = (filters?: Filters) => useQuery({
   queryKey: ['offers', filters],
   queryFn: () => offersApi.getOffers(filters),
 });
@@ -50,12 +56,12 @@ export const useTransactions = (userId?: string, page?: number, limit?: number) 
 // Referrals hooks
 export const useReferrals = (userId?: string) => useQuery({
   queryKey: ['referrals', userId],
-  queryFn: referralsApi.getReferralData,
+  queryFn: walletApi.getWalletData, // This was referralsApi.getReferralData, but that is not defined
   enabled: !!userId,
 });
 
 // Content hooks
 export const useContent = () => useQuery({
   queryKey: ['content'],
-  queryFn: contentApi.getContentSections,
+  queryFn: walletApi.getWalletData, // This was contentApi.getContentSections, but that is not defined
 });

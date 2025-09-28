@@ -3,18 +3,13 @@ import { motion } from 'framer-motion';
 import {
   Wallet,
   Search,
-  Filter,
   CheckCircle,
   XCircle,
   Clock,
   Eye,
   Download,
-  Calendar,
-  User,
-  CreditCard,
 } from 'lucide-react';
 import { Card, Button, Badge, Pagination } from '../../../components/ui';
-import { mockWithdrawals } from '../../../data/mockData';
 
 interface WithdrawalRequest {
   id: string;

@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { Category } from '../types';
+import { Category, Offer, Store } from '../types';
 
 export const categoriesApi = {
   getCategories: (): Promise<Category[]> =>
@@ -9,11 +9,11 @@ export const categoriesApi = {
     apiClient.get(`/categories/${id}`),
 
   getCategoryOffers: (id: string, page?: number, limit?: number): Promise<{
-    offers: any[];
+    offers: Offer[];
     total: number;
   }> =>
     apiClient.get(`/categories/${id}/offers`, { params: { page, limit } }),
 
-  getCategoryStores: (id: string): Promise<any[]> =>
+  getCategoryStores: (id: string): Promise<Store[]> =>
     apiClient.get(`/categories/${id}/stores`),
 };

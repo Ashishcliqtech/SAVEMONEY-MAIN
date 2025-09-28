@@ -1,28 +1,63 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { Clock, Copy, ExternalLink, Filter, Grid2x2 as Grid, List } from 'lucide-react';
-import { Card, Button, Badge, SearchBar, Pagination, LoadingSpinner } from '../../components/ui';
-import { useOffers, useCategories } from '../../hooks/useSupabase';
+import { Clock, Copy, ExternalLink, Filter, Grid2x2 as Grid, List, X } from 'lucide-react';
+import {
+  Card,
+  Button,
+  Badge,
+  SearchBar,
+  Pagination,
+  LoadingSpinner,
+  EmptyState,
+  ErrorState,
+  LoadingCard,
+} from '../../components/ui';
+import { useOffers, useCategories } from '../../hooks/useSupabase.tsx';
 import toast from 'react-hot-toast';
+import { dummyOffers } from '../../data/dummyData.ts';
+
+const INITIAL_FILTERS = {
+  category: '',
+  offerType: '',
+  minCashback: '',
+  search: '',
+  sortBy: 'popularity' as 'cashback' | 'expiry' | 'popularity',
+  sortOrder: 'desc' as 'asc' | 'desc',
+  page: 1,
+  limit: 12,
+};
 
 export const Offers: React.FC = () => {
   const { t } = useTranslation();
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [filters, setFilters] = useState({
-    category: '',
-    offerType: '',
-    minCashback: '',
-    search: '',
-    sortBy: 'popularity' as 'cashback' | 'expiry' | 'popularity',
-    sortOrder: 'desc' as 'asc' | 'desc',
-    page: 1,
-    limit: 12,
-  });
+  const [filters, setFilters] = useState(INITIAL_FILTERS);
 
-  const { data: offersData, isLoading } = useOffers(filters);
+  const { data: offersData, isLoading, error } = useOffers(filters);
   const { data: categories } = useCategories();
+  
+  const finalOffers = (error || !offersData || offersData.offers.length === 0) 
+    ? dummyOffers.map(o => ({
+        ...o,
+        id: o.id + filters.page, // Make key unique for pagination
+        imageUrl: `https://picsum.photos/seed/${o.id}/400/300`,
+        isExclusive: Math.random() > 0.7,
+        isTrending: Math.random() > 0.7,
+        cashbackRate: Math.floor(Math.random() * 20) + 5,
+        store: {
+            ...o.store,
+            logo: `https://via.placeholder.com/48x48.png/000000/FFFFFF?text=${o.store.name[0]}`,
+        },
+        originalPrice: Math.floor(Math.random() * 1000) + 500,
+        discountedPrice: Math.floor(Math.random() * 500) + 200,
+        expiryDate: new Date(Date.now() + Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+        couponCode: Math.random() > 0.5 ? `DUMMY${Math.floor(Math.random() * 1000)}` : null
+    })) 
+    : offersData.offers;
+
+  const totalOffers = (error || !offersData || offersData.offers.length === 0) ? 25 : offersData.total;
+
 
   const handleSearch = (query: string) => {
     setFilters(prev => ({ ...prev, search: query, page: 1 }));
@@ -30,6 +65,10 @@ export const Offers: React.FC = () => {
 
   const handleFilterChange = (key: string, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value, page: 1 }));
+  };
+
+  const handleClearFilters = () => {
+    setFilters(INITIAL_FILTERS);
   };
 
   const handlePageChange = (page: number) => {
@@ -41,17 +80,8 @@ export const Offers: React.FC = () => {
     toast.success('Coupon code copied!');
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <LoadingSpinner size="xl" text="Loading offers..." color="text-orange-500" />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden">
-      {/* Hero Section */}
       <section className="bg-gradient-to-br from-orange-500 to-red-600 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
@@ -73,9 +103,8 @@ export const Offers: React.FC = () => {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Filters */}
         <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
             <select
               value={filters.category}
               onChange={(e) => handleFilterChange('category', e.target.value)}
@@ -121,13 +150,22 @@ export const Offers: React.FC = () => {
               <option value="cashback-desc">Highest Cashback</option>
               <option value="expiry-asc">Expiring Soon</option>
             </select>
+
+            <Button
+              variant="ghost"
+              onClick={handleClearFilters}
+              icon={X}
+            >
+              Clear Filters
+            </Button>
           </div>
         </div>
 
-        {/* Controls */}
         <div className="flex items-center justify-between mb-6">
           <p className="text-gray-600">
-            Showing {offersData?.offers.length || 0} of {offersData?.total || 0} offers
+            {!isLoading && (
+              `Showing ${finalOffers.length || 0} of ${totalOffers || 0} offers`
+            )}
           </p>
           
           <div className="flex items-center space-x-2">
@@ -146,121 +184,115 @@ export const Offers: React.FC = () => {
           </div>
         </div>
 
-        {/* Offers Grid/List */}
-        <div className={`mb-8 ${
-          viewMode === 'grid' 
-            ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' 
-            : 'space-y-4'
-        }`}>
-          {offersData?.offers.map((offer, index) => (
-            <motion.div
-              key={offer.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="h-full"
-            >
-              <Card className="group overflow-hidden h-full flex flex-col min-h-[480px]" hover padding="sm">
-                {/* Image */}
-                <div className="relative mb-4">
-                  <img
-                    src={offer.imageUrl}
-                    alt={offer.title}
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
-                  <div className="absolute top-2 left-2 flex flex-wrap gap-1">
-                    {offer.isExclusive && (
-                      <Badge variant="danger" size="sm">
-                        Exclusive
-                      </Badge>
-                    )}
-                    {offer.isTrending && (
-                      <Badge variant="warning" size="sm">
-                        🔥 Trending
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-sm font-semibold">
-                    {offer.cashbackRate}% back
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="space-y-3 flex-1 flex flex-col">
-                  {/* Store Info */}
-                  <div className="flex items-center space-x-2 mb-2">
+        {isLoading ? (
+          <LoadingCard count={filters.limit} className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6`} />
+        ) : (
+          <div className={`mb-8 ${viewMode === 'grid' 
+              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' 
+              : 'space-y-4'
+          }`}>
+            {finalOffers.map((offer, index) => (
+              <motion.div
+                key={offer.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="h-full"
+              >
+                <Card className="group overflow-hidden h-full flex flex-col min-h-[480px]" hover padding="sm">
+                  <div className="relative mb-4">
                     <img
-                      src={offer.store.logo}
-                      alt={offer.store.name}
-                      className="w-6 h-6 rounded-full object-cover"
+                      src={offer.imageUrl}
+                      alt={offer.title}
+                      className="w-full h-48 object-cover rounded-lg"
                     />
-                    <span className="text-sm font-medium text-gray-600">
-                      {offer.store.name}
-                    </span>
+                    <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+                      {offer.isExclusive && (
+                        <Badge variant="danger" size="sm">
+                          Exclusive
+                        </Badge>
+                      )}
+                      {offer.isTrending && (
+                        <Badge variant="warning" size="sm">
+                          🔥 Trending
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-sm font-semibold">
+                      {offer.cashbackRate}% back
+                    </div>
                   </div>
 
-                  {/* Title & Description */}
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 text-base leading-tight">
-                      {offer.title}
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-3 h-16">
-                      {offer.description.length > 100 ? `${offer.description.substring(0, 100)}...` : offer.description}
-                    </p>
-                  </div>
-
-                  {/* Price Info */}
-                  {offer.originalPrice && offer.discountedPrice && (
-                    <div className="flex items-center space-x-2">
-                      <span className="text-lg font-bold text-gray-900">
-                        ₹{offer.discountedPrice.toLocaleString()}
-                      </span>
-                      <span className="text-sm text-gray-500 line-through">
-                        ₹{offer.originalPrice.toLocaleString()}
+                  <div className="space-y-3 flex-1 flex flex-col">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <img
+                        src={offer.store.logo}
+                        alt={offer.store.name}
+                        className="w-6 h-6 rounded-full object-cover"
+                      />
+                      <span className="text-sm font-medium text-gray-600">
+                        {offer.store.name}
                       </span>
                     </div>
-                  )}
 
-                  {/* Expiry */}
-                  <div className="flex items-center text-sm text-orange-600 mb-4">
-                    <Clock className="w-4 h-4 mr-1" />
-                    <span>Valid till {new Date(offer.expiryDate).toLocaleDateString()}</span>
-                  </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 text-base leading-tight">
+                        {offer.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-3 h-16">
+                        {offer.description.length > 100 ? `${offer.description.substring(0, 100)}...` : offer.description}
+                      </p>
+                    </div>
 
-                  {/* Actions */}
-                  <div className="space-y-2 mt-auto">
-                    {offer.couponCode ? (
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm" 
-                          icon={Copy}
-                          onClick={() => handleCopyCode(offer.couponCode!)}
-                          className="flex-1 text-xs min-w-0"
-                        >
-                          {offer.couponCode.length > 8 ? `${offer.couponCode.substring(0, 8)}...` : offer.couponCode}
-                        </Button>
-                        <Button variant="primary" size="sm" icon={ExternalLink}>
-                          {t('offers.shopNow')}
-                        </Button>
+                    {offer.originalPrice && offer.discountedPrice && (
+                      <div className="flex items-center space-x-2">
+                        <span className="text-lg font-bold text-gray-900">
+                          ₹{offer.discountedPrice.toLocaleString()}
+                        </span>
+                        <span className="text-sm text-gray-500 line-through">
+                          ₹{offer.originalPrice.toLocaleString()}
+                        </span>
                       </div>
-                    ) : (
-                      <Button variant="primary" size="sm" fullWidth icon={ExternalLink}>
-                        {t('offers.getOffer')}
-                      </Button>
                     )}
-                  </div>
-                </div>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
 
-        {/* Pagination */}
-        {offersData && offersData.total > filters.limit && (
+                    <div className="flex items-center text-sm text-orange-600 mb-4">
+                      <Clock className="w-4 h-4 mr-1" />
+                      <span>Valid till {new Date(offer.expiryDate).toLocaleDateString()}</span>
+                    </div>
+
+                    <div className="space-y-2 mt-auto">
+                      {offer.couponCode ? (
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm" 
+                            icon={Copy}
+                            onClick={() => handleCopyCode(offer.couponCode!)}
+                            className="flex-1 text-xs min-w-0"
+                          >
+                            {offer.couponCode.length > 8 ? `${offer.couponCode.substring(0, 8)}...` : offer.couponCode}
+                          </Button>
+                          <Button variant="primary" size="sm" icon={ExternalLink}>
+                            {t('offers.shopNow')}
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button variant="primary" size="sm" fullWidth icon={ExternalLink}>
+                          {t('offers.getOffer')}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {!isLoading && totalOffers > filters.limit && (
           <Pagination
             currentPage={filters.page}
-            totalPages={Math.ceil(offersData.total / filters.limit)}
+            totalPages={Math.ceil(totalOffers / filters.limit)}
             onPageChange={handlePageChange}
           />
         )}

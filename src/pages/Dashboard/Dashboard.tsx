@@ -10,18 +10,29 @@ import {
   ShoppingBag,
   ArrowRight,
   Star,
+  Briefcase,
 } from 'lucide-react';
-import { Card, Button, Badge, LoadingSpinner } from '../../components/ui';
-import { useWallet, useTransactions } from '../../hooks/useSupabase';
+import {
+  Card,
+  Button,
+  Badge,
+  LoadingSpinner,
+  EmptyState,
+  ErrorState,
+  LoadingCard,
+} from '../../components/ui';
+import { useWallet, useTransactions, useOffers } from '../../hooks/useSupabase.tsx';
 import { useAuth } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../../constants';
+import { dummyOffers, dummyTransactions } from '../../data/dummyData.ts';
 
 export const Dashboard: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const { data: walletData, isLoading: walletLoading } = useWallet(user?.id);
-  const { data: transactionsData, isLoading: transactionsLoading } = useTransactions(user?.id, 1, 5);
+  const { data: walletData, isLoading: walletLoading, error: walletError } = useWallet(user?.id);
+  const { data: transactionsData, isLoading: transactionsLoading, error: transactionsError } = useTransactions(user?.id, 1, 5);
+  const { data: offersData, isLoading: offersLoading, error: offersError } = useOffers({ limit: 3, featured: true });
 
   const quickActions = [
     {
@@ -75,17 +86,16 @@ export const Dashboard: React.FC = () => {
   ];
 
   if (walletLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <LoadingSpinner size="xl" text="Loading your dashboard..." color="text-orange-500" />
-      </div>
-    );
+    return <LoadingSpinner size="xl" text="Loading your dashboard..." fullScreen color="text-orange-500" />;
   }
+
+  const finalOffers = (offersError || !Array.isArray(offersData) || offersData.length === 0) ? dummyOffers : offersData;
+  const finalTransactions = (transactionsError || !transactionsData?.transactions || transactionsData.transactions.length === 0) ? dummyTransactions : transactionsData.transactions;
+
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             {t('dashboard.welcome')}, {user?.name || 'User'}! 👋
@@ -95,7 +105,6 @@ export const Dashboard: React.FC = () => {
           </p>
         </div>
 
-        {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           {stats.map((stat, index) => (
             <motion.div
@@ -118,7 +127,6 @@ export const Dashboard: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Quick Actions */}
           <div className="lg:col-span-1">
             <Card>
               <h2 className="text-xl font-semibold text-gray-900 mb-6">
@@ -151,7 +159,6 @@ export const Dashboard: React.FC = () => {
             </Card>
           </div>
 
-          {/* Recent Activity */}
           <div className="lg:col-span-2">
             <Card>
               <div className="flex items-center justify-between mb-6">
@@ -166,78 +173,58 @@ export const Dashboard: React.FC = () => {
               </div>
 
               {transactionsLoading ? (
-                <div className="flex justify-center py-8">
-                  <LoadingSpinner size="md" color="text-orange-500" />
-                </div>
+                <LoadingCard count={3} />
               ) : (
                 <div className="space-y-4">
-                {transactionsData?.transactions.map((transaction, index) => (
-                  <motion.div
-                    key={transaction.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="flex items-center p-4 bg-gray-50 rounded-xl"
-                  >
-                    <img
-                      src={transaction.store.logo}
-                      alt={transaction.store.name}
-                      className="w-12 h-12 rounded-xl object-cover mr-4"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-gray-900">
-                        {transaction.store.name}
+                  {finalTransactions.map((transaction, index) => (
+                    <motion.div
+                      key={transaction.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="flex items-center p-4 bg-gray-50 rounded-xl"
+                    >
+                      <img
+                        src={transaction.store.logo}
+                        alt={transaction.store.name}
+                        className="w-12 h-12 rounded-xl object-cover mr-4"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-gray-900">
+                          {transaction.store.name}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          Order #{transaction.orderId}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {new Date(transaction.date).toLocaleDateString()}
+                        </div>
                       </div>
-                      <div className="text-sm text-gray-500">
-                        Order #{transaction.orderId}
+                      <div className="text-right">
+                        <div className="font-semibold text-gray-900">
+                          ₹{transaction.amount.toLocaleString()}
+                        </div>
+                        <div className="text-sm text-green-600 font-medium">
+                          +₹{transaction.cashbackEarned}
+                        </div>
+                        <Badge
+                          variant={
+                            transaction.status === 'confirmed' ? 'success' :
+                            transaction.status === 'pending' ? 'warning' : 'danger'
+                          }
+                          size="sm"
+                        >
+                          {transaction.status}
+                        </Badge>
                       </div>
-                      <div className="text-sm text-gray-500">
-                        {new Date(transaction.date).toLocaleDateString()}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-semibold text-gray-900">
-                        ₹{transaction.amount.toLocaleString()}
-                      </div>
-                      <div className="text-sm text-green-600 font-medium">
-                        +₹{transaction.cashbackEarned}
-                      </div>
-                      <Badge
-                        variant={
-                          transaction.status === 'confirmed' ? 'success' :
-                          transaction.status === 'pending' ? 'warning' : 'danger'
-                        }
-                        size="sm"
-                      >
-                        {transaction.status}
-                      </Badge>
-                    </div>
-                  </motion.div>
-                ))}
-
-                {(!transactionsData?.transactions || transactionsData.transactions.length === 0) && (
-                  <div className="text-center py-8">
-                    <ShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      No transactions yet
-                    </h3>
-                    <p className="text-gray-500 mb-4">
-                      Start shopping to see your cashback activity here
-                    </p>
-                    <Link to={ROUTES.OFFERS}>
-                      <Button variant="primary">
-                        Browse Offers
-                      </Button>
-                    </Link>
-                  </div>
-                )}
-              </div>
+                    </motion.div>
+                  ))}
+                </div>
               )}
             </Card>
           </div>
         </div>
 
-        {/* Featured Offers */}
         <div className="mt-8">
           <Card>
             <div className="flex items-center justify-between mb-6">
@@ -251,33 +238,37 @@ export const Dashboard: React.FC = () => {
               </Link>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map((_, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="bg-gradient-to-br from-purple-500 to-teal-500 rounded-xl p-6 text-white relative overflow-hidden"
-                >
-                  <div className="absolute top-2 right-2">
-                    <Star className="w-5 h-5 text-yellow-300 fill-current" />
-                  </div>
-                  <div className="mb-4">
-                    <div className="text-sm opacity-90 mb-1">Amazon</div>
-                    <div className="text-lg font-semibold mb-2">
-                      Flat 50% Off + 15% Cashback
+            {offersLoading ? (
+              <LoadingCard count={3} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" />
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {finalOffers.map((offer, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="bg-gradient-to-br from-purple-500 to-teal-500 rounded-xl p-6 text-white relative overflow-hidden"
+                  >
+                    <div className="absolute top-2 right-2">
+                      <Star className="w-5 h-5 text-yellow-300 fill-current" />
                     </div>
-                    <div className="text-sm opacity-90">
-                      On electronics and gadgets
+                    <div className="mb-4">
+                      <div className="text-sm opacity-90 mb-1">{offer.store.name}</div>
+                      <div className="text-lg font-semibold mb-2">
+                        {offer.title}
+                      </div>
+                      <div className="text-sm opacity-90">
+                        {offer.description}
+                      </div>
                     </div>
-                  </div>
-                  <Button variant="secondary" size="sm">
-                    Shop Now
-                  </Button>
-                </motion.div>
-              ))}
-            </div>
+                    <Button variant="secondary" size="sm">
+                      Shop Now
+                    </Button>
+                  </motion.div>
+                ))}
+              </div>
+            )}
           </Card>
         </div>
       </div>

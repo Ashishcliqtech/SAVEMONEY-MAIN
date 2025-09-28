@@ -2,11 +2,9 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Settings as SettingsIcon,
-  Globe,
   Bell,
   Shield,
   CreditCard,
-  Mail,
   Database,
   Users,
   Save,
@@ -52,18 +50,18 @@ export const Settings: React.FC = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="mb-8">
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             System Settings
           </h1>
           <p className="text-gray-600">
             Configure your platform settings and preferences
           </p>
-        </div>
+        </motion.div>
 
         <div className="lg:flex lg:gap-8">
           {/* Sidebar */}
-          <div className="lg:w-1/4 mb-8 lg:mb-0">
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.2 }} className="lg:w-1/4 mb-8 lg:mb-0">
             <Card>
               <div className="space-y-1">
                 {tabs.map((tab) => (
@@ -82,10 +80,10 @@ export const Settings: React.FC = () => {
                 ))}
               </div>
             </Card>
-          </div>
+          </motion.div>
 
           {/* Content */}
-          <div className="lg:w-3/4">
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.4 }} className="lg:w-3/4">
             <Card>
               {activeTab === 'general' && (
                 <div className="space-y-6">
@@ -315,7 +313,7 @@ export const Settings: React.FC = () => {
                 </Button>
               </div>
             </Card>
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>

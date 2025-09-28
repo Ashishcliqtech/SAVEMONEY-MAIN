@@ -5,14 +5,11 @@ import {
   Users,
   DollarSign,
   ShoppingBag,
-  Calendar,
   Download,
-  Filter,
   BarChart3,
-  PieChart,
   LineChart,
 } from 'lucide-react';
-import { Card, Button, Badge } from '../../../components/ui';
+import { Card, Button } from '../../../components/ui';
 
 export const Analytics: React.FC = () => {
   const [dateRange, setDateRange] = useState('30d');

@@ -38,6 +38,7 @@ export const Login: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-teal-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       {loading && (
         <LoadingSpinner 
+          key="loading-spinner"
           size="xl" 
           text="Signing you in..." 
           fullScreen 

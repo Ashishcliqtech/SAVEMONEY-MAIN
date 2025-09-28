@@ -17,7 +17,7 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { Card, Button, Badge, SearchBar, LoadingSpinner } from '../../components/ui';
-import { useNotifications } from '../../hooks/useSupabase';
+import { useNotifications } from '../../hooks/useSupabase.tsx';
 import { useAuth } from '../../hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';

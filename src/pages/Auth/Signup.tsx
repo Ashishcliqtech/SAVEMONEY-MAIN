@@ -73,6 +73,7 @@ export const Signup: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-teal-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         {loading && (
           <LoadingSpinner 
+            key="loading-spinner-otp"
             size="xl" 
             text="Verifying OTP..." 
             fullScreen 
@@ -136,6 +137,7 @@ export const Signup: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-teal-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       {loading && (
         <LoadingSpinner 
+          key="loading-spinner-signup"
           size="xl" 
           text="Creating your account..." 
           fullScreen 

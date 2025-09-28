@@ -8,13 +8,13 @@ export const referralsApi = {
   generateReferralLink: (): Promise<{ link: string; code: string }> =>
     apiClient.post('/referrals/generate-link'),
 
-  getReferralHistory: (): Promise<Array<{
+  getReferralHistory: (): Promise<{
     id: string;
     name: string;
     email: string;
     joinedDate: string;
     earnings: number;
     status: string;
-  }>> =>
+  }[]> =>
     apiClient.get('/referrals/history'),
 };

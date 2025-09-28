@@ -4,7 +4,6 @@ import {
   Bell,
   Send,
   Users,
-  Filter,
   Search,
   Plus,
   Edit,
@@ -15,10 +14,11 @@ import {
   MessageSquare,
   Mail,
   Smartphone,
-  Globe,
 } from 'lucide-react';
 import { Card, Button, Input, Modal, Badge, Pagination } from '../../../components/ui';
 import toast from 'react-hot-toast';
+
+type Channel = 'push' | 'email' | 'sms' | 'in-app';
 
 interface NotificationTemplate {
   id: string;
@@ -26,7 +26,7 @@ interface NotificationTemplate {
   message: string;
   type: 'deal' | 'cashback' | 'withdrawal' | 'referral' | 'support' | 'system';
   targetAudience: 'all' | 'active' | 'inactive' | 'premium' | 'new';
-  channels: ('push' | 'email' | 'sms' | 'in-app')[];
+  channels: Channel[];
   status: 'draft' | 'scheduled' | 'sent';
   scheduledDate?: string;
   sentCount?: number;
@@ -98,7 +98,7 @@ export const NotificationManagement: React.FC = () => {
     message: '',
     type: 'deal' as const,
     targetAudience: 'all' as const,
-    channels: ['push'] as ('push' | 'email' | 'sms' | 'in-app')[],
+    channels: ['push'] as Channel[],
     scheduledDate: '',
   });
 
@@ -416,7 +416,7 @@ export const NotificationManagement: React.FC = () => {
                 </label>
                 <select
                   value={newNotification.type}
-                  onChange={(e) => setNewNotification({...newNotification, type: e.target.value as any})}
+                  onChange={(e) => setNewNotification({...newNotification, type: e.target.value as NotificationTemplate['type']})}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="deal">Deal Alert</option>
@@ -449,7 +449,7 @@ export const NotificationManagement: React.FC = () => {
                 </label>
                 <select
                   value={newNotification.targetAudience}
-                  onChange={(e) => setNewNotification({...newNotification, targetAudience: e.target.value as any})}
+                  onChange={(e) => setNewNotification({...newNotification, targetAudience: e.target.value as NotificationTemplate['targetAudience']})}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
                   {audienceOptions.map(option => (
@@ -484,24 +484,25 @@ export const NotificationManagement: React.FC = () => {
                     <label
                       key={channel.id}
                       className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
-                        newNotification.channels.includes(channel.id as any)
+                        newNotification.channels.includes(channel.id as Channel)
                           ? 'border-purple-500 bg-purple-50'
                           : 'border-gray-200 hover:border-gray-300'
                       }`}
                     >
                       <input
                         type="checkbox"
-                        checked={newNotification.channels.includes(channel.id as any)}
+                        checked={newNotification.channels.includes(channel.id as Channel)}
                         onChange={(e) => {
+                          const selectedChannel = channel.id as Channel;
                           if (e.target.checked) {
                             setNewNotification({
                               ...newNotification,
-                              channels: [...newNotification.channels, channel.id as any]
+                              channels: [...newNotification.channels, selectedChannel]
                             });
                           } else {
                             setNewNotification({
                               ...newNotification,
-                              channels: newNotification.channels.filter(c => c !== channel.id)
+                              channels: newNotification.channels.filter(c => c !== selectedChannel)
                             });
                           }
                         }}

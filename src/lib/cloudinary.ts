@@ -14,7 +14,7 @@ export class CloudinaryService {
 
   getOptimizedUrl(
     publicId: string, 
-    transformation: string = 'f_auto,q_auto'
+    transformation = 'f_auto,q_auto'
   ): string {
     return `https://res.cloudinary.com/${this.cloudName}/image/upload/${transformation}/${publicId}`;
   }
@@ -23,9 +23,9 @@ export class CloudinaryService {
     publicId: string,
     width?: number,
     height?: number,
-    crop: string = 'fill',
-    quality: string = 'auto',
-    format: string = 'auto'
+    crop = 'fill',
+    quality = 'auto',
+    format = 'auto'
   ): string {
     const transformations = [];
     

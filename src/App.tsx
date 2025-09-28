@@ -1,7 +1,7 @@
 import React from 'react';
 import { Toaster } from 'react-hot-toast';
 import { AppRouter } from './routes';
-import { AuthProvider } from './hooks/useAuth';
+import { AuthProvider } from './hooks/useAuth.tsx';
 import { GlobalStyles } from './styles/GlobalStyles';
 import { LoadingSpinner } from './components/ui';
 import './utils/i18n';
@@ -14,6 +14,7 @@ function App() {
         <React.Suspense 
           fallback={
             <LoadingSpinner 
+              key="loading-spinner-app"
               size="xl" 
               text="Loading SaveMoney..." 
               fullScreen 

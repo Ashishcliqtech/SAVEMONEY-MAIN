@@ -10,9 +10,20 @@ import { OfferGrid } from './components/OfferGrid';
 import { RecommendedOffersCarousel } from './components/RecommendedOffersCarousel';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../../constants';
+import { useFeaturedOffers, usePopularStores, useTrendingOffers } from '../../hooks/useSupabase';
+import { dummyOffers, dummyCategories } from '../../data/dummyData';
+import { dummyStores } from '../../data/dummyStores';
 
 export const Home: React.FC = () => {
   const { t } = useTranslation();
+
+  const { data: featuredOffers, error: featuredError } = useFeaturedOffers();
+  const { data: trendingOffers, error: trendingError } = useTrendingOffers();
+  const { data: popularStores, error: popularError } = usePopularStores();
+
+  const finalFeaturedOffers = featuredError || !featuredOffers || featuredOffers.length === 0 ? dummyOffers : featuredOffers;
+  const finalTrendingOffers = trendingError || !trendingOffers || trendingOffers.length === 0 ? dummyOffers : trendingOffers;
+  const finalPopularStores = popularError || !popularStores || popularStores.length === 0 ? dummyStores : popularStores;
 
   // Mock data
   const featuredStats = [
@@ -118,7 +129,7 @@ export const Home: React.FC = () => {
 
       {/* Recommended Offers Carousel */}
       <section id="recommended-offers" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <RecommendedOffersCarousel />
+        <RecommendedOffersCarousel offers={finalFeaturedOffers} />
       </section>
 
       {/* Stats Section */}
@@ -152,7 +163,7 @@ export const Home: React.FC = () => {
             </Button>
           </Link>
         </div>
-        <OfferGrid featured />
+        <OfferGrid offers={finalFeaturedOffers} />
       </section>
 
       {/* Top Stores */}
@@ -162,7 +173,7 @@ export const Home: React.FC = () => {
             <h2 className="text-3xl font-bold text-gray-900">{t('home.topStores')}</h2>
             <p className="text-gray-600 mt-2">Shop from your favorite brands and earn cashback</p>
           </div>
-          <StoreCarousel />
+          <StoreCarousel stores={finalPopularStores} />
           <div className="text-center mt-8">
             <Link to={ROUTES.STORES}>
               <Button variant="primary" size="lg" icon={ArrowRight} iconPosition="right">
@@ -179,7 +190,7 @@ export const Home: React.FC = () => {
           <h2 className="text-3xl font-bold text-gray-900">{t('home.popularCategories')}</h2>
           <p className="text-gray-600 mt-2">Discover deals across all categories</p>
         </div>
-        <CategoryGrid />
+        <CategoryGrid categories={dummyCategories} />
       </section>
 
       {/* How It Works */}
@@ -273,7 +284,7 @@ export const Home: React.FC = () => {
               🔥 Hot Deals
             </Badge>
           </div>
-          <OfferGrid trending />
+          <OfferGrid offers={finalTrendingOffers} />
         </div>
       </section>
 

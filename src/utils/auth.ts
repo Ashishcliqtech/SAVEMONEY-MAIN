@@ -101,11 +101,11 @@ export const formatUserData = (userData: any): User => {
 
 // Rate limiting for client-side protection
 export class RateLimiter {
-  private attempts: Map<string, number[]> = new Map();
+  private attempts = new Map<string, number[]>();
   private readonly maxAttempts: number;
   private readonly windowMs: number;
 
-  constructor(maxAttempts: number = 5, windowMs: number = 15 * 60 * 1000) {
+  constructor(maxAttempts = 5, windowMs: number = 15 * 60 * 1000) {
     this.maxAttempts = maxAttempts;
     this.windowMs = windowMs;
   }

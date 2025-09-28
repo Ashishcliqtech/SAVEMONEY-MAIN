@@ -1,14 +1,28 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Store, Search, Plus, CreditCard as Edit, Trash2, Eye, Star, ExternalLink, Image, Percent } from 'lucide-react';
+import { Store, Search, Plus, Trash2, Eye, Star } from 'lucide-react';
 import { Card, Button, Badge, Input, Modal, Pagination, ImageUpload } from '../../../components/ui';
-import { useStores, useCategories, useCreateStore, useUpdateStore, useDeleteStore } from '../../../hooks/useSupabase';
+import { useStores, useCategories, useCreateStore, useUpdateStore, useDeleteStore } from '../../../hooks/useSupabase.tsx';
+
+interface StoreType {
+  id: string;
+  name: string;
+  description: string;
+  website_url: string;
+  cashback_rate: number;
+  category_id: string;
+  is_popular: boolean;
+  logo_url: string;
+  banner_url: string;
+  category?: { name: string };
+  total_offers: number;
+}
 
 export const StoreManagement: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [showStoreModal, setShowStoreModal] = useState(false);
-  const [selectedStore, setSelectedStore] = useState<any>(null);
+  const [selectedStore, setSelectedStore] = useState<StoreType | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [storeForm, setStoreForm] = useState({
     name: '',
@@ -36,7 +50,7 @@ export const StoreManagement: React.FC = () => {
   const stores = storesData?.stores || [];
   const totalPages = storesData?.totalPages || 1;
 
-  const handleEditStore = (store: any) => {
+  const handleEditStore = (store: StoreType) => {
     setSelectedStore(store);
     setStoreForm({
       name: store.name,
@@ -142,7 +156,7 @@ export const StoreManagement: React.FC = () => {
 
         {/* Stores Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {stores.map((store, index) => (
+          {stores.map((store: StoreType, index: number) => (
             <motion.div
               key={store.id}
               initial={{ opacity: 0, y: 20 }}
@@ -156,13 +170,13 @@ export const StoreManagement: React.FC = () => {
                     alt={store.name}
                     className="w-full h-40 object-cover rounded-lg"
                   />
-                  {store.isPopular && (
+                  {store.is_popular && (
                     <Badge variant="warning" size="sm" className="absolute top-2 left-2">
                       🔥 Popular
                     </Badge>
                   )}
                   <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-sm font-semibold">
-                    {store.cashbackRate}% back
+                    {store.cashback_rate}% back
                   </div>
                 </div>
 
@@ -198,15 +212,6 @@ export const StoreManagement: React.FC = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      icon={Edit}
-                      onClick={() => handleEditStore(store)}
-                      className="flex-1"
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
                       icon={Trash2}
                       onClick={() => handleDeleteStore(store.id)}
                       className="text-red-600 hover:text-red-700"
@@ -227,7 +232,7 @@ export const StoreManagement: React.FC = () => {
             <p className="text-gray-500 mb-4">
               Try adjusting your search or filter criteria
             </p>
-            <Button variant="primary" onClick={handleAddStore}>
+            <Button variant="primary" icon={Plus} onClick={handleAddStore}>
               Add First Store
             </Button>
           </Card>

@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import {
-  Search,
   HelpCircle,
   MessageCircle,
   Phone,
@@ -14,14 +12,11 @@ import {
   FileText,
   Users,
   Clock,
-  CheckCircle,
   AlertCircle,
-  Info,
 } from 'lucide-react';
 import { Card, Button, Badge, SearchBar } from '../../components/ui';
 
 export const Help: React.FC = () => {
-  const { t } = useTranslation();
   const [activeCategory, setActiveCategory] = useState('getting-started');
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');

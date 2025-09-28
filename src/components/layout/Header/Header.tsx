@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, Menu, ChevronDown, Globe, ShoppingBag, Wallet, CircleUser as UserCircle, LogOut, Settings, Bell, Search, Loader } from 'lucide-react';
+import { Menu, ChevronDown, Globe, ShoppingBag, Wallet, CircleUser as UserCircle, LogOut, Settings, Loader } from 'lucide-react';
 import { Button, SearchBar, NotificationDropdown } from '../../ui';
 import { useLanguage } from '../../../hooks';
 import { useAuth } from '../../../hooks/useAuth';
@@ -10,13 +10,11 @@ import { ROUTES } from '../../../constants';
 
 interface HeaderProps {
   onSidebarToggle: () => void;
-  isSidebarOpen: boolean;
   showSidebarToggle?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   onSidebarToggle,
-  isSidebarOpen,
   showSidebarToggle = true
 }) => {
   const { t } = useTranslation();
@@ -73,8 +71,8 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="hidden md:flex flex-1 max-w-xl mx-8">
               <SearchBar
                 placeholder={t('home.searchPlaceholder')}
-                onSearch={(query) => {
-                  console.log('Search:', query);
+                onSearch={(_query) => {
+                  // Perform search
                 }}
                 className="w-full"
               />
@@ -95,7 +93,7 @@ export const Header: React.FC<HeaderProps> = ({
                 className="flex items-center space-x-1 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
               >
                 <Globe className="w-4 h-4" />
-                <span className="text-sm font-medium">{language.toUpperCase()}</span>
+                <span className="text-sm font-medium">{language?.toUpperCase()}</span>
                 <ChevronDown className="w-4 h-4" />
               </button>
               
@@ -143,8 +141,8 @@ export const Header: React.FC<HeaderProps> = ({
                   className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
                 >
                   <img
-                    src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.name}&background=f97316&color=fff`}
-                    alt={user.name}
+                    src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.name || ''}&background=f97316&color=fff`}
+                    alt={user?.name || 'User Avatar'}
                     className="w-8 h-8 rounded-full object-cover"
                   />
                   <div className="hidden sm:block text-left">
@@ -218,8 +216,8 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="md:hidden pb-3">
             <SearchBar
               placeholder={t('home.searchPlaceholder')}
-              onSearch={(query) => {
-                console.log('Mobile search:', query);
+              onSearch={(_query) => {
+                // Perform search
               }}
             />
           </div>

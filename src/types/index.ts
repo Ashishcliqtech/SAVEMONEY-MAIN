@@ -82,14 +82,14 @@ export interface ReferralData {
   pendingEarnings: number;
   referralCode: string;
   referralLink: string;
-  recentReferrals: Array<{
+  recentReferrals: {
     _id: string;
     name: string;
     email: string;
     earnings: number;
     status: string;
     joinedDate: string;
-  }>;
+  }[];
 }
 
 export interface NotificationData {
@@ -259,14 +259,14 @@ export interface ReferralData {
   pendingEarnings: number;
   referralCode: string;
   referralLink: string;
-  recentReferrals: Array<{
+  recentReferrals: {
     _id: string;
     name: string;
     email: string;
     earnings: number;
     status: string;
     joinedDate: string;
-  }>;
+  }[];
 }
 
 export interface NotificationData {

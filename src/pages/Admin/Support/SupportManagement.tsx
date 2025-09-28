@@ -3,18 +3,14 @@ import { motion } from 'framer-motion';
 import {
   MessageCircle,
   Search,
-  Filter,
   Clock,
   CheckCircle,
   AlertCircle,
   User,
   Calendar,
   Reply,
-  Archive,
-  Star,
-  Flag,
 } from 'lucide-react';
-import { Card, Button, Badge, Input, Modal, Pagination } from '../../../components/ui';
+import { Card, Button, Badge, Modal, Pagination } from '../../../components/ui';
 import toast from 'react-hot-toast';
 
 interface SupportTicket {
@@ -111,15 +107,6 @@ export const SupportManagement: React.FC = () => {
         : ticket
     ));
     toast.success(`Ticket ${newStatus} successfully!`);
-  };
-
-  const handleAssignTicket = (ticketId: string, agent: string) => {
-    setTickets(tickets.map(ticket => 
-      ticket.id === ticketId 
-        ? { ...ticket, assignedTo: agent, status: 'in-progress', updatedAt: new Date().toISOString() }
-        : ticket
-    ));
-    toast.success('Ticket assigned successfully!');
   };
 
   const getPriorityColor = (priority: string) => {

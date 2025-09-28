@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { Upload, X, Loader } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Button } from '../Button';
 import toast from 'react-hot-toast';
 
 interface ImageUploadProps {
@@ -18,7 +17,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   className = '',
 }) => {
   const [preview, setPreview] = useState<string | null>(currentImage || null);
-  const [fileName, setFileName] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (files: FileList | null) => {
@@ -35,13 +33,11 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     }
 
     setPreview(URL.createObjectURL(file));
-    setFileName(file.name);
     onFileSelect(file);
   };
 
   const removeImage = () => {
     setPreview(null);
-    setFileName(null);
     onFileSelect(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';

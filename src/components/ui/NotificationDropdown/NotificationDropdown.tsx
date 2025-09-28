@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
   Bell,
@@ -18,16 +17,16 @@ import { Button, Badge } from '../';
 import { useNotifications } from '../../../hooks/useSupabase';
 import { useAuth } from '../../../hooks/useAuth';
 import { formatDistanceToNow } from 'date-fns';
+import { NotificationData } from '../../../types';
 
 export const NotificationDropdown: React.FC = () => {
-  const { t } = useTranslation();
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const { data: notificationsData, markAsRead, markAllAsRead } = useNotifications(user?.id);
 
-  const notifications = notificationsData?.notifications || [];
+  const notifications = notificationsData?.notifications.map(n => ({...n, id: n._id})) || [];
   const unreadCount = notificationsData?.unreadCount || 0;
   const recentNotifications = notifications.slice(0, 8);
 
@@ -115,7 +114,7 @@ export const NotificationDropdown: React.FC = () => {
     markAllAsRead();
   };
 
-  const handleNotificationClick = (notification: any) => {
+  const handleNotificationClick = (notification: NotificationData & { id: string }) => {
     if (!notification.isRead) {
       markAsRead(notification.id);
     }

@@ -19,16 +19,24 @@ import {
   BookOpen,
   Heart,
 } from 'lucide-react';
-import { Card, Button, Badge, Input, Modal, Pagination } from '../../../components/ui';
+import { Card, Button, Input, Modal } from '../../../components/ui';
 import { useCategories } from '../../../hooks/useApi';
 import toast from 'react-hot-toast';
 
+interface Category {
+  _id: string;
+  name: string;
+  description: string;
+  icon: string;
+  storeCount: number;
+  offerCount: number;
+}
+
 export const CategoryManagement: React.FC = () => {
-  const { data: categories = [], isLoading } = useCategories();
+  const { data: categories = [] } = useCategories();
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<any>(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
 
   const iconOptions = [
     { value: 'shirt', label: 'Fashion', icon: Shirt },
@@ -41,17 +49,17 @@ export const CategoryManagement: React.FC = () => {
     { value: 'heart', label: 'Health', icon: Heart },
   ];
 
-  const filteredCategories = categories.filter(category =>
+  const filteredCategories = categories.filter((category: Category) =>
     category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     category.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleEdit = (category: any) => {
+  const handleEdit = (category: Category) => {
     setSelectedCategory(category);
     setShowModal(true);
   };
 
-  const handleDelete = (categoryId: string) => {
+  const handleDelete = (_categoryId: string) => {
     if (confirm('Are you sure you want to delete this category?')) {
       // Replace with your delete mutation hook
       toast.success('Category deleted successfully!');
@@ -140,7 +148,7 @@ export const CategoryManagement: React.FC = () => {
 
         {/* Categories Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-          {filteredCategories.map((category, index) => {
+          {filteredCategories.map((category: Category, index: number) => {
             const iconOption = iconOptions.find(opt => opt.value === category.icon);
             const IconComponent = iconOption?.icon || Package;
 

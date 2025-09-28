@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { Search, Filter, Grid2x2 as Grid, List, ExternalLink, Star, Shirt, Smartphone, Plane, Utensils, Sparkles, Home, BookOpen, Heart } from 'lucide-react';
+import { ExternalLink, Shirt, Smartphone, Plane, Utensils, Sparkles, Home, BookOpen, Heart } from 'lucide-react';
 import { Card, Button, Badge, SearchBar, LoadingSpinner } from '../../components/ui';
-import { useCategories } from '../../hooks/useSupabase';
+import { useCategories } from '../../hooks/useSupabase.tsx';
 import { Link } from 'react-router-dom';
-import { ROUTES } from '../../constants';
+
+type SortByType = 'name' | 'stores' | 'offers';
 
 export const Categories: React.FC = () => {
   const { t } = useTranslation();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState<'name' | 'stores' | 'offers'>('name');
+  const [sortBy, setSortBy] = useState<SortByType>('name');
 
   const { data: categories, isLoading } = useCategories();
 
@@ -108,7 +109,7 @@ export const Categories: React.FC = () => {
           <div className="flex items-center space-x-4">
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e) => setSortBy(e.target.value as SortByType)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="name">Sort by Name</option>

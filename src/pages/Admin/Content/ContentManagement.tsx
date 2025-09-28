@@ -1,16 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Globe,
-  Star,
-  TrendingUp,
-  Eye,
   Edit,
   Plus,
   Save,
-  Image,
-  Type,
-  Layout,
   Smartphone,
   Monitor,
   Tablet,
@@ -51,7 +44,7 @@ const deleteContentSection = async (id: string): Promise<void> => {
 
 export const ContentManagement: React.FC = () => {
   const queryClient = useQueryClient();
-  const { data: sections = [], isLoading } = useQuery({ queryKey: ['contentSections'], queryFn: fetchContentSections });
+  const { data: sections = [], isLoading, error } = useQuery({ queryKey: ['contentSections'], queryFn: fetchContentSections });
 
   const createMutation = useMutation({
     mutationFn: createContentSection,
@@ -88,9 +81,8 @@ export const ContentManagement: React.FC = () => {
     },
   });
 
-
   const [showModal, setShowModal] = useState(false);
-  const [selectedSection, setSelectedSection] = useState<ContentSection | null>(null);
+  const [selectedSection, setSelectedSection] = useState<Partial<ContentSection> | null>(null);
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [imageFile, setImageFile] = useState<File | null>(null);
 
@@ -113,13 +105,12 @@ export const ContentManagement: React.FC = () => {
       });
     }
 
-
     if (imageFile) {
       formData.append('imageUrl', imageFile);
     }
 
-    if (selectedSection?._id) {
-      updateMutation.mutate({ id: selectedSection._id, formData });
+    if (selectedSection && 'id' in selectedSection && selectedSection.id) {
+      updateMutation.mutate({ id: selectedSection.id, formData });
     } else {
       createMutation.mutate(formData);
     }
@@ -130,7 +121,6 @@ export const ContentManagement: React.FC = () => {
       deleteMutation.mutate(id);
     }
   };
-
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -164,7 +154,6 @@ export const ContentManagement: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
@@ -181,7 +170,7 @@ export const ContentManagement: React.FC = () => {
                 return (
                   <button
                     key={device}
-                    onClick={() => setPreviewDevice(device as any)}
+                    onClick={() => setPreviewDevice(device as 'desktop' | 'tablet' | 'mobile')}
                     className={`p-2 rounded-md transition-colors ${
                       previewDevice === device
                         ? 'bg-purple-100 text-purple-600'
@@ -194,7 +183,7 @@ export const ContentManagement: React.FC = () => {
               })}
             </div>
             <Button variant="primary" icon={Plus} onClick={() => {
-              setSelectedSection(null);
+              setSelectedSection({});
               setShowModal(true);
             }}>
               Add Section
@@ -202,116 +191,115 @@ export const ContentManagement: React.FC = () => {
           </div>
         </div>
 
-        {/* Content Sections */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          {sections.map((section, index) => (
-            <motion.div
-              key={section._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Card className="h-full flex flex-col">
-                {/* Section Header */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-2">
-                    <Badge variant={getTypeColor(section.type)} size="sm">
-                      {section.type}
-                    </Badge>
-                    <Badge variant={getStatusColor(section.status)} size="sm">
-                      {section.status}
-                    </Badge>
+        {isLoading ? (
+          <div>Loading...</div>
+        ) : error ? (
+          <div>Error: {error.message}</div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            {sections.map((section, index) => (
+              <motion.div
+                key={section.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <Card className="h-full flex flex-col">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-2">
+                      <Badge variant={getTypeColor(section.type)} size="sm">
+                        {section.type}
+                      </Badge>
+                      <Badge variant={getStatusColor(section.status)} size="sm">
+                        {section.status}
+                      </Badge>
+                    </div>
+                    <div className="text-sm text-gray-500">
+                      Pos: {section.position}
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-500">
-                    Pos: {section.position}
-                  </div>
-                </div>
 
-                {/* Content Preview */}
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900 mb-2">
-                    {section.name}
-                  </h3>
-                  
-                  {section.content.imageUrl && (
-                    <img
-                      src={section.content.imageUrl}
-                      alt={section.content.title}
-                      className="w-full h-32 object-cover rounded-lg mb-3"
-                    />
-                  )}
-                  
-                  {section.content.title && (
-                    <div className="text-sm font-medium text-gray-900 mb-1">
-                      {section.content.title}
-                    </div>
-                  )}
-                  
-                  {section.content.subtitle && (
-                    <div className="text-sm text-gray-600 mb-2">
-                      {section.content.subtitle}
-                    </div>
-                  )}
-                  
-                  {section.content.description && (
-                    <div className="text-xs text-gray-500 line-clamp-2">
-                      {section.content.description}
-                    </div>
-                  )}
-                </div>
-
-                {/* Device Support */}
-                <div className="flex items-center space-x-2 mb-4">
-                  {section.devices.map((device) => {
-                    const IconComponent = getDeviceIcon(device);
-                    return (
-                      <div
-                        key={device}
-                        className="w-6 h-6 bg-gray-100 rounded flex items-center justify-center"
-                      >
-                        <IconComponent className="w-3 h-3 text-gray-600" />
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-gray-900 mb-2">
+                      {section.name}
+                    </h3>
+                    
+                    {section.content.imageUrl && (
+                      <img
+                        src={section.content.imageUrl}
+                        alt={section.content.title}
+                        className="w-full h-32 object-cover rounded-lg mb-3"
+                      />
+                    )}
+                    
+                    {section.content.title && (
+                      <div className="text-sm font-medium text-gray-900 mb-1">
+                        {section.content.title}
                       </div>
-                    );
-                  })}
-                </div>
-
-                {/* Actions */}
-                <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                  <div className="flex items-center space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      icon={Edit}
-                      onClick={() => handleEdit(section)}
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      icon={Trash2}
-                      onClick={() => handleDelete(section._id)}
-                      className="text-red-500"
-                    >
-                      Delete
-                    </Button>
+                    )}
+                    
+                    {section.content.subtitle && (
+                      <div className="text-sm text-gray-600 mb-2">
+                        {section.content.subtitle}
+                      </div>
+                    )}
+                    
+                    {section.content.description && (
+                      <div className="text-xs text-gray-500 line-clamp-2">
+                        {section.content.description}
+                      </div>
+                    )}
                   </div>
-                </div>
 
-                {/* Last Modified */}
-                <div className="text-xs text-gray-400 mt-2">
-                  Modified: {new Date(section.lastModified).toLocaleDateString()}
-                </div>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
+                  <div className="flex items-center space-x-2 mb-4">
+                    {section.devices.map((device) => {
+                      const IconComponent = getDeviceIcon(device);
+                      return (
+                        <div
+                          key={device}
+                          className="w-6 h-6 bg-gray-100 rounded flex items-center justify-center"
+                        >
+                          <IconComponent className="w-3 h-3 text-gray-600" />
+                        </div>
+                      );
+                    })}
+                  </div>
 
-        {/* Edit Modal */}
+                  <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        icon={Edit}
+                        onClick={() => handleEdit(section)}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        icon={Trash2}
+                        onClick={() => handleDelete(section.id)}
+                        className="text-red-500"
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-gray-400 mt-2">
+                    Modified: {new Date(section.lastModified).toLocaleDateString()}
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
         <Modal
           isOpen={showModal}
           onClose={() => setShowModal(false)}
-          title={selectedSection ? 'Edit Content Section' : 'Add Content Section'}
+          title={selectedSection?.id ? 'Edit Content Section' : 'Add Content Section'}
           size="xl"
         >
           <div className="space-y-6">
@@ -319,7 +307,7 @@ export const ContentManagement: React.FC = () => {
               <Input
                 label="Section Name"
                 value={selectedSection?.name || ''}
-                onChange={(e) => setSelectedSection(prev => prev ? { ...prev, name: e.target.value } : null)}
+                onChange={(e) => setSelectedSection(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="Enter section name"
               />
               <div>
@@ -328,7 +316,7 @@ export const ContentManagement: React.FC = () => {
                 </label>
                 <select
                   value={selectedSection?.type || 'featured'}
-                  onChange={(e) => setSelectedSection(prev => prev ? { ...prev, type: e.target.value as any } : null)}
+                  onChange={(e) => setSelectedSection(prev => ({ ...prev, type: e.target.value as ContentSection['type'] }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="hero">Hero Section</option>
@@ -343,14 +331,14 @@ export const ContentManagement: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Title"
-                value={selectedSection?.content.title || ''}
-                onChange={(e) => setSelectedSection(prev => prev ? { ...prev, content: { ...prev.content, title: e.target.value } } : null)}
+                value={selectedSection?.content?.title || ''}
+                onChange={(e) => setSelectedSection(prev => ({ ...prev, content: { ...prev?.content, title: e.target.value } }))}
                 placeholder="Enter title"
               />
               <Input
                 label="Subtitle"
-                value={selectedSection?.content.subtitle || ''}
-                onChange={(e) => setSelectedSection(prev => prev ? { ...prev, content: { ...prev.content, subtitle: e.target.value } } : null)}
+                value={selectedSection?.content?.subtitle || ''}
+                onChange={(e) => setSelectedSection(prev => ({ ...prev, content: { ...prev?.content, subtitle: e.target.value } }))}
                 placeholder="Enter subtitle"
               />
             </div>
@@ -360,8 +348,8 @@ export const ContentManagement: React.FC = () => {
                 Description
               </label>
               <textarea
-                value={selectedSection?.content.description || ''}
-                onChange={(e) => setSelectedSection(prev => prev ? { ...prev, content: { ...prev.content, description: e.target.value } } : null)}
+                value={selectedSection?.content?.description || ''}
+                onChange={(e) => setSelectedSection(prev => ({ ...prev, content: { ...prev?.content, description: e.target.value } }))}
                 rows={4}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
                 placeholder="Enter description..."
@@ -380,6 +368,7 @@ export const ContentManagement: React.FC = () => {
                 fullWidth
                 icon={Save}
                 onClick={handleSave}
+                loading={createMutation.isPending || updateMutation.isPending}
               >
                 Save Changes
               </Button>

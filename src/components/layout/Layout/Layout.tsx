@@ -53,7 +53,7 @@ export const Layout: React.FC = () => {
     if (isMobile && isSidebarOpen) {
       setIsSidebarOpen(false);
     }
-  }, [location.pathname, isMobile]);
+  }, [location.pathname, isMobile, isSidebarOpen]);
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -83,7 +83,6 @@ export const Layout: React.FC = () => {
         {/* Header - Always show hamburger */}
         <Header
           onSidebarToggle={toggleSidebar}
-          isSidebarOpen={isSidebarOpen}
           showSidebarToggle={true} // Always show hamburger
         />
 

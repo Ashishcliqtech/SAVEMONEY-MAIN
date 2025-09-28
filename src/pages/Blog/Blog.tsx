@@ -1,23 +1,17 @@
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import {
-  Calendar,
-  User,
   Clock,
   ArrowRight,
-  Search,
   Tag,
   TrendingUp,
   BookOpen,
-  Share2,
   Eye,
   Heart,
 } from 'lucide-react';
 import { Card, Button, Badge, SearchBar, Pagination } from '../../components/ui';
 
 export const Blog: React.FC = () => {
-  const { t } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
 

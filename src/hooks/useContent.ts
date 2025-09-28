@@ -20,7 +20,7 @@ export const useCreateContentSection = () => {
       queryClient.invalidateQueries({ queryKey: ['contentSections'] });
       toast.success('Content section created successfully!');
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(error.message || 'Failed to create content section');
     },
   });
@@ -35,7 +35,7 @@ export const useUpdateContentSection = () => {
       queryClient.invalidateQueries({ queryKey: ['contentSections'] });
       toast.success('Content section updated successfully!');
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(error.message || 'Failed to update content section');
     },
   });
@@ -49,7 +49,7 @@ export const useDeleteContentSection = () => {
       queryClient.invalidateQueries({ queryKey: ['contentSections'] });
       toast.success('Content section deleted successfully!');
     },
-    onError: (error: any) => {
+    onError: (error: Error) => {
       toast.error(error.message || 'Failed to delete content section');
     },
   });

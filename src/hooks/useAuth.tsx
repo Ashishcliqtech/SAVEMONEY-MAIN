@@ -1,24 +1,8 @@
-import React, { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import React, { useState, useEffect, ReactNode, useContext } from 'react';
 import { User } from '../types';
-import { authApi, LoginRequest, SignupRequest } from '../api/auth';
+import { authApi, SignupRequest } from '../api/auth';
 import toast from 'react-hot-toast';
-
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (email: string, password: string) => Promise<any>;
-  signup: (data: SignupRequest) => Promise<void>;
-  verifyOTP: (email: string, otp: string) => Promise<any>;
-  completeSignupAfterOTP: (email: string, otp: string) => Promise<void>;
-  sendOTP: (email: string) => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
-  loginWithFacebook: () => Promise<void>;
-  logout: () => void;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import { AuthContext } from '../contexts/AuthContext';
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -50,7 +34,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     loadUser();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string): Promise<User> => {
     setIsLoading(true);
     try {
       const response = await authApi.login({ email, password });
@@ -80,7 +64,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const verifyOTP = async (email: string, otp: string) => {
+  const verifyOTP = async (email: string, otp: string): Promise<User> => {
     setIsLoading(true);
     try {
       const response = await authApi.verifyOTP({ email, otp });

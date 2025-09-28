@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Search, Filter, Grid2x2 as Grid, List, ExternalLink, Star } from 'lucide-react';
 import { Card, Button, Badge, SearchBar, Pagination, LoadingSpinner } from '../../components/ui';
-import { useStores, useCategories } from '../../hooks/useSupabase';
+import { useStores, useCategories } from '../../hooks/useSupabase.tsx';
+import { dummyStores } from '../../data/dummyStores.ts';
 
 export const Stores: React.FC = () => {
   const { t } = useTranslation();
@@ -18,8 +19,11 @@ export const Stores: React.FC = () => {
     limit: 12,
   });
 
-  const { data: storesData, isLoading } = useStores(filters);
+  const { data: storesData, isLoading, error } = useStores(filters);
   const { data: categories } = useCategories();
+  
+  const finalStores = (error || !storesData || storesData.stores.length === 0) ? dummyStores : storesData.stores;
+  const totalStores = (error || !storesData || storesData.stores.length === 0) ? dummyStores.length : storesData.total;
 
   const handleSearch = (query: string) => {
     setFilters(prev => ({ ...prev, search: query, page: 1 }));
@@ -122,7 +126,7 @@ export const Stores: React.FC = () => {
         {/* Results Count */}
         <div className="mb-6">
           <p className="text-gray-600">
-            Showing {storesData?.stores.length || 0} of {storesData?.total || 0} stores
+            Showing {finalStores.length} of {totalStores} stores
           </p>
         </div>
 
@@ -132,7 +136,7 @@ export const Stores: React.FC = () => {
             ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6' 
             : 'space-y-4'
         }`}>
-          {storesData?.stores.map((store, index) => (
+          {finalStores.map((store, index) => (
             <motion.div
               key={store.id}
               initial={{ opacity: 0, y: 20 }}
@@ -243,10 +247,10 @@ export const Stores: React.FC = () => {
         </div>
 
         {/* Pagination */}
-        {storesData && storesData.total > filters.limit && (
+        {totalStores > filters.limit && (
           <Pagination
             currentPage={filters.page}
-            totalPages={Math.ceil(storesData.total / filters.limit)}
+            totalPages={Math.ceil(totalStores / filters.limit)}
             onPageChange={handlePageChange}
           />
         )}

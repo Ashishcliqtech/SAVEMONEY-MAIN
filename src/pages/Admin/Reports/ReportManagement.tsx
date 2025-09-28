@@ -3,16 +3,14 @@ import { motion } from 'framer-motion';
 import {
   FileText,
   Download,
-  Calendar,
-  Filter,
   BarChart3,
-  PieChart,
   TrendingUp,
   Users,
   DollarSign,
   ShoppingBag,
   Clock,
   Eye,
+  Star,
 } from 'lucide-react';
 import { Card, Button, Badge, Input } from '../../../components/ui';
 import toast from 'react-hot-toast';
@@ -28,50 +26,50 @@ interface Report {
   status: 'ready' | 'generating' | 'failed';
 }
 
-export const ReportManagement: React.FC = () => {
-  const [reports, setReports] = useState<Report[]>([
-    {
-      id: '1',
-      name: 'Monthly Financial Report',
-      type: 'financial',
-      description: 'Complete financial overview including revenue, cashback paid, and profit margins',
-      lastGenerated: '2025-01-22T10:30:00Z',
-      fileSize: '2.4 MB',
-      format: 'pdf',
-      status: 'ready',
-    },
-    {
-      id: '2',
-      name: 'User Activity Report',
-      type: 'user',
-      description: 'User engagement metrics, signup trends, and retention analysis',
-      lastGenerated: '2025-01-21T14:15:00Z',
-      fileSize: '1.8 MB',
-      format: 'excel',
-      status: 'ready',
-    },
-    {
-      id: '3',
-      name: 'Store Performance Report',
-      type: 'store',
-      description: 'Store-wise performance metrics, top performers, and growth analysis',
-      lastGenerated: '2025-01-20T09:45:00Z',
-      fileSize: '3.1 MB',
-      format: 'pdf',
-      status: 'ready',
-    },
-    {
-      id: '4',
-      name: 'Transaction Analysis',
-      type: 'transaction',
-      description: 'Detailed transaction analysis with fraud detection insights',
-      lastGenerated: '2025-01-19T16:20:00Z',
-      fileSize: '4.2 MB',
-      format: 'csv',
-      status: 'generating',
-    },
-  ]);
+const reports: Report[] = [
+  {
+    id: '1',
+    name: 'Monthly Financial Report',
+    type: 'financial',
+    description: 'Complete financial overview including revenue, cashback paid, and profit margins',
+    lastGenerated: '2025-01-22T10:30:00Z',
+    fileSize: '2.4 MB',
+    format: 'pdf',
+    status: 'ready',
+  },
+  {
+    id: '2',
+    name: 'User Activity Report',
+    type: 'user',
+    description: 'User engagement metrics, signup trends, and retention analysis',
+    lastGenerated: '2025-01-21T14:15:00Z',
+    fileSize: '1.8 MB',
+    format: 'excel',
+    status: 'ready',
+  },
+  {
+    id: '3',
+    name: 'Store Performance Report',
+    type: 'store',
+    description: 'Store-wise performance metrics, top performers, and growth analysis',
+    lastGenerated: '2025-01-20T09:45:00Z',
+    fileSize: '3.1 MB',
+    format: 'pdf',
+    status: 'ready',
+  },
+  {
+    id: '4',
+    name: 'Transaction Analysis',
+    type: 'transaction',
+    description: 'Detailed transaction analysis with fraud detection insights',
+    lastGenerated: '2025-01-19T16:20:00Z',
+    fileSize: '4.2 MB',
+    format: 'csv',
+    status: 'generating',
+  },
+];
 
+export const ReportManagement: React.FC = () => {
   const [dateRange, setDateRange] = useState({
     from: '',
     to: '',
@@ -120,7 +118,7 @@ export const ReportManagement: React.FC = () => {
     }, 3000);
   };
 
-  const handleDownload = (reportId: string) => {
+  const handleDownload = (_reportId: string) => {
     toast.success('Downloading report...');
   };
 

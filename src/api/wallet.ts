@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { Transaction, WithdrawalRequest } from '../types';
+import { Transaction } from '../types';
 
 export interface WalletData {
   _id: string;

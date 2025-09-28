@@ -1,6 +1,7 @@
 import React, { useState, useEffect, ReactNode, useContext } from 'react';
 import { User } from '../types';
-import { authApi, SignupRequest } from '../api/auth';
+import { authApi, SendOtpPayload, VerifyOtpPayload } from '../api/auth';
+import { userApi } from '../api/user';
 import toast from 'react-hot-toast';
 import { AuthContext } from '../contexts/AuthContext';
 
@@ -12,18 +13,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Effect to handle session management on app load
   useEffect(() => {
     const loadUser = async () => {
       const token = localStorage.getItem('auth_token');
       if (token) {
         try {
-          // If token exists, fetch user profile
-          const userData = await authApi.getProfile();
+          const userData = await userApi.getProfile();
           setUser(userData);
         } catch (error) {
-          console.error("Failed to fetch profile, logging out.", error);
-          // If token is invalid, clear it
+          // The API client's error interceptor will handle the toast notification.
           localStorage.removeItem('auth_token');
           setUser(null);
         }
@@ -39,74 +37,69 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const response = await authApi.login({ email, password });
       localStorage.setItem('auth_token', response.token);
-      const userData = await authApi.getProfile();
+      const userData = await userApi.getProfile();
       setUser(userData);
       toast.success('Welcome back!');
       return userData;
     } catch (error) {
-      console.error('Login failed:', error);
+      // The API client's error interceptor will handle the toast notification.
       throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const signup = async (signupData: SignupRequest) => {
+  const signup = async (signupData: SendOtpPayload) => {
     setIsLoading(true);
     try {
-      await authApi.signup(signupData);
+      await authApi.sendOtp(signupData);
       toast.success('OTP sent to your email!');
     } catch (error) {
-      console.error('Signup failed:', error);
+      // The API client's error interceptor will handle the toast notification.
       throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const verifyOTP = async (email: string, otp: string): Promise<User> => {
+  const verifyOtp = async (payload: VerifyOtpPayload): Promise<User> => {
     setIsLoading(true);
     try {
-      const response = await authApi.verifyOTP({ email, otp });
+      const response = await authApi.verifyOtp(payload);
       localStorage.setItem('auth_token', response.token);
-      const userData = await authApi.getProfile();
+      const userData = await userApi.getProfile();
       setUser(userData);
       toast.success('Account verified successfully!');
       return userData;
     } catch (error) {
-      console.error('OTP verification failed:', error);
+      // The API client's error interceptor will handle the toast notification.
       throw error;
     } finally {
       setIsLoading(false);
     }
   };
-  
-  const completeSignupAfterOTP = async (email: string, otp: string) => {
-     await verifyOTP(email, otp);
-  };
 
-  const sendOTP = async (email: string) => {
+  const forgotPassword = async (email: string) => {
     try {
-      await authApi.sendOTP(email);
-      toast.success('OTP sent successfully!');
-    } catch (error) {
-      console.error('Failed to send OTP:', error);
-      throw error;
-    }
-  };
-
-  const resetPassword = async (email: string) => {
-    try {
-      await authApi.forgotPassword(email);
+      await authApi.forgotPassword({ email });
       toast.success('Password reset link sent to your email!');
     } catch (error) {
-      console.error('Failed to send reset email:', error);
+      // The API client's error interceptor will handle the toast notification.
       throw error;
     }
   };
+  
+  const resetPassword = async (password: string, token: string) => {
+    try {
+      await authApi.resetPassword({ password, token });
+      toast.success('Password has been reset successfully!');
+    } catch (error) {
+      // The API client's error interceptor will handle the toast notification.
+      throw error;
+    }
+  }
 
   const loginWithGoogle = async () => {
-    // This would redirect to your backend's Google OAuth endpoint
     window.location.href = `${import.meta.env.VITE_API_BASE_URL}/auth/google`;
   };
 
@@ -115,7 +108,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = () => {
-    authApi.logout();
+    localStorage.removeItem('auth_token');
     setUser(null);
     toast.success('Logged out successfully');
     window.location.href = '/';
@@ -127,9 +120,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isLoading,
     login,
     signup,
-    verifyOTP,
-    completeSignupAfterOTP,
-    sendOTP,
+    verifyOtp,
+    forgotPassword,
     resetPassword,
     loginWithGoogle,
     loginWithFacebook,

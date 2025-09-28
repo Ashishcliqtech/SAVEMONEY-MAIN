@@ -2,47 +2,23 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from './Button';
-import { Video as LucideIcon } from 'lucide-react';
+import { Inbox } from 'lucide-react'; // Using a sensible default icon
 
 interface EmptyStateProps {
-  icon: LucideIcon;
+  icon?: React.ElementType; // Icon is now optional
   title: string;
   message: string;
   actionText?: string;
   onAction?: () => void;
-  showPlaceholder?: boolean;
-  placeholderData?: any[];
-  renderPlaceholder?: (data: any[]) => React.ReactNode;
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
-  icon: Icon,
+  icon: Icon = Inbox, // Default to the Inbox icon if not provided
   title,
   message,
   actionText,
   onAction,
-  showPlaceholder = false,
-  placeholderData = [],
-  renderPlaceholder,
 }) => {
-  // If we should show placeholder data and have data to show
-  if (showPlaceholder && placeholderData.length > 0 && renderPlaceholder) {
-    return (
-      <div className="space-y-6">
-        <div className="text-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <Icon className="w-8 h-8 text-blue-500 mx-auto mb-2" />
-          <p className="text-sm text-blue-700 font-medium">
-            {title} - Showing sample data
-          </p>
-          <p className="text-xs text-blue-600 mt-1">
-            {message}
-          </p>
-        </div>
-        {renderPlaceholder(placeholderData)}
-      </div>
-    );
-  }
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -58,7 +34,6 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
         <Button
           onClick={onAction}
           variant="primary"
-          className="bg-orange-500 hover:bg-orange-600 font-semibold"
         >
           {actionText}
         </Button>

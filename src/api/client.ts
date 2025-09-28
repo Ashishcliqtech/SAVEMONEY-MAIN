@@ -1,19 +1,12 @@
-import axios, { AxiosResponse } from 'axios';
+import axios, { AxiosError } from 'axios';
 import toast from 'react-hot-toast';
 
-// The base URL for your backend API
-const baseURL = import.meta.env.VITE_API_BASE_URL || 'https://updatedbackendcashkro.onrender.com/api';
-
-const apiClientInstance = axios.create({
-  baseURL,
-  timeout: 15000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+const apiClient = axios.create({
+  baseURL: 'https://updatedbackendcashkro.onrender.com/api',
 });
 
-// Interceptor to add the auth token to requests
-apiClientInstance.interceptors.request.use(
+// Request interceptor to attach the authentication token
+apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('auth_token');
     if (token) {
@@ -21,26 +14,44 @@ apiClientInstance.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
-);
-
-// Interceptor to handle responses and errors
-apiClientInstance.interceptors.response.use(
-  (response: AxiosResponse) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('auth_token');
-      // Redirecting to login if unauthorized
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
-      }
-    }
-
-    const message = error.response?.data?.message || error.response?.data?.msg || error.message || 'Something went wrong';
-    toast.error(message);
-
+    // This would be a configuration error
+    toast.error('Something went wrong while creating the request.');
     return Promise.reject(error);
   }
 );
 
-export const apiClient = apiClientInstance;
+// Response interceptor to handle errors globally
+apiClient.interceptors.response.use(
+  // On success, just return the response
+  (response) => response,
+  // On error, show a toast and reject the promise
+  (error: AxiosError) => {
+    let errorMessage = 'An unexpected error occurred. Please try again.';
+
+    if (error.response) {
+      // The server responded with an error status code (4xx or 5xx)
+      const responseData = error.response.data as { msg?: string; message?: string; error?: string };
+      errorMessage = responseData?.msg || responseData?.message || responseData?.error || `Request failed with status ${error.response.status}`;
+
+      if (error.response.status === 401) {
+        // Handle specific unauthorized errors
+        errorMessage = responseData?.msg || 'Authorization failed. Please log in again.';
+        // Optional: you could auto-logout the user here
+        // localStorage.removeItem('auth_token');
+        // window.location.href = '/login';
+      }
+    } else if (error.request) {
+      // The request was made but no response was received (e.g., network error)
+      errorMessage = 'Network error. Please check your connection or contact support.';
+    }
+
+    // Display the final error message to the user
+    toast.error(errorMessage);
+
+    // Reject the promise so that individual `.catch()` blocks can still handle the error
+    return Promise.reject(error);
+  }
+);
+
+export { apiClient };

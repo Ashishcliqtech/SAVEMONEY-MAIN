@@ -1,36 +1,31 @@
 import { apiClient } from './client';
-import { Transaction } from '../types';
+import { Wallet, Transaction, Withdrawal } from '../types';
 
-export interface WalletData {
-  _id: string;
-  user: string;
-  totalCashback: number;
-  availableCashback: number;
-  pendingCashback: number;
+// Assuming these types are in `src/types`
+export interface RequestWithdrawalPayload {
+    amount: number;
+    paymentDetails: {
+        method: string;
+        [key: string]: any; 
+    };
 }
 
-export interface WithdrawRequest {
-  amount: number;
-  paymentDetails: {
-    method: 'UPI' | 'Bank Transfer' | 'Paytm';
-    upiId?: string;
-    accountNumber?: string;
-    ifsc?: string;
-    paytmNumber?: string;
-  };
+export interface TransactionPaginatedResponse {
+  transactions: Transaction[];
+  totalPages: number;
+  currentPage: number;
 }
 
 export const walletApi = {
-  getWalletData: (): Promise<WalletData> =>
+  getWallet: (): Promise<Wallet> =>
     apiClient.get('/wallet').then(res => res.data),
 
-  getTransactions: (page?: number, limit?: number): Promise<{
-    transactions: Transaction[];
-    totalPages: number;
-    currentPage: number;
-  }> =>
+  getTransactions: (page: number = 1, limit: number = 20): Promise<TransactionPaginatedResponse> =>
     apiClient.get('/wallet/transactions', { params: { page, limit } }).then(res => res.data),
 
-  withdraw: (data: WithdrawRequest): Promise<{ msg: string }> =>
-    apiClient.post('/wallet/withdraw', data).then(res => res.data),
+  requestWithdrawal: (payload: RequestWithdrawalPayload): Promise<{ msg: string }> =>
+    apiClient.post('/wallet/request-withdrawal', payload).then(res => res.data),
+
+  getWithdrawals: (): Promise<Withdrawal[]> =>
+    apiClient.get('/wallet/withdrawals').then(res => res.data),
 };

@@ -27,8 +27,7 @@ export const Login: React.FC = () => {
       await login(formData.email, formData.password); 
       navigate(ROUTES.DASHBOARD);
     } catch (error) {
-      // Error is already handled by toast in the api client
-      console.error('Login error:', error);
+      // The API client's error interceptor will handle the toast notification.
     } finally {
       setLoading(false);
     }

@@ -2,9 +2,19 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { Search, Filter, Grid2x2 as Grid, List, ExternalLink, Star } from 'lucide-react';
-import { Card, Button, Badge, SearchBar, Pagination, LoadingSpinner } from '../../components/ui';
+import {
+  Card,
+  Button,
+  Badge,
+  SearchBar,
+  Pagination,
+  LoadingSpinner,
+  EmptyState,
+  ErrorState,
+  LoadingCard,
+} from '../../components/ui';
 import { useStores, useCategories } from '../../hooks/useSupabase.tsx';
-import { placeholderStores, placeholderCategories } from '../../data/placeholderData';
+import { Store } from '../../types';
 
 export const Stores: React.FC = () => {
   const { t } = useTranslation();
@@ -20,14 +30,7 @@ export const Stores: React.FC = () => {
   });
 
   const { data: storesData, isLoading, error } = useStores(filters);
-  const { data: categories } = useCategories();
-  
-  // Use placeholder data when API fails or returns empty results
-  const finalStores = (error || !storesData || storesData.stores.length === 0) ? placeholderStores : storesData.stores;
-  const totalStores = (error || !storesData || storesData.stores.length === 0) ? placeholderStores.length : storesData.total;
-  
-  // Use placeholder categories when API fails
-  const finalCategories = !categories || categories.length === 0 ? placeholderCategories : categories;
+  const { data: categories, isLoading: categoriesLoading, error: categoriesError } = useCategories();
 
   const handleSearch = (query: string) => {
     setFilters(prev => ({ ...prev, search: query, page: 1 }));
@@ -41,17 +44,139 @@ export const Stores: React.FC = () => {
     setFilters(prev => ({ ...prev, page }));
   };
 
-  if (isLoading) {
+  const renderContent = () => {
+    if (isLoading) {
+        return (
+            <div className={`mb-8 ${
+                viewMode === 'grid' 
+                  ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6' 
+                  : 'space-y-4'
+              }`}>
+                <LoadingCard count={filters.limit} />
+            </div>
+        );
+    }
+
+    if (error) {
+      return <ErrorState title="Failed to Load Stores" message="We couldn't fetch the stores right now. Please try again later." />;
+    }
+
+    if (!storesData || !storesData.stores || storesData.stores.length === 0) {
+      return <EmptyState title="No Stores Found" message="Try adjusting your search or filters." />;
+    }
+
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <LoadingSpinner size="xl" text="Loading stores..." color="text-orange-500" />
-      </div>
+      <>
+        <div className={`mb-8 ${
+            viewMode === 'grid' 
+              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6' 
+              : 'space-y-4'
+          }`}>
+            {storesData.stores.map((store: Store, index: number) => (
+              <motion.div
+                key={store.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+                className="h-full"
+              >
+                {viewMode === 'grid' ? (
+                  <Card className="group cursor-pointer overflow-hidden h-full flex flex-col" hover>
+                    <div className="relative mb-4">
+                      <img
+                        src={store.logo}
+                        alt={store.name}
+                        className="w-full h-40 object-cover rounded-lg"
+                      />
+                      {store.isPopular && (
+                        <Badge variant="warning" size="sm" className="absolute top-2 left-2">
+                          🔥 Popular
+                        </Badge>
+                      )}
+                      <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-sm font-semibold">
+                        {store.cashbackRate}% back
+                      </div>
+                    </div>
+                    <div className="space-y-3 flex-1 flex flex-col">
+                      <div>
+                        <h3 className="font-semibold text-lg text-gray-900 group-hover:text-purple-600 transition-colors mb-1">
+                          {store.name}
+                        </h3>
+                        <p className="text-sm text-gray-500">{store.category.name}</p>
+                      </div>
+                      <p className="text-sm text-gray-600 line-clamp-2 flex-1">
+                        {store.description}
+                      </p>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-1">
+                          <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                          <span className="text-sm text-gray-600">4.5</span>
+                        </div>
+                        <span className="text-sm text-gray-500">
+                          {store.totalOffers} offers
+                        </span>
+                      </div>
+                      <div className="mt-auto">
+                        <Button variant="primary" size="sm" fullWidth icon={ExternalLink}>
+                          {t('stores.visitStore')}
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                ) : (
+                  <Card className="group cursor-pointer h-full" hover>
+                    <div className="flex items-center space-x-4">
+                      <img
+                        src={store.logo}
+                        alt={store.name}
+                        className="w-16 h-16 rounded-lg object-cover"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <h3 className="font-semibold text-lg text-gray-900 group-hover:text-purple-600 transition-colors">
+                            {store.name}
+                          </h3>
+                          {store.isPopular && (
+                            <Badge variant="warning" size="sm">
+                              🔥 Popular
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-500 mb-2">{store.category.name}</p>
+                        <p className="text-sm text-gray-600 line-clamp-1">
+                          {store.description}
+                        </p>
+                      </div>
+                      <div className="text-right space-y-2">
+                        <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                          {store.cashbackRate}% back
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {store.totalOffers} offers
+                        </div>
+                        <Button variant="primary" size="sm" icon={ExternalLink}>
+                          {t('stores.visitStore')}
+                        </Button>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+              </motion.div>
+            ))}
+          </div>
+          {storesData.total > filters.limit && (
+            <Pagination
+              currentPage={filters.page}
+              totalPages={Math.ceil(storesData.total / filters.limit)}
+              onPageChange={handlePageChange}
+            />
+          )}
+      </>
     );
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden">
-      {/* Hero Section */}
       <section className="bg-gradient-to-br from-purple-600 to-teal-600 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
@@ -61,8 +186,6 @@ export const Stores: React.FC = () => {
             <p className="text-xl text-purple-100 mb-8">
               Shop from 500+ partner stores and earn cashback on every purchase
             </p>
-            
-            {/* Search Bar */}
             <div className="max-w-2xl mx-auto">
               <SearchBar
                 placeholder="Search stores..."
@@ -75,24 +198,22 @@ export const Stores: React.FC = () => {
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Filters and Controls */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8 space-y-4 lg:space-y-0">
           <div className="flex flex-wrap items-center gap-4">
-            {/* Category Filter */}
             <select
               value={filters.category}
               onChange={(e) => handleFilterChange('category', e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              disabled={categoriesLoading}
             >
               <option value="">All Categories</option>
-              {finalCategories.map((category) => (
+              {categories && categories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
                 </option>
               ))}
             </select>
 
-            {/* Sort Options */}
             <select
               value={`${filters.sortBy}-${filters.sortOrder}`}
               onChange={(e) => {
@@ -110,7 +231,6 @@ export const Stores: React.FC = () => {
             </select>
           </div>
 
-          {/* View Mode Toggle */}
           <div className="flex items-center space-x-2">
             <Button
               variant={viewMode === 'grid' ? 'primary' : 'ghost'}
@@ -127,137 +247,16 @@ export const Stores: React.FC = () => {
           </div>
         </div>
 
-        {/* Results Count */}
-        <div className="mb-6">
-          <p className="text-gray-600">
-            Showing {finalStores.length} of {totalStores} stores
-          </p>
-        </div>
-
-        {/* Stores Grid/List */}
-        <div className={`mb-8 ${
-          viewMode === 'grid' 
-            ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6' 
-            : 'space-y-4'
-        }`}>
-          {finalStores.map((store, index) => (
-            <motion.div
-              key={store.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="h-full"
-            >
-              {viewMode === 'grid' ? (
-                <Card className="group cursor-pointer overflow-hidden h-full flex flex-col" hover>
-                  {/* Store Image */}
-                  <div className="relative mb-4">
-                    <img
-                      src={store.logo}
-                      alt={store.name}
-                      className="w-full h-40 object-cover rounded-lg"
-                    />
-                    {store.isPopular && (
-                      <Badge variant="warning" size="sm" className="absolute top-2 left-2">
-                        🔥 Popular
-                      </Badge>
-                    )}
-                    <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-sm font-semibold">
-                      {store.cashbackRate}% back
-                    </div>
-                  </div>
-
-                  {/* Store Info */}
-                  <div className="space-y-3 flex-1 flex flex-col">
-                    <div>
-                      <h3 className="font-semibold text-lg text-gray-900 group-hover:text-purple-600 transition-colors mb-1">
-                        {store.name}
-                      </h3>
-                      <p className="text-sm text-gray-500">{store.category}</p>
-                    </div>
-
-                    <p className="text-sm text-gray-600 line-clamp-2 flex-1">
-                      {store.description}
-                    </p>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-1">
-                        <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                        <span className="text-sm text-gray-600">4.5</span>
-                      </div>
-                      <span className="text-sm text-gray-500">
-                        {store.totalOffers} offers
-                      </span>
-                    </div>
-
-                    <div className="mt-auto">
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        fullWidth
-                        icon={ExternalLink}
-                      >
-                        {t('stores.visitStore')}
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              ) : (
-                <Card className="group cursor-pointer h-full" hover>
-                  <div className="flex items-center space-x-4">
-                    <img
-                      src={store.logo}
-                      alt={store.name}
-                      className="w-16 h-16 rounded-lg object-cover"
-                    />
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <h3 className="font-semibold text-lg text-gray-900 group-hover:text-purple-600 transition-colors">
-                          {store.name}
-                        </h3>
-                        {store.isPopular && (
-                          <Badge variant="warning" size="sm">
-                            🔥 Popular
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-500 mb-2">{store.category}</p>
-                      <p className="text-sm text-gray-600 line-clamp-1">
-                        {store.description}
-                      </p>
-                    </div>
-
-                    <div className="text-right space-y-2">
-                      <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                        {store.cashbackRate}% back
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {store.totalOffers} offers
-                      </div>
-                      <Button
-                        variant="primary"
-                        size="sm"
-                        icon={ExternalLink}
-                      >
-                        {t('stores.visitStore')}
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
-              )}
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Pagination */}
-        {totalStores > filters.limit && (
-          <Pagination
-            currentPage={filters.page}
-            totalPages={Math.ceil(totalStores / filters.limit)}
-            onPageChange={handlePageChange}
-          />
+        {!isLoading && storesData && (
+             <div className="mb-6">
+                <p className="text-gray-600">
+                    Showing {storesData.stores.length} of {storesData.total} stores
+                </p>
+            </div>
         )}
+
+        {renderContent()}
+
       </div>
     </div>
   );

@@ -28,7 +28,7 @@ import { useWallet, useTransactions, useCreateWithdrawal } from '../../hooks/use
 import { useAuth } from '../../hooks/useAuth';
 import { WITHDRAWAL_METHODS } from '../../constants';
 import toast from 'react-hot-toast';
-import { placeholderTransactions, placeholderWalletData } from '../../data/placeholderData';
+import { Transaction } from '../../types';
 
 export const Wallet: React.FC = () => {
   const { t } = useTranslation();
@@ -44,15 +44,6 @@ export const Wallet: React.FC = () => {
   const { data: walletData, isLoading: walletLoading, error: walletError } = useWallet(user?.id);
   const { data: transactionsData, isLoading: transactionsLoading, error: transactionsError } = useTransactions(user?.id);
   const withdrawMutation = useCreateWithdrawal();
-  
-  // Use placeholder data when API fails or returns empty results
-  const finalTransactions = (transactionsError || !transactionsData?.transactions || transactionsData.transactions.length === 0)
-    ? placeholderTransactions
-    : transactionsData.transactions;
-    
-  const finalWalletData = walletError || !walletData 
-    ? placeholderWalletData
-    : walletData;
 
   const handleWithdraw = async () => {
     if (!withdrawalData.amount || !withdrawalData.method || !withdrawalData.accountDetails) {
@@ -73,7 +64,7 @@ export const Wallet: React.FC = () => {
       setShowWithdrawModal(false);
       setWithdrawalData({ amount: '', method: '', accountDetails: '' });
     } catch (error) {
-      toast.error('Failed to submit withdrawal request');
+      // Error toast is handled by the API client interceptor
     }
   };
 
@@ -90,30 +81,40 @@ export const Wallet: React.FC = () => {
   const stats = [
     {
       label: t('wallet.available'),
-      value: `₹${finalWalletData?.availableCashback?.toLocaleString() || '0'}`,
+      value: `₹${walletData?.availableCashback?.toLocaleString() || '0'}`,
       icon: WalletIcon,
       color: 'text-green-600',
       bgColor: 'bg-green-100',
     },
     {
       label: t('wallet.pending'),
-      value: `₹${finalWalletData?.pendingCashback?.toLocaleString() || '0'}`,
+      value: `₹${walletData?.pendingCashback?.toLocaleString() || '0'}`,
       icon: Clock,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100',
     },
     {
       label: t('wallet.withdrawn'),
-      value: `₹${finalWalletData?.withdrawnCashback?.toLocaleString() || '0'}`,
+      value: `₹${walletData?.withdrawnCashback?.toLocaleString() || '0'}`,
       icon: TrendingUp,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100',
     },
   ];
 
-  if (walletLoading) {
+  if (walletLoading || transactionsLoading) {
     return <LoadingSpinner size="xl" text="Loading your wallet..." fullScreen color="text-orange-500" />;
   }
+  
+  if (walletError) {
+      return <ErrorState title="Failed to Load Wallet" message="We couldn't fetch your wallet data. Please try again later." fullScreen />;
+  }
+
+  const filteredTransactions = transactionsData?.transactions?.filter(tx => {
+      if (transactionFilter === 'cashback') return tx.cashbackEarned > 0;
+      if (transactionFilter === 'withdrawal') return tx.cashbackEarned <= 0; // Assuming withdrawals are represented as negative earnings
+      return true;
+  }) || [];
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -155,7 +156,7 @@ export const Wallet: React.FC = () => {
                 <WalletIcon className="w-16 h-16 mx-auto mb-4 opacity-90" />
                 <div className="text-sm opacity-90 mb-2">Total Balance</div>
                 <div className="text-3xl font-bold mb-6">
-                  ₹{finalWalletData?.totalCashback?.toLocaleString() || '0'}
+                  ₹{walletData?.totalCashback?.toLocaleString() || '0'}
                 </div>
                 <Button
                   variant="secondary"
@@ -163,11 +164,11 @@ export const Wallet: React.FC = () => {
                   fullWidth
                   icon={Download}
                   onClick={() => setShowWithdrawModal(true)}
-                  disabled={!finalWalletData?.availableCashback || finalWalletData.availableCashback < 10}
+                  disabled={!walletData?.availableCashback || walletData.availableCashback < 10}
                 >
                   {t('wallet.withdrawButton')}
                 </Button>
-                {finalWalletData?.availableCashback && finalWalletData.availableCashback < 10 && (
+                {walletData?.availableCashback && walletData.availableCashback < 10 && (
                   <p className="text-sm opacity-75 mt-2">
                     Minimum withdrawal amount is ₹10
                   </p>
@@ -227,12 +228,12 @@ export const Wallet: React.FC = () => {
               </select>
             </div>
           </div>
-
-          {transactionsLoading ? (
-            <LoadingCard count={5} />
+          
+          {transactionsError ? (
+             <ErrorState title="Could Not Load Transactions" message="There was a problem fetching your recent transactions."/>
           ) : (
             <div className="space-y-4">
-              {finalTransactions.map((transaction, index) => (
+              {filteredTransactions.length > 0 ? filteredTransactions.map((transaction: Transaction, index: number) => (
                 <motion.div
                   key={transaction.id}
                   initial={{ opacity: 0, y: 10 }}
@@ -284,7 +285,7 @@ export const Wallet: React.FC = () => {
                     </Badge>
                   </div>
                 </motion.div>
-              ))}
+              )) : <EmptyState title="No Transactions Yet" message="Your recent transactions will appear here."/>}
             </div>
           )}
         </Card>

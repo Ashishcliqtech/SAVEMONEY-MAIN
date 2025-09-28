@@ -15,7 +15,7 @@ import {
 } from '../../components/ui';
 import { useOffers, useCategories } from '../../hooks/useSupabase.tsx';
 import toast from 'react-hot-toast';
-import { placeholderOffers, placeholderCategories } from '../../data/placeholderData';
+import { Offer } from '../../types';
 
 const INITIAL_FILTERS = {
   category: '',
@@ -35,21 +35,7 @@ export const Offers: React.FC = () => {
   const [filters, setFilters] = useState(INITIAL_FILTERS);
 
   const { data: offersData, isLoading, error } = useOffers(filters);
-  const { data: categories } = useCategories();
-  
-  // Use placeholder data when API fails or returns empty results
-  const finalOffers = (error || !offersData || offersData.offers.length === 0) 
-    ? placeholderOffers.map(o => ({
-        ...o,
-        id: o.id + filters.page, // Make key unique for pagination
-    })) 
-    : offersData.offers;
-
-  const totalOffers = (error || !offersData || offersData.offers.length === 0) ? placeholderOffers.length : offersData.total;
-  
-  // Use placeholder categories when API fails
-  const finalCategories = !categories || categories.length === 0 ? placeholderCategories : categories;
-
+  const { data: categories, isLoading: categoriesLoading, error: categoriesError } = useCategories();
 
   const handleSearch = (query: string) => {
     setFilters(prev => ({ ...prev, search: query, page: 1 }));
@@ -72,123 +58,40 @@ export const Offers: React.FC = () => {
     toast.success('Coupon code copied!');
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
-      <section className="bg-gradient-to-br from-orange-500 to-red-600 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl lg:text-5xl font-bold mb-4">
-              {t('offers.title')}
-            </h1>
-            <p className="text-xl text-orange-100 mb-8">
-              Discover the best deals, coupons, and cashback offers
-            </p>
-            
-            <div className="max-w-2xl mx-auto">
-              <SearchBar
-                placeholder="Search offers, stores, or brands..."
-                onSearch={handleSearch}
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
-            <select
-              value={filters.category}
-              onChange={(e) => handleFilterChange('category', e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-            >
-              <option value="">All Categories</option>
-              {finalCategories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={filters.offerType}
-              onChange={(e) => handleFilterChange('offerType', e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-            >
-              <option value="">All Types</option>
-              <option value="cashback">Cashback</option>
-              <option value="coupon">Coupon</option>
-              <option value="deal">Deal</option>
-            </select>
-
-            <input
-              type="number"
-              placeholder="Min Cashback %"
-              value={filters.minCashback}
-              onChange={(e) => handleFilterChange('minCashback', e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-            />
-
-            <select
-              value={`${filters.sortBy}-${filters.sortOrder}`}
-              onChange={(e) => {
-                const [sortBy, sortOrder] = e.target.value.split('-');
-                handleFilterChange('sortBy', sortBy);
-                handleFilterChange('sortOrder', sortOrder);
-              }}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-            >
-              <option value="popularity-desc">Most Popular</option>
-              <option value="cashback-desc">Highest Cashback</option>
-              <option value="expiry-asc">Expiring Soon</option>
-            </select>
-
-            <Button
-              variant="ghost"
-              onClick={handleClearFilters}
-              icon={X}
-            >
-              Clear Filters
-            </Button>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between mb-6">
-          <p className="text-gray-600">
-            {!isLoading && (
-              `Showing ${finalOffers.length || 0} of ${totalOffers || 0} offers`
-            )}
-          </p>
-          
-          <div className="flex items-center space-x-2">
-            <Button
-              variant={viewMode === 'grid' ? 'primary' : 'ghost'}
-              size="sm"
-              icon={Grid}
-              onClick={() => setViewMode('grid')}
-            />
-            <Button
-              variant={viewMode === 'list' ? 'primary' : 'ghost'}
-              size="sm"
-              icon={List}
-              onClick={() => setViewMode('list')}
-            />
-          </div>
-        </div>
-
-        {isLoading ? (
-          <LoadingCard count={filters.limit} className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6`} />
-        ) : (
-          <div className={`mb-8 ${viewMode === 'grid' 
+  const renderContent = () => {
+    if (isLoading) {
+        return (
+          <div className={`mb-8 ${
+            viewMode === 'grid' 
               ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' 
               : 'space-y-4'
           }`}>
-            {finalOffers.map((offer, index) => (
+            <LoadingCard count={filters.limit} />
+          </div>
+        )
+    }
+
+    if (error) {
+      return <ErrorState title="Failed to Load Offers" message="We couldn't fetch the offers right now. Please try again later." />;
+    }
+
+    if (!offersData || !offersData.offers || offersData.offers.length === 0) {
+      return <EmptyState title="No Offers Found" message="Try adjusting your search or filters." />;
+    }
+
+    return (
+      <>
+        <div className={`mb-8 ${
+            viewMode === 'grid' 
+              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' 
+              : 'space-y-4'
+          }`}>
+            {offersData.offers.map((offer: Offer, index: number) => (
               <motion.div
                 key={offer.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: index * 0.05 }}
                 className="h-full"
               >
                 <Card className="group overflow-hidden h-full flex flex-col min-h-[480px]" hover padding="sm">
@@ -278,16 +181,125 @@ export const Offers: React.FC = () => {
                 </Card>
               </motion.div>
             ))}
-          </div>
-        )}
-
-        {!isLoading && totalOffers > filters.limit && (
+        </div>
+        {offersData.total > filters.limit && (
           <Pagination
             currentPage={filters.page}
-            totalPages={Math.ceil(totalOffers / filters.limit)}
+            totalPages={Math.ceil(offersData.total / filters.limit)}
             onPageChange={handlePageChange}
           />
         )}
+      </>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
+      <section className="bg-gradient-to-br from-orange-500 to-red-600 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-4xl lg:text-5xl font-bold mb-4">
+              {t('offers.title')}
+            </h1>
+            <p className="text-xl text-orange-100 mb-8">
+              Discover the best deals, coupons, and cashback offers
+            </p>
+            
+            <div className="max-w-2xl mx-auto">
+              <SearchBar
+                placeholder="Search offers, stores, or brands..."
+                onSearch={handleSearch}
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-xl shadow-sm p-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+            <select
+              value={filters.category}
+              onChange={(e) => handleFilterChange('category', e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              disabled={categoriesLoading}
+            >
+              <option value="">All Categories</option>
+              {categories && categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={filters.offerType}
+              onChange={(e) => handleFilterChange('offerType', e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+            >
+              <option value="">All Types</option>
+              <option value="cashback">Cashback</option>
+              <option value="coupon">Coupon</option>
+              <option value="deal">Deal</option>
+            </select>
+
+            <input
+              type="number"
+              placeholder="Min Cashback %"
+              value={filters.minCashback}
+              onChange={(e) => handleFilterChange('minCashback', e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+            />
+
+            <select
+              value={`${filters.sortBy}-${filters.sortOrder}`}
+              onChange={(e) => {
+                const [sortBy, sortOrder] = e.target.value.split('-');
+                handleFilterChange('sortBy', sortBy);
+                handleFilterChange('sortOrder', sortOrder);
+              }}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+            >
+              <option value="popularity-desc">Most Popular</option>
+              <option value="cashback-desc">Highest Cashback</option>
+              <option value="expiry-asc">Expiring Soon</option>
+            </select>
+
+            <Button
+              variant="ghost"
+              onClick={handleClearFilters}
+              icon={X}
+            >
+              Clear Filters
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between mb-6">
+          {!isLoading && offersData && (
+             <p className="text-gray-600">
+                Showing {offersData.offers.length} of {offersData.total} offers
+            </p>
+          )}
+          
+          <div className="flex items-center space-x-2">
+            <Button
+              variant={viewMode === 'grid' ? 'primary' : 'ghost'}
+              size="sm"
+              icon={Grid}
+              onClick={() => setViewMode('grid')}
+            />
+            <Button
+              variant={viewMode === 'list' ? 'primary' : 'ghost'}
+              size="sm"
+              icon={List}
+              onClick={() => setViewMode('list')}
+            />
+          </div>
+        </div>
+        
+        {renderContent()}
+
       </div>
     </div>
   );

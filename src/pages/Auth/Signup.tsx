@@ -11,7 +11,7 @@ import toast from 'react-hot-toast';
 
 export const Signup: React.FC = () => {
   const { t } = useTranslation();
-  const { signup, completeSignupAfterOTP } = useAuth();
+  const { signup, verifyOtp } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -39,13 +39,15 @@ export const Signup: React.FC = () => {
     }
     setLoading(true);
     try {
-      // This function now calls your backend to send the OTP
-      await signup(formData);
-      // On success, we change the state to show the OTP input form
+      await signup({ 
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone,
+       });
       setShowOtp(true);
     } catch (error) {
-      // Error toasts are handled by the API client
-      console.error('Signup error:', error);
+      // The API client's error interceptor will handle the toast notification.
     } finally {
       setLoading(false);
     }
@@ -58,16 +60,15 @@ export const Signup: React.FC = () => {
     }
     setLoading(true);
     try {
-      await completeSignupAfterOTP(formData.email, otp);
+      await verifyOtp({ email: formData.email, otp });
       navigate(ROUTES.DASHBOARD);
     } catch (error) {
-      console.error('OTP verification error:', error);
+      // The API client's error interceptor will handle the toast notification.
     } finally {
       setLoading(false);
     }
   };
 
-  // This part conditionally renders the OTP form when `showOtp` is true
   if (showOtp) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-teal-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -260,4 +261,3 @@ export const Signup: React.FC = () => {
     </div>
   );
 };
-

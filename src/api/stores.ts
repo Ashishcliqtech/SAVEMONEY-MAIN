@@ -1,35 +1,81 @@
 import { apiClient } from './client';
 import { Store } from '../types';
 
-export interface StoresResponse {
-  stores: Store[];
-  total: number;
-  page: number;
-  limit: number;
+// Assuming these types are in `src/types`
+export interface GetAllStoresParams {
+    page?: number;
+    limit?: number;
+    category?: string;
 }
 
-export interface StoreFilters {
-  category?: string;
-  search?: string;
-  sortBy?: 'name' | 'cashback' | 'popularity';
-  sortOrder?: 'asc' | 'desc';
-  page?: number;
-  limit?: number;
+export interface SearchStoresParams {
+    q: string;
+}
+
+export interface CreateStorePayload {
+    name: string;
+    description: string;
+    url: string;
+    category: string;
+    isPopular: boolean;
+    isFeatured: boolean;
+    logo: File;
+}
+
+export interface UpdateStorePayload {
+    name?: string;
+    description?: string;
+    url?: string;
+    category?: string;
+    isPopular?: boolean;
+    isFeatured?: boolean;
+    logo?: File;
+}
+
+export interface StorePaginatedResponse {
+  stores: Store[];
+  totalPages: number;
+  currentPage: number;
 }
 
 export const storesApi = {
-  getStores: (filters?: StoreFilters): Promise<StoresResponse> =>
-    apiClient.get('/stores', { params: filters }),
-
-  getStore: (id: string): Promise<Store> =>
-    apiClient.get(`/stores/${id}`),
+  // Public
+  getAllStores: (params: GetAllStoresParams): Promise<StorePaginatedResponse> =>
+    apiClient.get('/stores', { params }).then(res => res.data),
 
   getPopularStores: (): Promise<Store[]> =>
-    apiClient.get('/stores/popular'),
+    apiClient.get('/stores/popular').then(res => res.data),
 
   getFeaturedStores: (): Promise<Store[]> =>
-    apiClient.get('/stores/featured'),
+    apiClient.get('/stores/featured').then(res => res.data),
 
-  searchStores: (query: string): Promise<Store[]> =>
-    apiClient.get('/stores/search', { params: { q: query } }),
+  searchStores: (params: SearchStoresParams): Promise<Store[]> =>
+    apiClient.get('/stores/search', { params }).then(res => res.data),
+
+  getStoreById: (id: string): Promise<Store> =>
+    apiClient.get(`/stores/${id}`).then(res => res.data),
+
+  // Admin
+  createStore: (payload: CreateStorePayload): Promise<Store> => {
+    const formData = new FormData();
+    Object.entries(payload).forEach(([key, value]) => {
+        formData.append(key, value);
+    });
+    return apiClient.post('/admin/stores', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    }).then(res => res.data);
+  },
+  
+  updateStore: (id: string, payload: UpdateStorePayload): Promise<Store> => {
+    const formData = new FormData();
+    Object.entries(payload).forEach(([key, value]) => {
+        formData.append(key, value);
+    });
+    return apiClient.put(`/admin/stores/${id}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    }).then(res => res.data);
+  },
+
+  deleteStore: (id: string): Promise<void> =>
+    apiClient.delete(`/admin/stores/${id}`).then(res => res.data),
 };

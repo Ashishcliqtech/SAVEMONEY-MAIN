@@ -24,7 +24,6 @@ import { useWallet, useTransactions, useOffers } from '../../hooks/useSupabase.t
 import { useAuth } from '../../hooks/useAuth';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../../constants';
-import { placeholderOffers, placeholderTransactions, placeholderWalletData } from '../../data/placeholderData';
 import { Offer, Transaction } from '../../types';
 
 export const Dashboard: React.FC = () => {
@@ -36,17 +35,6 @@ export const Dashboard: React.FC = () => {
   const { data: transactionsResponse, isLoading: transactionsLoading, error: transactionsError } = useTransactions(user?.id, 1, 5);
   const { data: offersData, isLoading: offersLoading, error: offersError } = useOffers({ limit: 3, featured: true });
 
-  // --- Robust Data Handling ---
-  const finalWalletData = walletError || !walletData ? placeholderWalletData : walletData;
-
-  const finalOffers: Offer[] = (offersError || !Array.isArray(offersData) || offersData.length === 0)
-    ? placeholderOffers.slice(0, 3)
-    : offersData;
-    
-  const finalTransactions: Transaction[] = (transactionsError || !transactionsResponse?.transactions || !Array.isArray(transactionsResponse.transactions) || transactionsResponse.transactions.length === 0)
-    ? placeholderTransactions.slice(0, 5)
-    : transactionsResponse.transactions;
-
   const quickActions = [
     { icon: Wallet, label: t('dashboard.viewWallet'), href: ROUTES.WALLET, color: 'bg-purple-500' },
     { icon: ShoppingBag, label: t('dashboard.browseOffers'), href: ROUTES.OFFERS, color: 'bg-teal-500' },
@@ -55,16 +43,15 @@ export const Dashboard: React.FC = () => {
   ];
 
   const stats = [
-    { label: t('dashboard.totalEarnings'), value: `₹${finalWalletData?.totalCashback?.toLocaleString() || '0'}`, icon: TrendingUp, color: 'text-green-600', bgColor: 'bg-green-100' },
-    { label: t('dashboard.availableCashback'), value: `₹${finalWalletData?.availableCashback?.toLocaleString() || '0'}`, icon: Wallet, color: 'text-purple-600', bgColor: 'bg-purple-100' },
-    { label: t('dashboard.pendingCashback'), value: `₹${finalWalletData?.pendingCashback?.toLocaleString() || '0'}`, icon: Clock, color: 'text-orange-600', bgColor: 'bg-orange-100' },
+    { label: t('dashboard.totalEarnings'), value: `₹${walletData?.totalCashback?.toLocaleString() || '0'}`, icon: TrendingUp, color: 'text-green-600', bgColor: 'bg-green-100' },
+    { label: t('dashboard.availableCashback'), value: `₹${walletData?.availableCashback?.toLocaleString() || '0'}`, icon: Wallet, color: 'text-purple-600', bgColor: 'bg-purple-100' },
+    { label: t('dashboard.pendingCashback'), value: `₹${walletData?.pendingCashback?.toLocaleString() || '0'}`, icon: Clock, color: 'text-orange-600', bgColor: 'bg-orange-100' },
   ];
 
   if (walletLoading) {
     return <LoadingSpinner size="xl" text="Loading your dashboard..." fullScreen color="text-orange-500" />;
   }
 
-  // Show a full-page error if wallet data (critical for stats) fails to load
   if (walletError) {
     return <ErrorState title="Failed to Load Dashboard" message="We couldn't fetch your essential dashboard data. Please try again later." fullScreen />;
   }
@@ -121,7 +108,7 @@ export const Dashboard: React.FC = () => {
               </div>
               {transactionsLoading ? <LoadingCard count={3} /> : transactionsError ? <ErrorState title="Could Not Load Activity" message="There was a problem fetching your recent transactions."/> : (
                 <div className="space-y-4">
-                  {finalTransactions.length > 0 ? finalTransactions.map((transaction, index) => (
+                  {transactionsResponse?.transactions && transactionsResponse.transactions.length > 0 ? transactionsResponse.transactions.map((transaction: Transaction, index: number) => (
                     <motion.div key={transaction.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} className="flex items-center p-4 bg-gray-50 rounded-xl">
                       <img src={transaction.store.logo} alt={transaction.store.name} className="w-12 h-12 rounded-xl object-cover mr-4" />
                       <div className="flex-1 min-w-0">
@@ -150,7 +137,7 @@ export const Dashboard: React.FC = () => {
             </div>
             {offersLoading ? <LoadingCard count={3} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" /> : offersError ? <ErrorState title="Could Not Load Offers" message="We couldn't fetch recommendations for you right now."/> : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {finalOffers.length > 0 ? finalOffers.map((offer, index) => (
+                {offersData && offersData.length > 0 ? offersData.map((offer: Offer, index: number) => (
                   <motion.div key={index} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }} className="bg-gradient-to-br from-purple-500 to-teal-500 rounded-xl p-6 text-white relative overflow-hidden">
                     <div className="absolute top-2 right-2"><Star className="w-5 h-5 text-yellow-300 fill-current" /></div>
                     <div className="mb-4">

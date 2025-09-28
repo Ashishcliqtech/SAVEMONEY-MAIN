@@ -1,355 +1,97 @@
+// Base User Type
 export interface User {
-  id: string; // From JWT, can remain 'id'
-  _id: string; // From database
-  email: string;
-  name: string;
-  avatar?: string;
-  phone?: string;
-  referralCode: string;
-  totalCashback: number;
-  availableCashback: number;
-  pendingCashback: number;
-  role?: 'user' | 'admin' | 'moderator';
-  createdAt: string;
-  isVerified?: boolean;
-  isActive?: boolean;
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    role: 'user' | 'admin';
+    referralCode?: string;
+    referredBy?: string;
+    createdAt: string;
+    updatedAt: string;
 }
 
+// Category Type
+export interface Category {
+    id: string;
+    name: string;
+    description: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+// Store Type
 export interface Store {
-  _id: string;
-  name: string;
-  logo: string;
-  banner?: string;
-  description: string;
-  cashbackRate: number;
-  category: string;
-  isPopular: boolean;
-  totalOffers: number;
-  website: string;
+    id: string;
+    name: string;
+    description: string;
+    url: string;
+    logo: string;
+    category: string; // Or Category if populated
+    isPopular: boolean;
+    isFeatured: boolean;
+    createdAt: string;
+    updatedAt: string;
 }
 
+// Offer Type
 export interface Offer {
-  _id: string;
-  title: string;
-  description: string;
-  store: Store;
-  cashbackRate: number;
-  originalPrice?: number;
-  discountedPrice?: number;
-  couponCode?: string;
-  offerType: 'cashback' | 'coupon' | 'deal';
-  category: string;
-  expiryDate: string;
-  isExclusive: boolean;
-  isTrending: boolean;
-  imageUrl: string;
-  terms: string[];
-  minOrderValue?: number;
+    id: string;
+    title: string;
+    description: string;
+    offerType: 'coupon' | 'deal';
+    couponCode?: string;
+    store: string; // Or Store if populated
+    category: string; // Or Category if populated
+    imageUrl: string;
+    startDate: string;
+    endDate: string;
+    isTrending: boolean;
+    isFeatured: boolean;
+    isExclusive: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
+// Wallet & Transaction Types
+export interface Wallet {
+    id: string;
+    user: string; // Or User if populated
+    balance: number;
+    pendingBalance: number;
+    updatedAt: string;
 }
 
 export interface Transaction {
-  _id: string;
-  store: Store;
-  amount: number;
-  cashbackEarned: number;
-  status: 'pending' | 'confirmed' | 'cancelled';
-  date: string;
-  orderId: string;
+    id: string;
+    user: string; // Or User if populated
+    type: 'credit' | 'debit';
+    amount: number;
+    description: string;
+    status: 'pending' | 'completed' | 'failed';
+    createdAt: string;
 }
 
-export interface WithdrawalRequest {
-  _id: string;
-  amount: number;
-  method: 'upi' | 'bank' | 'paytm' | 'voucher';
-  accountDetails: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  requestDate: string;
-  completedDate?: string;
+export interface Withdrawal {
+    id: string;
+    user: string; // Or User if populated
+    amount: number;
+    status: 'pending' | 'approved' | 'rejected';
+    paymentDetails: {
+        method: string;
+        [key: string]: any;
+    };
+    createdAt: string;
+    updatedAt: string;
 }
 
-export interface Category {
-  _id: string;
-  name: string;
-  icon: string;
-  description: string;
-  storeCount: number;
-  offerCount: number;
-}
-
-export interface ReferralData {
-  totalEarnings: number;
-  totalReferrals: number;
-  pendingEarnings: number;
-  referralCode: string;
-  referralLink: string;
-  recentReferrals: {
-    _id: string;
-    name: string;
-    email: string;
-    earnings: number;
-    status: string;
-    joinedDate: string;
-  }[];
-}
-
-export interface NotificationData {
-  _id: string;
-  type: 'deal' | 'cashback' | 'withdrawal' | 'referral' | 'support';
-  title: string;
-  message: string;
-  isRead: boolean;
-  createdAt: string;
-  actionUrl?: string;
-}
-
-export interface AdminStats {
-  totalUsers: number;
-  totalStores: number;
-  totalOffers: number;
-  totalCashbackPaid: number;
-  pendingWithdrawals: number;
-  monthlyGrowth: number;
-}
-
+// Content Section Type
 export interface ContentSection {
-  _id: string;
-  name: string;
-  type: 'hero' | 'featured' | 'highlighted' | 'banner' | 'testimonial';
-  status: 'active' | 'inactive' | 'scheduled';
-  content: {
-    title?: string;
-    subtitle?: string;
-    description?: string;
+    id: string;
+    title: string;
+    page: string;
+    content: any; // JSON object
     imageUrl?: string;
-    buttonText?: string;
-    buttonLink?: string;
-  };
-  position: number;
-  devices: ('desktop' | 'tablet' | 'mobile')[];
-  scheduledDate?: string;
-  lastModified: string;
-}
-
-export type Language = 'en' | 'hi';
-
-export interface ThemeColors {
-  primary: {
-    50: string;
-    100: string;
-    500: string;
-    600: string;
-    700: string;
-    900: string;
-  };
-  secondary: {
-    50: string;
-    500: string;
-    600: string;
-  };
-  accent: {
-    50: string;
-    500: string;
-    600: string;
-  };
-  success: {
-    50: string;
-    500: string;
-  };
-  warning: {
-    50: string;
-    500: string;
-  };
-  error: {
-    50: string;
-    500: string;
-  };
-  neutral: {
-    50: string;
-    100: string;
-    200: string;
-    300: string;
-    400: string;
-    500: string;
-    600: string;
-    700: string;
-    800: string;
-    900: string;
-  };
-}export interface User {
-  id: string; // From JWT, can remain 'id'
-  _id: string; // From database
-  email: string;
-  name: string;
-  avatar?: string;
-  phone?: string;
-  referralCode: string;
-  totalCashback: number;
-  availableCashback: number;
-  pendingCashback: number;
-  role?: 'user' | 'admin' | 'moderator';
-  createdAt: string;
-  isVerified?: boolean;
-  isActive?: boolean;
-}
-
-export interface Store {
-  _id: string;
-  name: string;
-  logo: string;
-  banner?: string;
-  description: string;
-  cashbackRate: number;
-  category: string;
-  isPopular: boolean;
-  totalOffers: number;
-  website: string;
-}
-
-export interface Offer {
-  _id: string;
-  title: string;
-  description: string;
-  store: Store;
-  cashbackRate: number;
-  originalPrice?: number;
-  discountedPrice?: number;
-  couponCode?: string;
-  offerType: 'cashback' | 'coupon' | 'deal';
-  category: string;
-  expiryDate: string;
-  isExclusive: boolean;
-  isTrending: boolean;
-  imageUrl: string;
-  terms: string[];
-  minOrderValue?: number;
-}
-
-export interface Transaction {
-  _id: string;
-  store: Store;
-  amount: number;
-  cashbackEarned: number;
-  status: 'pending' | 'confirmed' | 'cancelled';
-  date: string;
-  orderId: string;
-}
-
-export interface WithdrawalRequest {
-  _id: string;
-  amount: number;
-  method: 'upi' | 'bank' | 'paytm' | 'voucher';
-  accountDetails: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  requestDate: string;
-  completedDate?: string;
-}
-
-export interface Category {
-  _id: string;
-  name: string;
-  icon: string;
-  description: string;
-  storeCount: number;
-  offerCount: number;
-}
-
-export interface ReferralData {
-  totalEarnings: number;
-  totalReferrals: number;
-  pendingEarnings: number;
-  referralCode: string;
-  referralLink: string;
-  recentReferrals: {
-    _id: string;
-    name: string;
-    email: string;
-    earnings: number;
-    status: string;
-    joinedDate: string;
-  }[];
-}
-
-export interface NotificationData {
-  _id: string;
-  type: 'deal' | 'cashback' | 'withdrawal' | 'referral' | 'support';
-  title: string;
-  message: string;
-  isRead: boolean;
-  createdAt: string;
-  actionUrl?: string;
-}
-
-export interface AdminStats {
-  totalUsers: number;
-  totalStores: number;
-  totalOffers: number;
-  totalCashbackPaid: number;
-  pendingWithdrawals: number;
-  monthlyGrowth: number;
-}
-
-export interface ContentSection {
-  _id: string;
-  name: string;
-  type: 'hero' | 'featured' | 'highlighted' | 'banner' | 'testimonial';
-  status: 'active' | 'inactive' | 'scheduled';
-  content: {
-    title?: string;
-    subtitle?: string;
-    description?: string;
-    imageUrl?: string;
-    buttonText?: string;
-    buttonLink?: string;
-  };
-  position: number;
-  devices: ('desktop' | 'tablet' | 'mobile')[];
-  scheduledDate?: string;
-  lastModified: string;
-}
-
-export type Language = 'en' | 'hi';
-
-export interface ThemeColors {
-  primary: {
-    50: string;
-    100: string;
-    500: string;
-    600: string;
-    700: string;
-    900: string;
-  };
-  secondary: {
-    50: string;
-    500: string;
-    600: string;
-  };
-  accent: {
-    50: string;
-    500: string;
-    600: string;
-  };
-  success: {
-    50: string;
-    500: string;
-  };
-  warning: {
-    50: string;
-    500: string;
-  };
-  error: {
-    50: string;
-    500: string;
-  };
-  neutral: {
-    50: string;
-    100: string;
-    200: string;
-    300: string;
-    400: string;
-    500: string;
-    600: string;
-    700: string;
-    800: string;
-    900: string;
-  };
+    createdAt: string;
+    updatedAt: string;
 }

@@ -1,20 +1,13 @@
 import { apiClient } from './client';
-import { ReferralData } from '../types';
 
-export const referralsApi = {
-  getReferralData: (): Promise<ReferralData> =>
-    apiClient.get('/referrals'),
-
-  generateReferralLink: (): Promise<{ link: string; code: string }> =>
-    apiClient.post('/referrals/generate-link'),
-
-  getReferralHistory: (): Promise<{
-    id: string;
-    name: string;
-    email: string;
-    joinedDate: string;
+export interface ReferralDashboardData {
+    referralCode: string;
     earnings: number;
-    status: string;
-  }[]> =>
-    apiClient.get('/referrals/history'),
+    referredUsersCount: number;
+    referralLink: string;
+}
+
+export const referralApi = {
+  getDashboard: (): Promise<ReferralDashboardData> =>
+    apiClient.get('/referral/dashboard').then(res => res.data),
 };

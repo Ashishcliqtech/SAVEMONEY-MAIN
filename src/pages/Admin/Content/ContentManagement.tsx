@@ -1,14 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import {
-  Edit,
-  Plus,
-  Save,
-  Smartphone,
-  Monitor,
-  Tablet,
-  Trash2,
-} from 'lucide-react';
+import { CreditCard as Edit, Plus, Save, Smartphone, Monitor, Tablet, Trash2 } from 'lucide-react';
 import { Card, Button, Input, Modal, Badge, ImageUpload } from '../../../components/ui';
 import toast from 'react-hot-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';

@@ -1,24 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import {
-  Grid3X3,
-  Search,
-  Plus,
-  Edit,
-  Trash2,
-  Eye,
-  Star,
-  TrendingUp,
-  Package,
-  Shirt,
-  Smartphone,
-  Plane,
-  Utensils,
-  Sparkles,
-  Home,
-  BookOpen,
-  Heart,
-} from 'lucide-react';
+import { Grid3x3 as Grid3X3, Search, Plus, CreditCard as Edit, Trash2, Eye, Star, TrendingUp, Package, Shirt, Smartphone, Plane, Utensils, Sparkles, Home, BookOpen, Heart } from 'lucide-react';
 import { Card, Button, Input, Modal } from '../../../components/ui';
 import { useCategories } from '../../../hooks/useApi';
 import toast from 'react-hot-toast';

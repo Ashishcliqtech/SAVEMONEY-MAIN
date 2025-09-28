@@ -1,18 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import {
-  Users,
-  Search,
-  Plus,
-  Edit,
-  Trash2,
-  Eye,
-  Ban,
-  CheckCircle,
-  Mail,
-  Phone,
-  Calendar,
-} from 'lucide-react';
+import { Users, Search, Plus, CreditCard as Edit, Trash2, Eye, Ban, CheckCircle, Mail, Phone, Calendar } from 'lucide-react';
 import { Card, Button, Badge, Input, Modal, Pagination, EmptyState, LoadingSpinner } from '../../../components/ui';
 import { useUsers } from '../../../hooks/useSupabase.tsx';
 import { placeholderUsers } from '../../../data/placeholderData';

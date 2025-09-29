@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 import { ROUTES } from '../../constants';
 import { useFeaturedOffers, usePopularStores, useTrendingOffers, useCategories } from '../../hooks/useApi';
 import { placeholderOffers, placeholderStores } from '../../data/placeholderData';
+import { savingsAppImage } from '../../lib/image';
 
 export const Home: React.FC = () => {
   const { t } = useTranslation();
@@ -129,7 +130,7 @@ export const Home: React.FC = () => {
       <HeroSection />
 
       {/* Recommended Offers Carousel */}
-      <section id="recommended-offers" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <section id="recommended-offers">
         <RecommendedOffersCarousel offers={finalFeaturedOffers} />
       </section>
 
@@ -194,57 +195,76 @@ export const Home: React.FC = () => {
         <CategoryGrid categories={finalCategories} isLoading={categoriesLoading} />
       </section>
 
-      {/* How It Works */}
-      <section className="bg-gray-900 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">How SaveMoney Works</h2>
-            <p className="text-gray-300 text-lg">Start earning cashback in 3 simple steps</p>
+      <section className="bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center space-x-3">
+              <TrendingUp className="w-8 h-8 text-orange-500" />
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900">{t('home.trendingOffers')}</h2>
+                <p className="text-gray-600">What's hot right now</p>
+              </div>
+            </div>
+            <Badge variant="warning" size="md">
+              🔥 Hot Deals
+            </Badge>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                step: '01',
-                title: 'Sign Up & Browse',
-                description: 'Create your free account and browse thousands of offers from top brands.',
-                icon: Users,
-              },
-              {
-                step: '02',
-                title: 'Shop & Earn',
-                description: 'Click through our links to shop at your favorite stores and earn cashback.',
-                icon: Gift,
-              },
-              {
-                step: '03',
-                title: 'Get Paid',
-                description: 'Withdraw your earnings via UPI, bank transfer, or gift vouchers.',
-                icon: CreditCard,
-              },
-            ].map((step, index) => (
-              <motion.div
-                key={step.step}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.2 }}
-                className="text-center"
-              >
-                <div className="relative mb-8">
-                  <div className="w-20 h-20 bg-gradient-to-br from-purple-600 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <step.icon className="w-10 h-10 text-white" />
-                  </div>
-                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center text-sm font-bold">
-                    {step.step}
-                  </div>
-                </div>
-                <h3 className="text-xl font-semibold mb-4">{step.title}</h3>
-                <p className="text-gray-300">{step.description}</p>
-              </motion.div>
-            ))}
-          </div>
+          <OfferGrid offers={finalTrendingOffers} />
         </div>
       </section>
+
+      {/* How It Works */}
+      <section className="bg-gray-50 text-gray-900 py-20">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="text-center mb-16">
+      <h2 className="text-3xl font-bold mb-4">How SaveMoney Works</h2>
+      <p className="text-gray-600 text-lg">Start earning cashback in 3 simple steps</p>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      {[
+        {
+          step: '01',
+          title: 'Sign Up & Browse',
+          description: 'Create your free account and browse thousands of offers from top brands.',
+          icon: Users,
+        },
+        {
+          step: '02',
+          title: 'Shop & Earn',
+          description: 'Click through our links to shop at your favorite stores and earn cashback.',
+          icon: Gift,
+        },
+        {
+          step: '03',
+          title: 'Get Paid',
+          description: 'Withdraw your earnings via UPI, bank transfer, or gift vouchers.',
+          icon: CreditCard,
+        },
+      ].map((step, index) => (
+        <motion.div
+          key={step.step}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: index * 0.2 }}
+          className="text-center"
+        >
+          <div className="relative mb-8">
+            <div className="w-20 h-20 bg-gradient-to-br from-purple-600 to-teal-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <step.icon className="w-10 h-10 text-white" />
+            </div>
+            <div className="absolute -top-2 -right-2 w-8 h-8 bg-orange-500 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-md">
+              {step.step}
+            </div>
+          </div>
+          <h3 className="text-xl font-semibold mb-4">{step.title}</h3>
+          <p className="text-gray-600">{step.description}</p>
+        </motion.div>
+      ))}
+    </div>
+  </div>
+</section>
+
 
       {/* Features Section */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -271,23 +291,7 @@ export const Home: React.FC = () => {
       </section>
 
       {/* Trending Offers */}
-      <section className="bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-3">
-              <TrendingUp className="w-8 h-8 text-orange-500" />
-              <div>
-                <h2 className="text-3xl font-bold text-gray-900">{t('home.trendingOffers')}</h2>
-                <p className="text-gray-600">What's hot right now</p>
-              </div>
-            </div>
-            <Badge variant="warning" size="md">
-              🔥 Hot Deals
-            </Badge>
-          </div>
-          <OfferGrid offers={finalTrendingOffers} />
-        </div>
-      </section>
+      
 
       {/* Testimonials */}
       <section className="bg-gradient-to-br from-purple-50 to-teal-50 py-20">
@@ -314,41 +318,62 @@ export const Home: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-r from-purple-600 to-teal-600 text-white py-20">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+      <section className="relative bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white px-6 sm:px-10 lg:px-20 overflow-hidden
+  py-16 lg:py-20 rounded-3xl shadow-2xl">
+  {/* Decorative glowing orbs */}
+  <div className="absolute -top-20 -left-20 w-72 h-72 bg-purple-600/30 rounded-full blur-3xl animate-pulse"></div>
+  <div className="absolute -bottom-24 -right-24 w-80 h-80 bg-teal-500/30 rounded-full blur-3xl animate-pulse delay-200"></div>
+
+  <div className="relative max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 items-center gap-12">
+    {/* Left: Text Content */}
+    <motion.div
+      initial={{ opacity: 0, x: -40 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.8, ease: 'easeOut' }}
+      className="text-center lg:text-left"
+    >
+      <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
+        Start <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-teal-300">Saving Smarter</span> Today
+      </h2>
+
+      <p className="text-lg sm:text-xl lg:text-2xl text-gray-300 mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+        Join <span className="font-bold text-white">2M+ smart shoppers</span> already earning cashback on every purchase.  
+        Get an instant <span className="font-extrabold text-teal-300">₹100 welcome bonus</span> when you sign up!
+      </p>
+
+      <div className="flex flex-col sm:flex-row gap-5 justify-center lg:justify-start">
+        <Link to={ROUTES.SIGNUP}>
+          <Button
+            size="lg"
+            className="bg-gradient-to-r from-teal-400 to-purple-500 text-white font-bold text-lg px-10 py-4 rounded-2xl shadow-xl hover:scale-105 transition-transform duration-300"
           >
-            <h2 className="text-4xl font-bold mb-6">
-              Ready to Start Saving Money?
-            </h2>
-            <p className="text-xl text-purple-100 mb-8 max-w-2xl mx-auto">
-              Join over 2 million users who are already earning cashback on every purchase. 
-              Sign up today and get ₹100 welcome bonus!
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link to={ROUTES.SIGNUP}>
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  className="bg-black text-purple-600 hover:bg-gray-100"
-                >
-                  Get Started Free
-                </Button>
-              </Link>
-              {/* <Button
-                variant="outline"
-                size="lg"
-                className="border-white/30 text-white hover:bg-white/10"
-              >
-                Download App
-              </Button> */}
-            </div>
-          </motion.div>
-        </div>
-      </section>
+            🚀 Get Started Free
+          </Button>
+        </Link>
+
+        
+      </div>
+    </motion.div>
+
+    {/* Right: Illustration / Mockup */}
+    <motion.div
+      initial={{ opacity: 0, x: 40 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.9, ease: 'easeOut' }}
+      className="flex justify-center lg:justify-end"
+    >
+      <img
+  src={savingsAppImage}
+  alt="SaveMoney App Preview"
+  className="w-full max-w-md lg:max-w-lg drop-shadow-2xl rounded-3xl h-64 lg:h-80 object-contain"
+/>
+
+    </motion.div>
+  </div>
+</section>
+
+
+
     </div>
   );
 };

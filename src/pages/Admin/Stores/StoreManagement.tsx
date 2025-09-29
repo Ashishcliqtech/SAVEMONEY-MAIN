@@ -25,6 +25,8 @@ export const StoreManagement: React.FC = () => {
   const [showStoreModal, setShowStoreModal] = useState(false);
   const [selectedStore, setSelectedStore] = useState<StoreType | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [storeForm, setStoreForm] = useState({
     name: '',
     description: '',
@@ -45,7 +47,6 @@ export const StoreManagement: React.FC = () => {
   
   const { data: apiCategories, error: categoriesError } = useCategories();
   
-  // Use placeholder data when API fails or returns empty results
   const stores = !storesData?.stores || storesData.stores.length === 0 ? placeholderStores : storesData.stores;
   const totalPages = !storesData ? Math.ceil(placeholderStores.length / 9) : storesData.totalPages || 1;
   const categories = categoriesError || !apiCategories || apiCategories.length === 0 ? placeholderCategories : apiCategories;
@@ -87,26 +88,30 @@ export const StoreManagement: React.FC = () => {
       logo_url: '',
       banner_url: '',
     });
+    setLogoFile(null);
+    setBannerFile(null);
     setShowStoreModal(true);
   };
 
   const handleSaveStore = () => {
-    const storeData = {
-      ...storeForm,
-      slug: storeForm.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
-    };
+    const formData = new FormData();
+    Object.entries(storeForm).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+            formData.append(key, String(value));
+        }
+    });
 
+    if (logoFile) formData.append('logo', logoFile);
+    if (bannerFile) formData.append('banner', bannerFile);
+    
     if (selectedStore) {
-      updateStoreMutation.mutate({ id: selectedStore.id, updates: storeData });
+      updateStoreMutation.mutate({ id: selectedStore.id, updates: formData });
     } else {
-      createStoreMutation.mutate(storeData);
+      createStoreMutation.mutate(formData);
     }
     setShowStoreModal(false);
   };
 
-  const handleImageUpload = (field: 'logo_url' | 'banner_url') => (imageUrl: string) => {
-    setStoreForm(prev => ({ ...prev, [field]: imageUrl }));
-  };
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -314,9 +319,7 @@ export const StoreManagement: React.FC = () => {
                 Store Logo
               </label>
               <ImageUpload
-                onUpload={handleImageUpload('logo_url')}
-                folder="stores"
-                transformation="storeLogo"
+                onFileSelect={setLogoFile}
                 currentImage={storeForm.logo_url}
                 placeholder="Upload store logo"
               />
@@ -328,9 +331,7 @@ export const StoreManagement: React.FC = () => {
                 Store Banner (Optional)
               </label>
               <ImageUpload
-                onUpload={handleImageUpload('banner_url')}
-                folder="stores"
-                transformation="storeBanner"
+                onFileSelect={setBannerFile}
                 currentImage={storeForm.banner_url}
                 placeholder="Upload store banner"
               />
@@ -371,3 +372,4 @@ export const StoreManagement: React.FC = () => {
     </div>
   );
 };
+

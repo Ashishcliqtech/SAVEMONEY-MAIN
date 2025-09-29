@@ -60,31 +60,9 @@ interface ApiError {
 
 // API Error Handling
 const handleApiError = (error: AxiosError<ApiError>) => {
-  if (toast.custom) {
-    toast.custom((t) => (
-      <div
-        className={`${t.visible ? 'animate-enter' : 'animate-leave'} max-w-md w-full bg-white shadow-lg rounded-lg pointer-events-auto flex ring-1 ring-black ring-opacity-5`}>
-        <div className="flex-1 w-0 p-4">
-          <div className="flex items-start">
-            <div className="ml-3 flex-1">
-              <p className="text-sm font-medium text-gray-900">
-                {error.response?.data?.message || error.message || 'An unknown error occurred'}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="flex border-l border-gray-200">
-          <button onClick={() => toast.dismiss(t.id)} className="w-full border border-transparent rounded-none rounded-r-lg p-4 flex items-center justify-center text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-            Close
-          </button>
-        </div>
-      </div>
-    ));
-  } else {
-    toast.error(error.response?.data?.message || error.message || 'An unknown error occurred');
-  }
-
-  return Promise.reject(new Error(error.response?.data?.message || error.message || 'An unknown error occurred'));
+  const errorMessage = error.response?.data?.message || error.message || 'An unknown error occurred';
+  toast.error(errorMessage);
+  return Promise.reject(new Error(errorMessage));
 };
 
 
@@ -300,7 +278,6 @@ export const useNotifications = (userId?: string) => {
       queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
-      // Don't show error toast for this action
     }
   };
 
@@ -310,7 +287,6 @@ export const useNotifications = (userId?: string) => {
       queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
     } catch (error) {
       console.error('Failed to mark all notifications as read:', error);
-      // Don't show error toast for this action
     }
   };
 
@@ -327,7 +303,7 @@ export const useUsers = () => {
     queryKey: ['users'],
     queryFn: async () => {
       try {
-        const { data } = await apiClient.get('/users');
+        const { data } = await apiClient.get('/admin/users');
         return data;
       } catch (error) {
         console.error("Failed to fetch users. Using placeholder data.", error);
@@ -339,16 +315,9 @@ export const useUsers = () => {
 
 export const useCreateStore = () => {
   const queryClient = useQueryClient();
-  
   return useMutation({
-    mutationFn: async (storeData: Partial<Store>) => {
-      try {
-        const { data } = await apiClient.post('/stores', storeData);
-        return data;
-      } catch (error) {
-        return handleApiError(error as AxiosError<ApiError>);
-      }
-    },
+    mutationFn: (storeData: FormData) => 
+      apiClient.post('/admin/stores', storeData, { headers: { 'Content-Type': 'multipart/form-data' } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stores'] });
       toast.success('Store created successfully!');
@@ -358,16 +327,9 @@ export const useCreateStore = () => {
 
 export const useUpdateStore = () => {
   const queryClient = useQueryClient();
-  
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Store> }) => {
-      try {
-        const { data } = await apiClient.put(`/stores/${id}`, updates);
-        return data;
-      } catch (error) {
-        return handleApiError(error as AxiosError<ApiError>);
-      }
-    },
+    mutationFn: ({ id, updates }: { id: string; updates: FormData }) =>
+      apiClient.put(`/admin/stores/${id}`, updates, { headers: { 'Content-Type': 'multipart/form-data' } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stores'] });
       toast.success('Store updated successfully!');
@@ -377,15 +339,8 @@ export const useUpdateStore = () => {
 
 export const useDeleteStore = () => {
   const queryClient = useQueryClient();
-  
   return useMutation({
-    mutationFn: async (id: string) => {
-      try {
-        await apiClient.delete(`/stores/${id}`);
-      } catch (error) {
-        return handleApiError(error as AxiosError<ApiError>);
-      }
-    },
+    mutationFn: (id: string) => apiClient.delete(`/admin/stores/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['stores'] });
       toast.success('Store deleted successfully!');
@@ -395,35 +350,21 @@ export const useDeleteStore = () => {
 
 export const useCreateOffer = () => {
   const queryClient = useQueryClient();
-  
   return useMutation({
-    mutationFn: async (offerData: Partial<Offer>) => {
-      try {
-        const { data } = await apiClient.post('/offers', offerData);
-        return data;
-      } catch (error) {
-        return handleApiError(error as AxiosError<ApiError>);
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['offers'] });
-      toast.success('Offer created successfully!');
-    },
+      mutationFn: (offerData: FormData) => 
+          apiClient.post('/admin/offers', offerData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+      onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ['offers'] });
+          toast.success('Offer created successfully!');
+      },
   });
 };
 
 export const useUpdateOffer = () => {
   const queryClient = useQueryClient();
-  
   return useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: Partial<Offer> }) => {
-      try {
-        const { data } = await apiClient.put(`/offers/${id}`, updates);
-        return data;
-      } catch (error) {
-        return handleApiError(error as AxiosError<ApiError>);
-      }
-    },
+    mutationFn: ({ id, updates }: { id: string; updates: FormData }) =>
+      apiClient.put(`/admin/offers/${id}`, updates, { headers: { 'Content-Type': 'multipart/form-data' } }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['offers'] });
       toast.success('Offer updated successfully!');
@@ -433,15 +374,8 @@ export const useUpdateOffer = () => {
 
 export const useDeleteOffer = () => {
   const queryClient = useQueryClient();
-  
   return useMutation({
-    mutationFn: async (id: string) => {
-      try {
-        await apiClient.delete(`/offers/${id}`);
-      } catch (error) {
-        return handleApiError(error as AxiosError<ApiError>);
-      }
-    },
+    mutationFn: (id: string) => apiClient.delete(`/admin/offers/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['offers'] });
       toast.success('Offer deleted successfully!');
@@ -450,20 +384,34 @@ export const useDeleteOffer = () => {
 };
 
 export const useCreateCategory = () => {
-  const queryClient = useQueryClient();
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: (categoryData: Partial<Category>) => apiClient.post('/admin/categories', categoryData),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['categories'] });
+        toast.success('Category created successfully!');
+      },
+    });
+};
+
+export const useUpdateCategory = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: ({ id, updates }: { id: string; updates: Partial<Category> }) => apiClient.put(`/admin/categories/${id}`, updates),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['categories'] });
+        toast.success('Category updated successfully!');
+      },
+    });
+};
   
-  return useMutation({
-    mutationFn: async (categoryData: Partial<Category>) => {
-      try {
-        const { data } = await apiClient.post('/categories', categoryData);
-        return data;
-      } catch (error) {
-        return handleApiError(error as AxiosError<ApiError>);
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['categories'] });
-      toast.success('Category created successfully!');
-    },
-  });
+export const useDeleteCategory = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: (id: string) => apiClient.delete(`/admin/categories/${id}`),
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['categories'] });
+        toast.success('Category deleted successfully!');
+      },
+    });
 };

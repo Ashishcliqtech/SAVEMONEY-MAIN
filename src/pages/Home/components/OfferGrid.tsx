@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { Clock, Copy, ExternalLink } from 'lucide-react';
 import { Card, Button, Badge } from '../../../components/ui';
@@ -9,7 +9,7 @@ interface OfferGridProps {
   offers: any[];
 }
 
-export const OfferGrid: React.FC<OfferGridProps> = ({ offers }) => {
+export const OfferGrid: React.FC<OfferGridProps> = memo(({ offers }) => {
   const { t } = useTranslation();
 
   const handleCopyCode = (code: string) => {
@@ -119,4 +119,4 @@ export const OfferGrid: React.FC<OfferGridProps> = ({ offers }) => {
       ))}
     </div>
   );
-};
+});

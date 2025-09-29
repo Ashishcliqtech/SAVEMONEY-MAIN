@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, memo } from 'react';
 import { Upload, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -10,7 +10,7 @@ interface ImageUploadProps {
   className?: string;
 }
 
-export const ImageUpload: React.FC<ImageUploadProps> = ({
+export const ImageUpload: React.FC<ImageUploadProps> = memo(({
   onFileSelect,
   currentImage,
   placeholder = 'Click to upload image',
@@ -93,4 +93,4 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       )}
     </div>
   );
-};
+});

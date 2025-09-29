@@ -12,26 +12,6 @@ export interface SearchStoresParams {
     q: string;
 }
 
-export interface CreateStorePayload {
-    name: string;
-    description: string;
-    url: string;
-    category: string;
-    isPopular: boolean;
-    isFeatured: boolean;
-    logo: File;
-}
-
-export interface UpdateStorePayload {
-    name?: string;
-    description?: string;
-    url?: string;
-    category?: string;
-    isPopular?: boolean;
-    isFeatured?: boolean;
-    logo?: File;
-}
-
 export interface StorePaginatedResponse {
   stores: Store[];
   totalPages: number;
@@ -56,21 +36,13 @@ export const storesApi = {
     apiClient.get(`/stores/${id}`).then(res => res.data),
 
   // Admin
-  createStore: (payload: CreateStorePayload): Promise<Store> => {
-    const formData = new FormData();
-    Object.entries(payload).forEach(([key, value]) => {
-        formData.append(key, value);
-    });
+  createStore: (formData: FormData): Promise<Store> => {
     return apiClient.post('/admin/stores', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
     }).then(res => res.data);
   },
   
-  updateStore: (id: string, payload: UpdateStorePayload): Promise<Store> => {
-    const formData = new FormData();
-    Object.entries(payload).forEach(([key, value]) => {
-        formData.append(key, value);
-    });
+  updateStore: (id: string, formData: FormData): Promise<Store> => {
     return apiClient.put(`/admin/stores/${id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
     }).then(res => res.data);

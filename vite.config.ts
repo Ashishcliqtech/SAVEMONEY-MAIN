@@ -1,19 +1,21 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
+  },
   build: {
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom'],
-          router: ['react-router-dom'],
-          ui: ['framer-motion', 'lucide-react', 'styled-components'],
-          forms: ['react-hook-form', '@hookform/resolvers', 'yup'],
-          utils: ['axios', 'date-fns', 'clsx', 'jwt-decode', 'i18next', 'react-i18next'],
-          query: ['@tanstack/react-query', 'react-query'],
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          ui: ['framer-motion', 'lucide-react'],
         },
       },
     },
@@ -31,15 +33,19 @@ export default defineConfig({
     exclude: ['lucide-react'],
   },
   server: {
+    host: '0.0.0.0', // Listen on all network interfaces
     proxy: {
       '/api': {
-        target: 'https://updatedbackendcashkro.onrender.com', // Replace with your Render URL
+        target: 'https://updatedbackendcashkro.onrender.com/api', // Replace with your Render URL
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
     hmr: {
+      // This configuration helps the HMR client connect correctly in proxied environments.
+      clientPort: 5173,
       overlay: false,
     },
   },
 });
+

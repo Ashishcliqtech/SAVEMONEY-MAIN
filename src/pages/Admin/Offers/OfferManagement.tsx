@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Tag, Search, Plus, Trash2, Eye, Clock, Copy } from 'lucide-react';
 import { Card, Button, Badge, Input, Modal, Pagination, ImageUpload } from '../../../components/ui';
-import { useOffers, useStores, useCreateOffer, useUpdateOffer, useDeleteOffer } from '../../../hooks/useSupabase.tsx';
+import { useOffers, useStores, useCategories, useCreateOffer, useUpdateOffer, useDeleteOffer } from '../../../hooks/useSupabase';
 import toast from 'react-hot-toast';
-import { placeholderOffers, placeholderStores } from '../../../data/placeholderData';
+import { placeholderOffers, placeholderStores, placeholderCategories } from '../../../data/placeholderData';
 
 interface Offer {
   id: string;
@@ -34,6 +34,7 @@ export const OfferManagement: React.FC = () => {
   const [showOfferModal, setShowOfferModal] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [offerForm, setOfferForm] = useState({
     title: '',
     description: '',
@@ -63,11 +64,12 @@ export const OfferManagement: React.FC = () => {
   });
   
   const { data: apiStores, error: storesError } = useStores({ limit: 100 });
-  
-  // Use placeholder data when API fails or returns empty results
+  const { data: apiCategories, error: categoriesError } = useCategories();
+
   const offers = !offersData?.offers || offersData.offers.length === 0 ? placeholderOffers : offersData.offers;
   const totalPages = !offersData ? Math.ceil(placeholderOffers.length / 9) : offersData.totalPages || 1;
   const stores = storesError || !apiStores?.stores || apiStores.stores.length === 0 ? placeholderStores : apiStores.stores;
+  const categories = categoriesError || !apiCategories || apiCategories.length === 0 ? placeholderCategories : apiCategories;
   
   const createOfferMutation = useCreateOffer();
   const updateOfferMutation = useUpdateOffer();
@@ -122,20 +124,30 @@ export const OfferManagement: React.FC = () => {
       is_trending: false,
       is_featured: false,
     });
+    setImageFile(null);
     setShowOfferModal(true);
   };
 
   const handleSaveOffer = () => {
-    const offerData = {
-      ...offerForm,
-      expiry_date: offerForm.expiry_date ? new Date(offerForm.expiry_date).toISOString() : null,
-      offer_type: offerForm.offer_type as 'cashback' | 'coupon' | 'deal',
-    };
+    const formData = new FormData();
+
+    // Append all form fields to formData
+    Object.entries(offerForm).forEach(([key, value]) => {
+        if (key === 'terms' && Array.isArray(value)) {
+            value.forEach(term => formData.append('terms', term));
+        } else if (value !== null && value !== undefined) {
+            formData.append(key, String(value));
+        }
+    });
+
+    if (imageFile) {
+        formData.append('imageUrl', imageFile);
+    }
 
     if (selectedOffer) {
-      updateOfferMutation.mutate({ id: selectedOffer.id, updates: offerData });
+      updateOfferMutation.mutate({ id: selectedOffer.id, updates: formData });
     } else {
-      createOfferMutation.mutate(offerData);
+      createOfferMutation.mutate(formData);
     }
     setShowOfferModal(false);
   };
@@ -242,18 +254,18 @@ export const OfferManagement: React.FC = () => {
 
                 <div className="flex-1 flex flex-col">
                   <div className="flex items-center space-x-2 mb-2">
-  <img
-    src={
-      offer.store?.logo_url ||
-      'https://images.pexels.com/photos/6214476/pexels-photo-6214476.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop'
-    }
-    alt={offer.store?.name || 'Store'}
-    className="w-6 h-6 rounded-full object-cover"
-  />
-  <span className="text-sm font-medium text-gray-600">
-    {offer.store?.name || 'Unknown Store'}
-  </span>
-</div>
+                      <img
+                        src={
+                          offer.store?.logo_url ||
+                          'https://images.pexels.com/photos/6214476/pexels-photo-6214476.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop'
+                        }
+                        alt={offer.store?.name || 'Store'}
+                        className="w-6 h-6 rounded-full object-cover"
+                      />
+                      <span className="text-sm font-medium text-gray-600">
+                        {offer.store?.name || 'Unknown Store'}
+                      </span>
+                  </div>
 
 
                   <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
@@ -428,9 +440,7 @@ export const OfferManagement: React.FC = () => {
                 Offer Image
               </label>
               <ImageUpload
-                onUpload={(imageUrl) => setOfferForm(prev => ({ ...prev, image_url: imageUrl }))}
-                folder="offers"
-                transformation="offerImage"
+                onFileSelect={setImageFile}
                 currentImage={offerForm.image_url}
                 placeholder="Upload offer image"
               />

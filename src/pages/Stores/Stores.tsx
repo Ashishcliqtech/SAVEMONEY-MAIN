@@ -12,9 +12,9 @@ import {
   EmptyState,
   ErrorState,
   LoadingCard,
-} from '../../components/ui';
-import { useStores, useCategories } from '../../hooks/useSupabase.tsx';
-import { Store } from '../../types';
+} from '@/components/ui';
+import { useStores, useCategories } from '@/hooks/useSupabase';
+import { Store } from '@/types';
 
 export const Stores: React.FC = () => {
   const { t } = useTranslation();
@@ -102,7 +102,7 @@ export const Stores: React.FC = () => {
                         <h3 className="font-semibold text-lg text-gray-900 group-hover:text-purple-600 transition-colors mb-1">
                           {store.name}
                         </h3>
-                        <p className="text-sm text-gray-500">{store.category.name}</p>
+                        <p className="text-sm text-gray-500">{store.category?.name || 'General'}</p>
                       </div>
                       <p className="text-sm text-gray-600 line-clamp-2 flex-1">
                         {store.description}
@@ -142,7 +142,7 @@ export const Stores: React.FC = () => {
                             </Badge>
                           )}
                         </div>
-                        <p className="text-sm text-gray-500 mb-2">{store.category.name}</p>
+                        <p className="text-sm text-gray-500 mb-2">{store.category?.name || 'General'}</p>
                         <p className="text-sm text-gray-600 line-clamp-1">
                           {store.description}
                         </p>

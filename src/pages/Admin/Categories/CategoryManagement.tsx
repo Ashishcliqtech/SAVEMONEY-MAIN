@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Grid3x3 as Grid3X3, Search, Plus, CreditCard as Edit, Trash2, Eye, Star, TrendingUp, Package, Shirt, Smartphone, Plane, Utensils, Sparkles, Home, BookOpen, Heart } from 'lucide-react';
+import { Grid3x3 as Grid3X3, Search, Plus, Edit, Trash2, Eye, Package, Shirt, Smartphone, Plane, Utensils, Sparkles, Home, BookOpen, Heart, Star, TrendingUp } from 'lucide-react';
 import { Card, Button, Input, Modal } from '../../../components/ui';
-import { useCategories } from '../../../hooks/useApi';
+import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '../../../hooks/useSupabase';
 import toast from 'react-hot-toast';
 import { placeholderCategories } from '../../../data/placeholderData';
 
 interface Category {
-  _id: string;
+  id: string;
   name: string;
   description: string;
   icon: string;
@@ -16,14 +16,17 @@ interface Category {
 }
 
 export const CategoryManagement: React.FC = () => {
-  const { data: apiCategories, error } = useCategories();
-  
-  // Use placeholder data when API fails or returns empty results
+  const { data: apiCategories, isLoading, error } = useCategories();
+
   const categories = error || !apiCategories || apiCategories.length === 0 ? placeholderCategories : apiCategories;
-  
+
+  const createCategoryMutation = useCreateCategory();
+  const updateCategoryMutation = useUpdateCategory();
+  const deleteCategoryMutation = useDeleteCategory();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<Partial<Category> | null>(null);
 
   const iconOptions = [
     { value: 'shirt', label: 'Fashion', icon: Shirt },
@@ -38,7 +41,7 @@ export const CategoryManagement: React.FC = () => {
 
   const filteredCategories = categories.filter((category: Category) =>
     category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    category.description.toLowerCase().includes(searchQuery.toLowerCase())
+    (category.description && category.description.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const handleEdit = (category: Category) => {
@@ -46,16 +49,28 @@ export const CategoryManagement: React.FC = () => {
     setShowModal(true);
   };
 
-  const handleDelete = (_categoryId: string) => {
+  const handleAdd = () => {
+    setSelectedCategory({});
+    setShowModal(true);
+  }
+
+  const handleDelete = (categoryId: string) => {
     if (confirm('Are you sure you want to delete this category?')) {
-      // Replace with your delete mutation hook
-      toast.success('Category deleted successfully!');
+      deleteCategoryMutation.mutate(categoryId);
     }
   };
 
   const handleSave = () => {
-    // Replace with your create/update mutation hook
-    toast.success('Category saved successfully!');
+    if (!selectedCategory?.name || !selectedCategory?.description) {
+        toast.error("Name and description are required.");
+        return;
+    }
+    
+    if (selectedCategory.id) {
+        updateCategoryMutation.mutate({ id: selectedCategory.id, updates: selectedCategory });
+    } else {
+        createCategoryMutation.mutate(selectedCategory);
+    }
     setShowModal(false);
     setSelectedCategory(null);
   };
@@ -73,7 +88,7 @@ export const CategoryManagement: React.FC = () => {
               Organize and manage product categories
             </p>
           </div>
-          <Button variant="primary" icon={Plus} onClick={() => setShowModal(true)}>
+          <Button variant="primary" icon={Plus} onClick={handleAdd}>
             Add Category
           </Button>
         </div>
@@ -141,7 +156,7 @@ export const CategoryManagement: React.FC = () => {
 
             return (
               <motion.div
-                key={category._id}
+                key={category.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
@@ -196,7 +211,7 @@ export const CategoryManagement: React.FC = () => {
                       variant="ghost"
                       size="sm"
                       icon={Trash2}
-                      onClick={() => handleDelete(category._id)}
+                      onClick={() => handleDelete(category.id)}
                       className="text-red-600 hover:text-red-700"
                     />
                   </div>
@@ -210,7 +225,7 @@ export const CategoryManagement: React.FC = () => {
         <Modal
           isOpen={showModal}
           onClose={() => setShowModal(false)}
-          title={selectedCategory?._id ? 'Edit Category' : 'Add Category'}
+          title={selectedCategory?.id ? 'Edit Category' : 'Add Category'}
           size="lg"
         >
           <div className="space-y-6">
@@ -218,6 +233,7 @@ export const CategoryManagement: React.FC = () => {
               <Input
                 label="Category Name"
                 value={selectedCategory?.name || ''}
+                onChange={(e) => setSelectedCategory(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="Enter category name"
               />
               <div>
@@ -226,6 +242,7 @@ export const CategoryManagement: React.FC = () => {
                 </label>
                 <select
                   value={selectedCategory?.icon || ''}
+                  onChange={(e) => setSelectedCategory(prev => ({ ...prev, icon: e.target.value }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
                   {iconOptions.map(option => (
@@ -243,6 +260,7 @@ export const CategoryManagement: React.FC = () => {
               </label>
               <textarea
                 value={selectedCategory?.description || ''}
+                onChange={(e) => setSelectedCategory(prev => ({ ...prev, description: e.target.value }))}
                 rows={4}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
                 placeholder="Enter category description..."
@@ -261,8 +279,9 @@ export const CategoryManagement: React.FC = () => {
                 variant="primary"
                 fullWidth
                 onClick={handleSave}
+                loading={createCategoryMutation.isPending || updateCategoryMutation.isPending}
               >
-                {selectedCategory?._id ? 'Update' : 'Create'} Category
+                {selectedCategory?.id ? 'Update' : 'Create'} Category
               </Button>
             </div>
           </div>
@@ -271,3 +290,4 @@ export const CategoryManagement: React.FC = () => {
     </div>
   );
 };
+

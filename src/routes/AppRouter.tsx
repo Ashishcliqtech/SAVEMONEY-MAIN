@@ -1,38 +1,42 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Layout } from '../components/layout';
 import { LoadingSpinner } from '../components/ui';
-import { Home } from '../pages/Home';
-import { Login, Signup } from '../pages/Auth';
-import { Stores } from '../pages/Stores';
-import { Categories } from '../pages/Categories';
-import { Offers } from '../pages/Offers';
-import { Dashboard } from '../pages/Dashboard';
-import { Wallet } from '../pages/Wallet';
-import { Referrals } from '../pages/Referrals';
-import { Profile } from '../pages/Profile';
-import { Support } from '../pages/Support';
-import { HowItWorks } from '../pages/HowItWorks';
-import { Blog } from '../pages/Blog';
-import { Help } from '../pages/Help';
-import { Notifications } from '../pages/Notifications';
 import { ROUTES } from '../constants';
-import { 
-  AdminDashboard, 
-  UserManagement, 
-  StoreManagement, 
-  CategoryManagement,
-  OfferManagement, 
-  WithdrawalManagement, 
-  ContentManagement,
-  NotificationManagement,
-  ReportManagement,
-  SupportManagement,
-  Analytics, 
-  Settings as AdminSettings 
-} from '../pages/Admin';
 import { useAuth } from '../hooks/useAuth';
+
+// Lazy load pages
+const Home = lazy(() => import('../pages/Home').then(module => ({ default: module.Home })));
+const Login = lazy(() => import('../pages/Auth').then(module => ({ default: module.Login })));
+const Signup = lazy(() => import('../pages/Auth').then(module => ({ default: module.Signup })));
+const Stores = lazy(() => import('../pages/Stores').then(module => ({ default: module.Stores })));
+const Categories = lazy(() => import('../pages/Categories').then(module => ({ default: module.Categories })));
+const Offers = lazy(() => import('../pages/Offers').then(module => ({ default: module.Offers })));
+const Dashboard = lazy(() => import('../pages/Dashboard').then(module => ({ default: module.Dashboard })));
+const Wallet = lazy(() => import('../pages/Wallet').then(module => ({ default: module.Wallet })));
+const Referrals = lazy(() => import('../pages/Referrals').then(module => ({ default: module.Referrals })));
+const Profile = lazy(() => import('../pages/Profile').then(module => ({ default: module.Profile })));
+const Support = lazy(() => import('../pages/Support').then(module => ({ default: module.Support })));
+const HowItWorks = lazy(() => import('../pages/HowItWorks').then(module => ({ default: module.HowItWorks })));
+const Blog = lazy(() => import('../pages/Blog').then(module => ({ default: module.Blog })));
+const Help = lazy(() => import('../pages/Help').then(module => ({ default: module.Help })));
+const Notifications = lazy(() => import('../pages/Notifications').then(module => ({ default: module.Notifications })));
+
+// Lazy load Admin pages
+const AdminDashboard = lazy(() => import('../pages/Admin').then(module => ({ default: module.AdminDashboard })));
+const UserManagement = lazy(() => import('../pages/Admin').then(module => ({ default: module.UserManagement })));
+const StoreManagement = lazy(() => import('../pages/Admin').then(module => ({ default: module.StoreManagement })));
+const CategoryManagement = lazy(() => import('../pages/Admin').then(module => ({ default: module.CategoryManagement })));
+const OfferManagement = lazy(() => import('../pages/Admin').then(module => ({ default: module.OfferManagement })));
+const WithdrawalManagement = lazy(() => import('../pages/Admin').then(module => ({ default: module.WithdrawalManagement })));
+const ContentManagement = lazy(() => import('../pages/Admin').then(module => ({ default: module.ContentManagement })));
+const NotificationManagement = lazy(() => import('../pages/Admin').then(module => ({ default: module.NotificationManagement })));
+const ReportManagement = lazy(() => import('../pages/Admin').then(module => ({ default: module.ReportManagement })));
+const SupportManagement = lazy(() => import('../pages/Admin').then(module => ({ default: module.SupportManagement })));
+const Analytics = lazy(() => import('../pages/Admin').then(module => ({ default: module.Analytics })));
+const AdminSettings = lazy(() => import('../pages/Admin').then(module => ({ default: module.Settings })));
+
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -79,9 +83,10 @@ export const AppRouter: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <Router>
-        <React.Suspense 
+        <Suspense 
           fallback={
             <LoadingSpinner 
+              key="loading-spinner-app"
               size="xl" 
               text="Loading page..." 
               fullScreen 
@@ -138,7 +143,7 @@ export const AppRouter: React.FC = () => {
             {/* Catch-all route */}
             <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
           </Routes>
-        </React.Suspense>
+        </Suspense>
       </Router>
     </QueryClientProvider>
   );

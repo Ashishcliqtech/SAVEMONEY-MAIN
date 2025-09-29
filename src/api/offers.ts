@@ -13,26 +13,6 @@ export interface SearchOffersParams {
     q: string;
 }
 
-export interface CreateOfferPayload {
-    title: string;
-    description: string;
-    offerType: 'coupon' | 'deal';
-    couponCode?: string;
-    store: string;
-    category: string;
-    imageUrl: File; 
-}
-
-export interface UpdateOfferPayload {
-    title?: string;
-    description?: string;
-    offerType?: 'coupon' | 'deal';
-    couponCode?: string;
-    store?: string;
-    category?: string;
-    imageUrl?: File;
-}
-
 export interface OfferPaginatedResponse {
   offers: Offer[];
   totalPages: number;
@@ -63,21 +43,13 @@ export const offersApi = {
     apiClient.post(`/offers/${id}/track`, {}).then(res => res.data),
 
   // Admin
-  createOffer: (payload: CreateOfferPayload): Promise<Offer> => {
-    const formData = new FormData();
-    Object.entries(payload).forEach(([key, value]) => {
-        formData.append(key, value);
-    });
+  createOffer: (formData: FormData): Promise<Offer> => {
     return apiClient.post('/admin/offers', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
     }).then(res => res.data);
   },
 
-  updateOffer: (id: string, payload: UpdateOfferPayload): Promise<Offer> => {
-    const formData = new FormData();
-    Object.entries(payload).forEach(([key, value]) => {
-        formData.append(key, value);
-    });
+  updateOffer: (id: string, formData: FormData): Promise<Offer> => {
     return apiClient.put(`/admin/offers/${id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
     }).then(res => res.data);

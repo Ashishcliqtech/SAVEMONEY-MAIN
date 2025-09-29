@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { motion } from 'framer-motion';
 import { ExternalLink } from 'lucide-react';
 import { Card, LoadingCard } from '../../../components/ui';
@@ -9,7 +9,7 @@ interface StoreCarouselProps {
   stores?: any[];
 }
 
-export const StoreCarousel: React.FC<StoreCarouselProps> = ({ stores: propStores }) => {
+export const StoreCarousel: React.FC<StoreCarouselProps> = memo(({ stores: propStores }) => {
   const { data: apiStores, isLoading, error } = usePopularStores();
   
   // Use prop stores, API stores, or fallback to placeholder data
@@ -69,4 +69,4 @@ export const StoreCarousel: React.FC<StoreCarouselProps> = ({ stores: propStores
       </div>
     </div>
   );
-};
+});

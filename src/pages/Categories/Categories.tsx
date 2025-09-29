@@ -3,9 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { ExternalLink, Shirt, Smartphone, Plane, Utensils, Sparkles, Home, BookOpen, Heart } from 'lucide-react';
 import { Card, Button, Badge, SearchBar, LoadingSpinner } from '../../components/ui';
-import { useCategories } from '../../hooks/useSupabase.tsx';
+import { useCategories } from '../../hooks/useApi';
 import { Link } from 'react-router-dom';
-import { placeholderCategories } from '../../data/placeholderData';
+import { Category } from '../../types';
 
 type SortByType = 'name' | 'stores' | 'offers';
 
@@ -15,12 +15,12 @@ export const Categories: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortByType>('name');
 
-  const { data: apiCategories, isLoading, error } = useCategories();
+  const { data: apiCategories, isLoading } = useCategories();
   
-  // Use placeholder data when API fails or returns empty results
-  const categories = error || !apiCategories || apiCategories.length === 0 ? placeholderCategories : apiCategories;
+  // Use an empty array as a fallback if the API fails or returns no data
+  const categories: Category[] = apiCategories || [];
 
-  const iconMap = {
+  const iconMap: { [key: string]: React.ElementType } = {
     shirt: Shirt,
     smartphone: Smartphone,
     plane: Plane,
@@ -55,13 +55,13 @@ export const Categories: React.FC = () => {
 
   const filteredCategories = categories.filter(category =>
     category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    category.description.toLowerCase().includes(searchQuery.toLowerCase())
+    (category.description && category.description.toLowerCase().includes(searchQuery.toLowerCase()))
   ).sort((a, b) => {
     switch (sortBy) {
       case 'stores':
-        return b.storeCount - a.storeCount;
+        return (b.storeCount || 0) - (a.storeCount || 0);
       case 'offers':
-        return b.offerCount - a.offerCount;
+        return (b.offerCount || 0) - (a.offerCount || 0);
       default:
         return a.name.localeCompare(b.name);
     }
@@ -126,7 +126,10 @@ export const Categories: React.FC = () => {
         {/* Categories Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 mb-8">
           {filteredCategories.map((category, index) => {
-            const IconComponent = iconMap[category.icon as keyof typeof iconMap];
+            // Safely look up the icon, using Sparkles as a fallback for any invalid or missing icon names.
+            const IconComponent = (category.icon && Object.prototype.hasOwnProperty.call(iconMap, category.icon))
+              ? iconMap[category.icon]
+              : Sparkles;
             const bgColor = bgColors[index % bgColors.length];
             const textColor = textColors[index % textColors.length];
 
@@ -140,7 +143,7 @@ export const Categories: React.FC = () => {
                 <Link to={`/categories/${category.id}`}>
                   <Card className="text-center group cursor-pointer h-full flex flex-col" hover padding="md">
                     <div className={`w-20 h-20 mx-auto rounded-2xl ${bgColor} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-200`}>
-                      <IconComponent className={`w-10 h-10 ${textColor}`} />
+                      {IconComponent && <IconComponent className={`w-10 h-10 ${textColor}`} />}
                     </div>
                     
                     <h3 className="text-lg font-semibold text-gray-900 mb-3">
@@ -154,7 +157,7 @@ export const Categories: React.FC = () => {
                     <div className="grid grid-cols-2 gap-4 mb-4">
                       <div className="text-center">
                         <div className="text-lg font-bold text-gray-900">
-                          {category.storeCount}
+                          {category.storeCount ?? 0}
                         </div>
                         <div className="text-sm text-gray-500">
                           {t('categories.stores')}
@@ -162,7 +165,7 @@ export const Categories: React.FC = () => {
                       </div>
                       <div className="text-center">
                         <div className="text-lg font-bold text-green-600">
-                          {category.offerCount}
+                          {category.offerCount ?? 0}
                         </div>
                         <div className="text-sm text-gray-500">
                           {t('categories.offers')}
@@ -201,7 +204,10 @@ export const Categories: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {filteredCategories.slice(0, 3).map((category, index) => {
-              const IconComponent = iconMap[category.icon as keyof typeof iconMap];
+              // Apply the same safe icon lookup logic here for popular categories
+              const IconComponent = (category.icon && Object.prototype.hasOwnProperty.call(iconMap, category.icon))
+                ? iconMap[category.icon]
+                : Sparkles;
               const bgColor = bgColors[index % bgColors.length];
               const textColor = textColors[index % textColors.length];
 
@@ -220,7 +226,7 @@ export const Categories: React.FC = () => {
                     </div>
                     
                     <div className={`w-16 h-16 mx-auto rounded-2xl ${bgColor} flex items-center justify-center mb-4`}>
-                      <IconComponent className={`w-8 h-8 ${textColor}`} />
+                      {IconComponent && <IconComponent className={`w-8 h-8 ${textColor}`} />}
                     </div>
                     
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -228,10 +234,10 @@ export const Categories: React.FC = () => {
                     </h3>
                     
                     <div className="flex items-center justify-center space-x-4 text-sm text-gray-600 mb-4">
-                      <span>{category.storeCount} stores</span>
+                      <span>{category.storeCount ?? 0} stores</span>
                       <span>•</span>
                       <span className="text-green-600 font-medium">
-                        {category.offerCount} offers
+                        {category.offerCount ?? 0} offers
                       </span>
                     </div>
 
@@ -250,3 +256,5 @@ export const Categories: React.FC = () => {
     </div>
   );
 };
+
+

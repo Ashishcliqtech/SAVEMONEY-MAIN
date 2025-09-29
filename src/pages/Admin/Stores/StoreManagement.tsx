@@ -1,111 +1,100 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Store, Search, Plus, Trash2, Eye, Star } from 'lucide-react';
-import { Card, Button, Badge, Input, Modal, Pagination, ImageUpload } from '../../../components/ui';
-import { useStores, useCategories, useCreateStore, useUpdateStore, useDeleteStore } from '../../../hooks/useSupabase.tsx';
-import { placeholderStores, placeholderCategories } from '../../../data/placeholderData';
+import { Store as StoreIcon, Search, Plus, Trash2, Eye, Star, AlertTriangle } from 'lucide-react';
+import { Card, Button, Badge, Input, Modal, Pagination, ImageUpload, EmptyState, LoadingSpinner } from '../../../components/ui';
+import { useStores, useCategories, useCreateStore, useUpdateStore, useDeleteStore } from '../../../hooks/useApi';
+import { Store, Category } from '../../../types';
+import toast from 'react-hot-toast';
 
-interface StoreType {
-  id: string;
-  name: string;
-  description: string;
-  website_url: string;
-  cashback_rate: number;
-  category_id: string;
-  is_popular: boolean;
-  logo_url: string;
-  banner_url: string;
-  category?: { name: string };
-  total_offers: number;
-}
+const initialFormState = {
+  name: '',
+  description: '',
+  url: '',
+  cashback_rate: 0,
+  category: '',
+  isPopular: false,
+  isFeatured: false,
+  logo: '',
+  banner_url: '',
+};
 
 export const StoreManagement: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [showStoreModal, setShowStoreModal] = useState(false);
-  const [selectedStore, setSelectedStore] = useState<StoreType | null>(null);
+  const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
+  const [storeForm, setStoreForm] = useState<Partial<Store>>(initialFormState);
   const [currentPage, setCurrentPage] = useState(1);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
-  const [storeForm, setStoreForm] = useState({
-    name: '',
-    description: '',
-    website_url: '',
-    cashback_rate: 0,
-    category_id: '',
-    is_popular: false,
-    logo_url: '',
-    banner_url: '',
-  });
+  const [storeToDelete, setStoreToDelete] = useState<Store | null>(null);
 
-  const { data: storesData, isLoading } = useStores({
+  const { data: storesData, isLoading: isLoadingStores } = useStores({
     search: searchQuery,
     category: categoryFilter !== 'all' ? categoryFilter : undefined,
     page: currentPage,
     limit: 9,
   });
-  
-  const { data: apiCategories, error: categoriesError } = useCategories();
-  
-  const stores = !storesData?.stores || storesData.stores.length === 0 ? placeholderStores : storesData.stores;
-  const totalPages = !storesData ? Math.ceil(placeholderStores.length / 9) : storesData.totalPages || 1;
-  const categories = categoriesError || !apiCategories || apiCategories.length === 0 ? placeholderCategories : apiCategories;
-  
+
+  const { data: categories, isLoading: isLoadingCategories } = useCategories();
+
+  const stores = storesData?.stores || [];
+  const totalPages = storesData?.totalPages || 1;
+
   const createStoreMutation = useCreateStore();
   const updateStoreMutation = useUpdateStore();
   const deleteStoreMutation = useDeleteStore();
 
-  const handleEditStore = (store: StoreType) => {
-    setSelectedStore(store);
+  const handleEditStore = (store: Store) => {
+    setSelectedStoreId(store._id || store.id);
     setStoreForm({
-      name: store.name,
-      description: store.description || '',
-      website_url: store.website_url || '',
-      cashback_rate: store.cashback_rate,
-      category_id: store.category_id || '',
-      is_popular: store.is_popular,
-      logo_url: store.logo_url || '',
-      banner_url: store.banner_url || '',
-    });
-    setShowStoreModal(true);
-  };
-
-  const handleDeleteStore = (storeId: string) => {
-    if (confirm('Are you sure you want to delete this store?')) {
-      deleteStoreMutation.mutate(storeId);
-    }
-  };
-
-  const handleAddStore = () => {
-    setSelectedStore(null);
-    setStoreForm({
-      name: '',
-      description: '',
-      website_url: '',
-      cashback_rate: 0,
-      category_id: '',
-      is_popular: false,
-      logo_url: '',
-      banner_url: '',
+        ...store,
+        category: typeof store.category === 'object' ? (store.category as Category)?._id : store.category,
     });
     setLogoFile(null);
     setBannerFile(null);
     setShowStoreModal(true);
   };
 
+  const handleConfirmDelete = () => {
+    if (storeToDelete) {
+      const idToDelete = storeToDelete._id || storeToDelete.id;
+      if (idToDelete) {
+        deleteStoreMutation.mutate(idToDelete);
+      } else {
+        toast.error("Could not delete store: ID is missing.");
+      }
+      setStoreToDelete(null);
+    }
+  };
+
+  const handleAddStore = () => {
+    setSelectedStoreId(null);
+    setStoreForm(initialFormState);
+    setLogoFile(null);
+    setBannerFile(null);
+    setShowStoreModal(true);
+  };
+
   const handleSaveStore = () => {
+    if (!storeForm.name || !storeForm.category) {
+      toast.error("Name and category are required.");
+      return;
+    }
+
     const formData = new FormData();
+
     Object.entries(storeForm).forEach(([key, value]) => {
-        if (value !== null && value !== undefined) {
-            formData.append(key, String(value));
-        }
+      if (value !== null && value !== undefined) {
+        formData.append(key, String(value));
+      }
     });
 
     if (logoFile) formData.append('logo', logoFile);
-    if (bannerFile) formData.append('banner', bannerFile);
-    
-    if (selectedStore) {
-      updateStoreMutation.mutate({ id: selectedStore.id, updates: formData });
+    if (bannerFile) formData.append('banner_url', bannerFile);
+
+    if (selectedStoreId) {
+      updateStoreMutation.mutate({ id: selectedStoreId, updates: formData });
     } else {
       createStoreMutation.mutate(formData);
     }
@@ -144,108 +133,105 @@ export const StoreManagement: React.FC = () => {
                   className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 w-full sm:w-64"
                 />
               </div>
-              
+
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
                 className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                disabled={isLoadingCategories}
               >
                 <option value="all">All Categories</option>
-                {categories?.map(category => (
-                  <option key={category.id} value={category.id}>{category.name}</option>
+                {categories?.map((category: Category) => (
+                  <option key={category._id} value={category._id}>{category.name}</option>
                 ))}
               </select>
             </div>
 
             <div className="text-sm text-gray-600">
-              Showing {stores.length} of {storesData?.total || placeholderStores.length} stores
+              Showing {stores.length} of {storesData?.totalStores || 0} stores
             </div>
           </div>
         </Card>
 
         {/* Stores Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {stores.map((store: StoreType, index: number) => (
-            <motion.div
-              key={store.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Card className="h-full flex flex-col" hover>
-                <div className="relative mb-4">
-                  <img
-                    src={store.logo_url || 'https://images.pexels.com/photos/6214476/pexels-photo-6214476.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop'}
-                    alt={store.name}
-                    className="w-full h-40 object-cover rounded-lg"
-                  />
-                  {store.is_popular && (
-                    <Badge variant="warning" size="sm" className="absolute top-2 left-2">
-                      🔥 Popular
-                    </Badge>
-                  )}
-                  <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-sm font-semibold">
-                    {store.cashback_rate}% back
-                  </div>
-                </div>
-
-                <div className="flex-1 flex flex-col">
-                  <h3 className="font-semibold text-lg text-gray-900 mb-2">
-                    {store.name}
-                  </h3>
-                  <p className="text-sm text-gray-500 mb-2">{store.category?.name}</p>
-                  <p className="text-sm text-gray-600 mb-4 line-clamp-2 flex-1">
-                    {store.description}
-                  </p>
-
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-1">
-                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                      <span className="text-sm text-gray-600">4.5</span>
+        {isLoadingStores ? <LoadingSpinner /> : (
+          stores.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {stores.map((store: Store, index: number) => (
+                <motion.div
+                  key={store._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card className="h-full flex flex-col" hover>
+                    <div className="relative mb-4">
+                      <img
+                        src={store.logo || 'https://placehold.co/400x200/eee/ccc?text=Store+Logo'}
+                        alt={store.name}
+                        className="w-full h-40 object-cover rounded-lg"
+                      />
+                      {store.isPopular && (
+                        <Badge variant="warning" size="sm" className="absolute top-2 left-2">
+                          🔥 Popular
+                        </Badge>
+                      )}
+                      <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-sm font-semibold">
+                        {store.cashback_rate}% back
+                      </div>
                     </div>
-                    <span className="text-sm text-gray-500">
-                      {store.total_offers} offers
-                    </span>
-                  </div>
 
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      icon={Eye}
-                      onClick={() => handleEditStore(store)}
-                      className="flex-1"
-                    >
-                      View
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      icon={Trash2}
-                      onClick={() => handleDeleteStore(store.id)}
-                      className="text-red-600 hover:text-red-700"
-                    />
-                  </div>
-                </div>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
+                    <div className="flex-1 flex flex-col">
+                      <h3 className="font-semibold text-lg text-gray-900 mb-2">
+                        {store.name}
+                      </h3>
+                      <p className="text-sm text-gray-500 mb-2">{store.category?.name}</p>
+                      <p className="text-sm text-gray-600 mb-4 line-clamp-2 flex-1">
+                        {store.description}
+                      </p>
 
-        {stores.length === 0 && !isLoading && (
-          <Card className="text-center py-12">
-            <Store className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No stores found
-            </h3>
-            <p className="text-gray-500 mb-4">
-              Try adjusting your search or filter criteria
-            </p>
-            <Button variant="primary" icon={Plus} onClick={handleAddStore}>
-              Add First Store
-            </Button>
-          </Card>
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center space-x-1">
+                          <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                          <span className="text-sm text-gray-600">4.5</span>
+                        </div>
+                        <span className="text-sm text-gray-500">
+                          {store.totalOffers || 0} offers
+                        </span>
+                      </div>
+
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          icon={Eye}
+                          onClick={() => handleEditStore(store)}
+                          className="flex-1"
+                        >
+                          View
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          icon={Trash2}
+                          onClick={() => setStoreToDelete(store)}
+                          className="text-red-600 hover:text-red-700"
+                        />
+                      </div>
+                    </div>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              title="No stores found"
+              message="Try adjusting your search or filter criteria, or add a new store to get started."
+              icon={StoreIcon}
+            />
+          )
         )}
+
 
         {/* Pagination */}
         {stores.length > 0 && (
@@ -260,27 +246,27 @@ export const StoreManagement: React.FC = () => {
         <Modal
           isOpen={showStoreModal}
           onClose={() => setShowStoreModal(false)}
-          title={selectedStore ? 'Edit Store' : 'Add Store'}
+          title={selectedStoreId ? 'Edit Store' : 'Add Store'}
           size="xl"
         >
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Store Name"
-                value={storeForm.name}
+                value={storeForm.name || ''}
                 onChange={(e) => setStoreForm(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="Enter store name"
               />
               <Input
                 label="Website URL"
-                value={storeForm.website_url}
-                onChange={(e) => setStoreForm(prev => ({ ...prev, website_url: e.target.value }))}
+                value={storeForm.url || ''}
+                onChange={(e) => setStoreForm(prev => ({ ...prev, url: e.target.value }))}
                 placeholder="https://example.com"
               />
               <Input
                 label="Cashback Rate (%)"
                 type="number"
-                value={storeForm.cashback_rate}
+                value={storeForm.cashback_rate || 0}
                 onChange={(e) => setStoreForm(prev => ({ ...prev, cashback_rate: parseFloat(e.target.value) || 0 }))}
                 placeholder="5"
               />
@@ -289,13 +275,13 @@ export const StoreManagement: React.FC = () => {
                   Category
                 </label>
                 <select
-                  value={storeForm.category_id}
-                  onChange={(e) => setStoreForm(prev => ({ ...prev, category_id: e.target.value }))}
+                  value={storeForm.category as string || ''}
+                  onChange={(e) => setStoreForm(prev => ({ ...prev, category: e.target.value }))}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="">Select Category</option>
-                  {categories.map(category => (
-                    <option key={category.id} value={category.id}>{category.name}</option>
+                  {categories?.map((category: Category) => (
+                    <option key={category._id} value={category._id}>{category.name}</option>
                   ))}
                 </select>
               </div>
@@ -303,12 +289,24 @@ export const StoreManagement: React.FC = () => {
                 <input
                   type="checkbox"
                   id="isPopular"
-                  checked={storeForm.is_popular}
-                  onChange={(e) => setStoreForm(prev => ({ ...prev, is_popular: e.target.checked }))}
+                  checked={storeForm.isPopular || false}
+                  onChange={(e) => setStoreForm(prev => ({ ...prev, isPopular: e.target.checked }))}
                   className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
                 />
                 <label htmlFor="isPopular" className="ml-2 text-sm text-gray-700">
                   Mark as Popular
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="isFeatured"
+                  checked={storeForm.isFeatured || false}
+                  onChange={(e) => setStoreForm(prev => ({ ...prev, isFeatured: e.target.checked }))}
+                  className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                />
+                <label htmlFor="isFeatured" className="ml-2 text-sm text-gray-700">
+                  Mark as Featured
                 </label>
               </div>
             </div>
@@ -320,7 +318,7 @@ export const StoreManagement: React.FC = () => {
               </label>
               <ImageUpload
                 onFileSelect={setLogoFile}
-                currentImage={storeForm.logo_url}
+                currentImage={storeForm.logo}
                 placeholder="Upload store logo"
               />
             </div>
@@ -341,7 +339,7 @@ export const StoreManagement: React.FC = () => {
                 Description
               </label>
               <textarea
-                value={storeForm.description}
+                value={storeForm.description || ''}
                 onChange={(e) => setStoreForm(prev => ({ ...prev, description: e.target.value }))}
                 rows={4}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
@@ -363,7 +361,42 @@ export const StoreManagement: React.FC = () => {
                 onClick={handleSaveStore}
                 loading={createStoreMutation.isPending || updateStoreMutation.isPending}
               >
-                {selectedStore ? 'Update Store' : 'Create Store'}
+                {selectedStoreId ? 'Update Store' : 'Create Store'}
+              </Button>
+            </div>
+          </div>
+        </Modal>
+
+        {/* Delete Confirmation Modal */}
+        <Modal
+          isOpen={!!storeToDelete}
+          onClose={() => setStoreToDelete(null)}
+          title="Confirm Deletion"
+          size="md"
+        >
+          <div className="text-center">
+            <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+              <AlertTriangle className="w-8 h-8 text-red-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Delete Store
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete the store "{storeToDelete?.name}"? This action cannot be undone.
+            </p>
+            <div className="flex justify-center space-x-4">
+              <Button
+                variant="outline"
+                onClick={() => setStoreToDelete(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleConfirmDelete}
+                loading={deleteStoreMutation.isPending}
+              >
+                Delete
               </Button>
             </div>
           </div>

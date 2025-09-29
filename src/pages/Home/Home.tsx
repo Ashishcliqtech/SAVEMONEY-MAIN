@@ -10,8 +10,8 @@ import { OfferGrid } from './components/OfferGrid';
 import { RecommendedOffersCarousel } from './components/RecommendedOffersCarousel';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../../constants';
-import { useFeaturedOffers, usePopularStores, useTrendingOffers } from '../../hooks/useSupabase';
-import { placeholderOffers, placeholderStores, placeholderCategories } from '../../data/placeholderData';
+import { useFeaturedOffers, usePopularStores, useTrendingOffers, useCategories } from '../../hooks/useApi';
+import { placeholderOffers, placeholderStores } from '../../data/placeholderData';
 
 export const Home: React.FC = () => {
   const { t } = useTranslation();
@@ -19,10 +19,12 @@ export const Home: React.FC = () => {
   const { data: featuredOffers, error: featuredError } = useFeaturedOffers(4);
   const { data: trendingOffers, error: trendingError } = useTrendingOffers();
   const { data: popularStores, error: popularError } = usePopularStores();
+  const { data: categories, isLoading: categoriesLoading, error: categoriesError } = useCategories();
 
   const finalFeaturedOffers = featuredError || !featuredOffers || featuredOffers.length === 0 ? placeholderOffers : featuredOffers;
   const finalTrendingOffers = trendingError || !trendingOffers || trendingOffers.length === 0 ? placeholderOffers : trendingOffers;
   const finalPopularStores = popularError || !popularStores || popularStores.length === 0 ? placeholderStores : popularStores;
+  const finalCategories = categoriesError || !categories || categories.length === 0 ? [] : categories;
 
   // Mock data
   const featuredStats = [
@@ -189,7 +191,7 @@ export const Home: React.FC = () => {
           <h2 className="text-3xl font-bold text-gray-900">{t('home.popularCategories')}</h2>
           <p className="text-gray-600 mt-2">Discover deals across all categories</p>
         </div>
-        <CategoryGrid categories={placeholderCategories} />
+        <CategoryGrid categories={finalCategories} isLoading={categoriesLoading} />
       </section>
 
       {/* How It Works */}

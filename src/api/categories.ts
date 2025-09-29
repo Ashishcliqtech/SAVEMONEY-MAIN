@@ -5,11 +5,13 @@ import { Category, Offer, Store } from '../types';
 export interface CreateCategoryPayload {
     name: string;
     description: string;
+    icon: string;
 }
 
 export interface UpdateCategoryPayload {
     name?: string;
     description?: string;
+    icon?: string;
 }
 
 

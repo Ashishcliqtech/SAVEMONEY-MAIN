@@ -1,24 +1,16 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Grid3x3 as Grid3X3, Search, Plus, Edit, Trash2, Eye, Package, Shirt, Smartphone, Plane, Utensils, Sparkles, Home, BookOpen, Heart, Star, TrendingUp } from 'lucide-react';
+import { Grid3x3 as Grid3X3, Search, Plus, Edit, Trash2, Eye, Package, Star, TrendingUp, AlertTriangle } from 'lucide-react';
 import { Card, Button, Input, Modal } from '../../../components/ui';
-import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '../../../hooks/useSupabase';
+import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from '../../../hooks/useApi';
 import toast from 'react-hot-toast';
-import { placeholderCategories } from '../../../data/placeholderData';
-
-interface Category {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  storeCount: number;
-  offerCount: number;
-}
+import { Category } from '../../../types';
+import { iconOptions, iconMap } from '../../../utils/iconMap';
 
 export const CategoryManagement: React.FC = () => {
-  const { data: apiCategories, isLoading, error } = useCategories();
+  const { data: apiCategories, isLoading } = useCategories();
 
-  const categories = error || !apiCategories || apiCategories.length === 0 ? placeholderCategories : apiCategories;
+  const categories: Category[] = apiCategories || [];
 
   const createCategoryMutation = useCreateCategory();
   const updateCategoryMutation = useUpdateCategory();
@@ -27,17 +19,7 @@ export const CategoryManagement: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Partial<Category> | null>(null);
-
-  const iconOptions = [
-    { value: 'shirt', label: 'Fashion', icon: Shirt },
-    { value: 'smartphone', label: 'Electronics', icon: Smartphone },
-    { value: 'plane', label: 'Travel', icon: Plane },
-    { value: 'utensils', label: 'Food', icon: Utensils },
-    { value: 'sparkles', label: 'Beauty', icon: Sparkles },
-    { value: 'home', label: 'Home', icon: Home },
-    { value: 'book-open', label: 'Books', icon: BookOpen },
-    { value: 'heart', label: 'Health', icon: Heart },
-  ];
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
 
   const filteredCategories = categories.filter((category: Category) =>
     category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -50,24 +32,36 @@ export const CategoryManagement: React.FC = () => {
   };
 
   const handleAdd = () => {
-    setSelectedCategory({});
+    // Set a default icon to ensure it's always sent to the backend
+    setSelectedCategory({ icon: 'shirt' });
     setShowModal(true);
   }
 
-  const handleDelete = (categoryId: string) => {
-    if (confirm('Are you sure you want to delete this category?')) {
-      deleteCategoryMutation.mutate(categoryId);
+  const handleDelete = (category: Category) => {
+    setCategoryToDelete(category);
+  };
+
+  const handleConfirmDelete = () => {
+    if (categoryToDelete) {
+      const idToDelete = categoryToDelete._id || categoryToDelete.id;
+      if (idToDelete) {
+        deleteCategoryMutation.mutate(idToDelete);
+      } else {
+        toast.error("Could not delete category: ID is missing.");
+      }
+      setCategoryToDelete(null);
     }
   };
 
   const handleSave = () => {
-    if (!selectedCategory?.name || !selectedCategory?.description) {
-        toast.error("Name and description are required.");
+    if (!selectedCategory?.name || !selectedCategory?.description || !selectedCategory?.icon) {
+        toast.error("Name, description, and icon are required.");
         return;
     }
     
-    if (selectedCategory.id) {
-        updateCategoryMutation.mutate({ id: selectedCategory.id, updates: selectedCategory });
+    const categoryId = selectedCategory._id || selectedCategory.id;
+    if (categoryId) {
+        updateCategoryMutation.mutate({ id: categoryId, updates: selectedCategory });
     } else {
         createCategoryMutation.mutate(selectedCategory);
     }
@@ -151,12 +145,11 @@ export const CategoryManagement: React.FC = () => {
         {/* Categories Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
           {filteredCategories.map((category: Category, index: number) => {
-            const iconOption = iconOptions.find(opt => opt.value === category.icon);
-            const IconComponent = iconOption?.icon || Package;
+            const IconComponent = iconMap[category.icon] || Package;
 
             return (
               <motion.div
-                key={category.id}
+                key={category._id || category.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
@@ -211,7 +204,7 @@ export const CategoryManagement: React.FC = () => {
                       variant="ghost"
                       size="sm"
                       icon={Trash2}
-                      onClick={() => handleDelete(category.id)}
+                      onClick={() => handleDelete(category)}
                       className="text-red-600 hover:text-red-700"
                     />
                   </div>
@@ -282,6 +275,41 @@ export const CategoryManagement: React.FC = () => {
                 loading={createCategoryMutation.isPending || updateCategoryMutation.isPending}
               >
                 {selectedCategory?.id ? 'Update' : 'Create'} Category
+              </Button>
+            </div>
+          </div>
+        </Modal>
+
+        {/* Delete Confirmation Modal */}
+        <Modal
+          isOpen={!!categoryToDelete}
+          onClose={() => setCategoryToDelete(null)}
+          title="Confirm Deletion"
+          size="md"
+        >
+          <div className="text-center">
+            <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <AlertTriangle className="w-8 h-8 text-red-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                Delete Category
+            </h3>
+            <p className="text-gray-600 mb-6">
+                Are you sure you want to delete the category "{categoryToDelete?.name}"? This action cannot be undone.
+            </p>
+            <div className="flex justify-center space-x-4">
+              <Button
+                variant="outline"
+                onClick={() => setCategoryToDelete(null)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                onClick={handleConfirmDelete}
+                loading={deleteCategoryMutation.isPending}
+              >
+                Delete
               </Button>
             </div>
           </div>

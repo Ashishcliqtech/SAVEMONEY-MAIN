@@ -2,16 +2,12 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Users, Search, Plus, CreditCard as Edit, Trash2, Eye, Ban, CheckCircle, Mail, Phone, Calendar } from 'lucide-react';
 import { Card, Button, Badge, Input, Modal, Pagination, EmptyState, LoadingSpinner } from '../../../components/ui';
-import { useUsers } from '../../../hooks/useSupabase.tsx';
-import { placeholderUsers } from '../../../data/placeholderData';
+import { useUsers } from '../../../hooks/useApi';
+import { User as UserType } from '../../../types';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
+interface User extends UserType {
   status: 'active' | 'inactive' | 'banned';
-  totalCashback: number;
+  totalCashback?: number; // Made optional to prevent crashes
   joinedDate: string;
   lastLogin: string;
   avatar: string;
@@ -20,8 +16,7 @@ interface User {
 export const UserManagement: React.FC = () => {
   const { data: apiUsers, isLoading, error } = useUsers();
   
-  // Use placeholder data when API fails or returns empty results
-  const users = error || !apiUsers || apiUsers.length === 0 ? placeholderUsers : apiUsers;
+  const users: User[] = (apiUsers as User[]) || [];
   
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -174,7 +169,7 @@ export const UserManagement: React.FC = () => {
                       </td>
                       <td className="py-4 px-4">
                         <div className="font-medium text-gray-900">
-                          ₹{user.totalCashback.toLocaleString()}
+                          ₹{(user.totalCashback || 0).toLocaleString()}
                         </div>
                       </td>
                       <td className="py-4 px-4">

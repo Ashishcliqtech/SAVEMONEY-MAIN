@@ -5,50 +5,67 @@ export interface User {
     email: string;
     phone: string;
     role: 'user' | 'admin';
+    avatar?: string;
     referralCode?: string;
     referredBy?: string;
     createdAt: string;
     updatedAt: string;
+    totalCashback?: number;
+    availableCashback?: number;
+    pendingCashback?: number;
 }
 
 // Category Type
 export interface Category {
-    id: string;
+    id?: string; // Mongoose virtual, may not always be present
+    _id: string; // The actual MongoDB document ID
     name: string;
     description: string;
+    icon: string;
+    storeCount?: number;
+    offerCount?: number;
     createdAt: string;
     updatedAt: string;
 }
 
 // Store Type
 export interface Store {
-    id: string;
+    _id: string; // Use _id from MongoDB
+    id: string; // Keep id for compatibility if needed
     name: string;
     description: string;
     url: string;
     logo: string;
-    category: string; // Or Category if populated
+    banner_url?: string;
+    category: Category; // Should be populated
     isPopular: boolean;
     isFeatured: boolean;
+    cashback_rate: number;
+    totalOffers?: number; // From virtual
     createdAt: string;
     updatedAt: string;
 }
 
 // Offer Type
 export interface Offer {
+    _id: string;
     id: string;
     title: string;
     description: string;
-    offerType: 'coupon' | 'deal';
+    offerType: 'coupon' | 'deal' | 'cashback';
     couponCode?: string;
-    store: string; // Or Store if populated
-    category: string; // Or Category if populated
+    store: Store; // Assuming it's populated
+    category: Category; // Assuming it's populated
     imageUrl: string;
-    startDate: string;
-    endDate: string;
+    expiryDate: string;
     isTrending: boolean;
     isFeatured: boolean;
     isExclusive: boolean;
+    cashbackRate: number;
+    originalPrice?: number;
+    discountedPrice?: number;
+    terms?: string[];
+    minOrderValue?: number;
     createdAt: string;
     updatedAt: string;
 }
@@ -56,27 +73,31 @@ export interface Offer {
 // Wallet & Transaction Types
 export interface Wallet {
     id: string;
-    user: string; // Or User if populated
-    balance: number;
-    pendingBalance: number;
+    user: string;
+    totalCashback: number;
+    availableCashback: number;
+    pendingCashback: number;
+    withdrawnCashback: number;
     updatedAt: string;
 }
 
 export interface Transaction {
     id: string;
-    user: string; // Or User if populated
-    type: 'credit' | 'debit';
+    user: string;
+    orderId: string;
+    store: { name: string; logo: string };
+    date: string;
     amount: number;
-    description: string;
-    status: 'pending' | 'completed' | 'failed';
+    cashbackEarned: number;
+    status: 'pending' | 'confirmed' | 'failed';
     createdAt: string;
 }
 
 export interface Withdrawal {
     id: string;
-    user: string; // Or User if populated
+    user: string;
     amount: number;
-    status: 'pending' | 'approved' | 'rejected';
+    status: 'pending' | 'approved' | 'rejected' | 'processing' | 'completed';
     paymentDetails: {
         method: string;
         [key: string]: any;
@@ -88,10 +109,17 @@ export interface Withdrawal {
 // Content Section Type
 export interface ContentSection {
     id: string;
-    title: string;
+    name: string;
+    type: 'hero' | 'featured' | 'highlighted' | 'banner' | 'testimonial';
+    status: 'active' | 'inactive' | 'scheduled';
+    position: number;
+    devices: ('desktop' | 'tablet' | 'mobile')[];
+    lastModified: string;
     page: string;
     content: any; // JSON object
     imageUrl?: string;
     createdAt: string;
     updatedAt: string;
 }
+
+export type Language = 'en' | 'hi';

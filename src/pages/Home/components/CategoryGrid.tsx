@@ -9,23 +9,18 @@ import {
   Home,
   BookOpen,
   Heart,
+  Package,
 } from 'lucide-react';
 import { Card, LoadingCard } from '../../../components/ui';
-import { useCategories } from '../../../hooks/useSupabase';
-import { placeholderCategories } from '../../../data/placeholderData';
+import { Category } from '../../../types';
 
 interface CategoryGridProps {
-  categories?: any[];
+  categories: Category[];
+  isLoading: boolean;
 }
 
-export const CategoryGrid: React.FC<CategoryGridProps> = ({ categories: propCategories }) => {
-  const { data: apiCategories, isLoading, error } = useCategories();
-  
-  // Use prop categories, API categories, or fallback to placeholder data
-  const categories = propCategories || 
-    (error || !apiCategories || apiCategories.length === 0 ? placeholderCategories : apiCategories);
-
-  const iconMap = {
+export const CategoryGrid: React.FC<CategoryGridProps> = ({ categories, isLoading }) => {
+  const iconMap: { [key: string]: React.ElementType } = {
     shirt: Shirt,
     smartphone: Smartphone,
     plane: Plane,
@@ -71,13 +66,13 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({ categories: propCate
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 sm:gap-6">
       {categories.map((category, index) => {
-        const IconComponent = iconMap[category.icon as keyof typeof iconMap];
+        const IconComponent = iconMap[category.icon] || Package;
         const bgColor = bgColors[index % bgColors.length];
         const textColor = textColors[index % textColors.length];
         
         return (
           <motion.div
-            key={category.id}
+            key={category._id || category.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
@@ -91,10 +86,10 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({ categories: propCate
               
               <div className="space-y-1 mt-auto">
                 <div className="text-xs text-gray-600">
-                  {category.storeCount} stores
+                  {category.storeCount || 0} stores
                 </div>
                 <div className="text-xs text-green-600 font-medium">
-                  {category.offerCount} offers
+                  {category.offerCount || 0} offers
                 </div>
               </div>
             </Card>
@@ -104,3 +99,4 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({ categories: propCate
     </div>
   );
 };
+

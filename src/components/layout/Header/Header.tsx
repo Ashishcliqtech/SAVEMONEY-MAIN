@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, ChevronDown, Globe, ShoppingBag, Wallet, CircleUser as UserCircle, LogOut, Settings, Loader } from 'lucide-react';
-import { Button, SearchBar, NotificationDropdown } from '../../ui';
+import { Button, SearchBar } from '../../ui';
 import { useLanguage } from '../../../hooks';
 import { useAuth } from '../../../hooks/useAuth';
 import { ROUTES } from '../../../constants';
@@ -82,9 +82,9 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Right Section */}
           <div className="flex items-center space-x-2 lg:space-x-4 flex-shrink-0">
             {/* Notifications */}
-            {isAuthenticated && (
+            {/* {isAuthenticated && (
               <NotificationDropdown />
-            )}
+            )} */}
 
             {/* Language Selector */}
             <div className="relative hidden sm:block">

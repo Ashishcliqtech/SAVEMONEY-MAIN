@@ -242,15 +242,19 @@ export const OfferManagement: React.FC = () => {
 
                 <div className="flex-1 flex flex-col">
                   <div className="flex items-center space-x-2 mb-2">
-                    <img
-                      src={offer.store?.logo_url || 'https://images.pexels.com/photos/6214476/pexels-photo-6214476.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop'}
-                      alt={offer.store.name}
-                      className="w-6 h-6 rounded-full object-cover"
-                    />
-                    <span className="text-sm font-medium text-gray-600">
-                      {offer.store.name}
-                    </span>
-                  </div>
+  <img
+    src={
+      offer.store?.logo_url ||
+      'https://images.pexels.com/photos/6214476/pexels-photo-6214476.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop'
+    }
+    alt={offer.store?.name || 'Store'}
+    className="w-6 h-6 rounded-full object-cover"
+  />
+  <span className="text-sm font-medium text-gray-600">
+    {offer.store?.name || 'Unknown Store'}
+  </span>
+</div>
+
 
                   <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
                     {offer.title}

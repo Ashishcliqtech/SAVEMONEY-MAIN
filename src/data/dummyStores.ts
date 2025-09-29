@@ -23,7 +23,7 @@ export const dummyStores = [
         id: 'dummy-store-3',
         name: 'Myntra',
         logo: 'https://via.placeholder.com/150/E3336F/FFFFFF?text=M',
-        isPopular: false,
+        isPopular: true,
         cashbackRate: 8,
         category: 'Fashion',
         description: 'Online Shopping for women, men, kids fashion & lifestyle. Best fashion website in India for online shopping of clothes, footwear, accessories & more.',

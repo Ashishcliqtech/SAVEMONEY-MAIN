@@ -1,102 +1,287 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, Search, Bell, Wallet, ChevronDown, User, LogOut } from 'lucide-react';
+import { Menu, Search, Bell, Wallet, ChevronDown, User, LogOut, X, TrendingUp, Users, ShoppingBag } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
 import { useWallet } from '../../../hooks/useSupabase';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '../../ui';
+import { ROUTES } from '../../../constants';
+
 
 interface HeaderProps {
   onSidebarToggle: () => void;
-  showSidebarToggle: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onSidebarToggle, showSidebarToggle }) => {
-  const { user, logout } = useAuth();
+export const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
+  const { user, logout, isAuthenticated } = useAuth();
   const { data: wallet, isLoading } = useWallet(user?.id);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const formatBalance = () => {
     if (isLoading) {
-      return <span className="h-4 w-16 bg-gray-200 rounded animate-pulse"></span>;
+      return <span className="h-4 w-12 bg-gray-200 rounded animate-pulse inline-block"></span>;
     }
-    if (wallet?.balance != null) {
-      return `₹${wallet.balance.toLocaleString()}`;
+    if (wallet?.availableCashback != null) {
+      return `₹${wallet.availableCashback.toLocaleString()}`;
     }
-    return 'N/A';
+    return '₹0';
+  };
+  
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsMobileSearchOpen(false);
+        setIsProfileMenuOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const mobileMenuVariants = {
+    open: { opacity: 1, y: 0, transition: { ease: "easeOut" } },
+    closed: { opacity: 0, y: "-100%", transition: { ease: "easeIn" } },
+  };
+
+  const dropdownVariants = {
+    open: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.2, ease: "easeOut" } },
+    closed: { opacity: 0, y: 10, scale: 0.95, transition: { duration: 0.1, ease: "easeIn" } },
   };
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-30">
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center">
+        <div className="flex items-center justify-between h-20">
+          
+          {/* Left Side: Sidebar Toggle & Logo */}
+          <div className="flex items-center space-x-2">
             <button
               onClick={onSidebarToggle}
-              className={`${showSidebarToggle ? 'block' : 'hidden'} -ml-2 mr-2 p-2 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100`}
+              className={`-ml-2 p-2 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100`}
             >
               <Menu className="h-6 w-6" />
             </button>
-            <div className="hidden lg:flex items-center space-x-2">
-              <Search className="h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search anything..."
-                className="border-none focus:ring-0 p-0"
-              />
-            </div>
+            <Link to={ROUTES.HOME} className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-teal-600 rounded-lg flex items-center justify-center">
+                    <ShoppingBag className="w-5 h-5 text-white" />
+                </div>
+                <span className="hidden sm:inline text-xl font-bold text-gray-900">SaveMoney</span>
+            </Link>
           </div>
 
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2 bg-gray-100 px-3 py-2 rounded-lg">
-              <Wallet className="h-5 w-5 text-gray-600" />
-              <span className="text-sm font-medium text-gray-800">
-                {formatBalance()}
-              </span>
+          {/* Center: Mobile Logo */}
+          <div className="lg:hidden absolute left-1/2 -translate-x-1/2">
+             <Link to={ROUTES.HOME} className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-teal-600 rounded-lg flex items-center justify-center">
+                    <ShoppingBag className="w-5 h-5 text-white" />
+                </div>
+                <span className="hidden xs:inline text-xl font-bold text-gray-900">SaveMoney</span>
+            </Link>
+          </div>
+
+          {/* Right Side: Actions */}
+          <div className="flex items-center space-x-2 sm:space-x-4">
+            
+            {/* --- DESKTOP VIEW --- */}
+            <div className="hidden lg:flex items-center space-x-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search anything..."
+                  className="border border-gray-200 rounded-lg pl-10 pr-4 py-2 w-64 focus:ring-purple-500 focus:border-purple-500"
+                />
+              </div>
+
+              {isAuthenticated ? (
+                <>
+                  <div className="flex items-center space-x-2 bg-gray-100 px-3 py-2 rounded-lg">
+                    <Wallet className="h-5 w-5 text-gray-600" />
+                    <span className="text-sm font-medium text-gray-800">
+                      {formatBalance()}
+                    </span>
+                  </div>
+
+                  <button className="p-2 rounded-full text-gray-500 hover:text-gray-900 hover:bg-gray-100">
+                    <Bell className="h-6 w-6" />
+                  </button>
+
+                  <div className="relative" ref={profileMenuRef}>
+                    <button onClick={() => setIsProfileMenuOpen(prev => !prev)} className="flex items-center space-x-2">
+                      <img
+                        className="h-9 w-9 rounded-full object-cover"
+                        src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.name}&background=f97316&color=fff`}
+                        alt={user?.name}
+                      />
+                      <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    <AnimatePresence>
+                      {isProfileMenuOpen && (
+                        <motion.div
+                          variants={dropdownVariants}
+                          initial="closed"
+                          animate="open"
+                          exit="closed"
+                          className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-20 origin-top-right"
+                        >
+                          <div className="px-4 py-3 border-b">
+                            <p className="text-sm font-semibold text-gray-900 truncate">{user?.name}</p>
+                            <p className="text-sm text-gray-500 truncate">{user?.email}</p>
+                          </div>
+                          <div className="py-1">
+                            <Link to={ROUTES.DASHBOARD} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
+                              <TrendingUp className="w-4 h-4 mr-3"/>
+                              Dashboard
+                            </Link>
+                            <Link to={ROUTES.WALLET} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
+                              <Wallet className="w-4 h-4 mr-3"/>
+                              Wallet
+                            </Link>
+                            <Link to={ROUTES.REFERRALS} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
+                              <Users className="w-4 h-4 mr-3"/>
+                              Referrals
+                            </Link>
+                            <Link to="/profile" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
+                              <User className="w-4 h-4 mr-3"/>
+                              Profile
+                            </Link>
+                          </div>
+                          <div className="py-1 border-t">
+                            <button onClick={() => { logout(); setIsProfileMenuOpen(false); }} className="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                              <LogOut className="w-4 h-4 mr-3" />
+                              Logout
+                            </button>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <Link to={ROUTES.LOGIN}>
+                    <Button variant="outline" size="sm">Login</Button>
+                  </Link>
+                  <Link to={ROUTES.SIGNUP}>
+                    <Button variant="primary" size="sm">Sign Up</Button>
+                  </Link>
+                </div>
+              )}
             </div>
 
-            <button className="p-2 rounded-full text-gray-500 hover:text-gray-900 hover:bg-gray-100">
-              <Bell className="h-6 w-6" />
-            </button>
-
-            {user && (
-              <div className="relative group">
-                <button className="flex items-center space-x-2">
-                  <img
-                    className="h-8 w-8 rounded-full"
-                    src={user.avatar || `https://ui-avatars.com/api/?name=${user.name}&background=f97316&color=fff`}
-                    alt={user.name}
-                  />
-                  <ChevronDown className="h-4 w-4 text-gray-500" />
-                </button>
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 0, y: 10 }}
-                  whileHover={{ opacity: 1, y: 0 }}
-                  className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20 group-hover:opacity-100 group-hover:block hidden"
-                >
-                  <div className="px-4 py-3 border-b">
-                    <p className="text-sm font-medium text-gray-900 truncate">{user.name}</p>
-                    <p className="text-sm text-gray-500 truncate">{user.email}</p>
-                  </div>
-                  <Link
-                    to="/profile"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    <User className="w-4 h-4 mr-2 inline"/>
-                    Profile
+            {/* --- MOBILE VIEW --- */}
+            <div className="lg:hidden flex items-center space-x-2">
+              <button className="p-2 rounded-full text-gray-500 hover:bg-gray-100" onClick={() => setIsMobileSearchOpen(prev => !prev)}>
+                  {isMobileSearchOpen ? <X className="h-5 w-5" /> : <Search className="h-5 w-5" />}
+              </button>
+              {isAuthenticated ? (
+                <>
+                  <Link to={ROUTES.WALLET} className="flex items-center space-x-1 bg-gray-100 px-2.5 py-1.5 rounded-lg">
+                    <Wallet className="h-4 w-4 text-gray-600" />
+                    <span className="text-xs font-semibold text-gray-800">
+                      {formatBalance()}
+                    </span>
                   </Link>
-                  <button
-                    onClick={logout}
-                    className="w-full text-left block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    <LogOut className="w-4 h-4 mr-2 inline" />
-                    Logout
-                  </button>
-                </motion.div>
-              </div>
-            )}
+                  <div className="relative" ref={profileMenuRef}>
+                    <button onClick={() => setIsProfileMenuOpen(prev => !prev)} className="p-1 rounded-full">
+                        <img
+                            className="h-8 w-8 rounded-full object-cover"
+                            src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.name}&background=f97316&color=fff`}
+                            alt={user?.name}
+                        />
+                    </button>
+                     <AnimatePresence>
+                      {isProfileMenuOpen && (
+                        <motion.div
+                          variants={dropdownVariants}
+                          initial="closed"
+                          animate="open"
+                          exit="closed"
+                          className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-20 origin-top-right"
+                        >
+                          <div className="px-4 py-3 border-b">
+                            <p className="text-sm font-semibold text-gray-900 truncate">{user?.name}</p>
+                            <p className="text-sm text-gray-500 truncate">{user?.email}</p>
+                          </div>
+                          <div className="py-1">
+                            <Link to={ROUTES.DASHBOARD} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
+                              <TrendingUp className="w-4 h-4 mr-3"/>
+                              Dashboard
+                            </Link>
+                            <Link to={ROUTES.WALLET} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
+                              <Wallet className="w-4 h-4 mr-3"/>
+                              Wallet
+                            </Link>
+                            <Link to={ROUTES.REFERRALS} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
+                              <Users className="w-4 h-4 mr-3"/>
+                              Referrals
+                            </Link>
+                            <Link to="/profile" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
+                              <User className="w-4 h-4 mr-3"/>
+                              Profile
+                            </Link>
+                          </div>
+                          <div className="py-1 border-t">
+                            <button onClick={() => { logout(); setIsProfileMenuOpen(false); }} className="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                              <LogOut className="w-4 h-4 mr-3" />
+                              Logout
+                            </button>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </>
+              ) : (
+                <div className="flex items-center space-x-1.5">
+                  <Link to={ROUTES.LOGIN}>
+                    <Button variant="outline" size="sm" className="px-3">Login</Button>
+                  </Link>
+                  <Link to={ROUTES.SIGNUP}>
+                    <Button variant="primary" size="sm" className="px-3">Sign Up</Button>
+                  </Link>
+                </div>
+              )}
+            </div>
           </div>
         </div>
+
+        {/* --- MOBILE SEARCH DROPDOWN --- */}
+        <AnimatePresence>
+            {isMobileSearchOpen && (
+                 <motion.div 
+                    variants={mobileMenuVariants}
+                    initial="closed"
+                    animate="open"
+                    exit="closed"
+                    className="lg:hidden absolute top-full left-0 w-full bg-white shadow-lg p-4"
+                >
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <input
+                          type="text"
+                          placeholder="Search anything..."
+                          className="w-full border border-gray-200 rounded-lg pl-10 pr-4 py-2"
+                        />
+                    </div>
+                 </motion.div>
+            )}
+        </AnimatePresence>
       </div>
     </header>
   );
 };
+
+

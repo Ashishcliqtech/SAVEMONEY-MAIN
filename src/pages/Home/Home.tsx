@@ -130,9 +130,13 @@ const finalCategories = !categoriesError && categories ? categories : [];
       <HeroSection />
 
       {/* Recommended Offers Carousel */}
-      <section id="recommended-offers">
-        <RecommendedOffersCarousel offers={finalFeaturedOffers} />
-      </section>
+      <section id="recommended-offers" style={{ textAlign: 'center', padding: '20px 10px' }}>
+  <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', fontWeight: 'bold', marginBottom: '20px' }}>
+    Best Offers Recommended
+  </h2>
+  <RecommendedOffersCarousel offers={finalFeaturedOffers} />
+</section>
+
 
             {/* Stats Section */}
       <section className="relative bg-gradient-to-br from-purple-50 to-teal-50 py-16">

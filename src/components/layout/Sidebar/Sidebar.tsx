@@ -135,7 +135,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) 
                       <Link
                         key={item.href}
                         to={item.href}
-                        onClick={isMobile ? onToggle : undefined}
                         className={`flex items-center px-3 py-3 rounded-lg transition-all duration-200 group ${
                           isActive
                             ? 'bg-purple-50 text-purple-700'

@@ -1,3 +1,4 @@
+
 # SaveMoney - CashKaro-Style Cashback Platform
 
 A modern, responsive cashback and coupon platform built with React, TypeScript, Tailwind CSS.

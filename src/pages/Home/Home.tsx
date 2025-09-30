@@ -224,13 +224,13 @@ const finalCategories = !categoriesError && categories ? categories : [];
      
 
       {/* Popular Categories */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900">{t('home.popularCategories')}</h2>
           <p className="text-gray-600 mt-2">Discover deals across all categories</p>
         </div>
         <CategoryGrid categories={finalCategories} isLoading={categoriesLoading} />
-      </section>
+      </section> */}
 
       <section className="bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">

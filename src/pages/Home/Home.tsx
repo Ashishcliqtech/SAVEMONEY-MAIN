@@ -130,12 +130,31 @@ const finalCategories = !categoriesError && categories ? categories : [];
       <HeroSection />
 
       {/* Recommended Offers Carousel */}
-      <section id="recommended-offers" style={{ textAlign: 'center', padding: '20px 10px' }}>
-  <h2 style={{ fontSize: 'clamp(1.5rem, 4vw, 2.5rem)', fontWeight: 'bold', marginBottom: '20px' }}>
-    Best Offers Recommended
+      <section id="recommended-offers" style={{ textAlign: 'center', padding: '2rem 1rem', backgroundColor: '#f9f9f9', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+  <h2 style={{
+    fontWeight: '700',
+    color: '#222',
+    fontSize: 'clamp(1.8rem, 4vw, 3rem)',
+    marginBottom: '0.25rem',
+    letterSpacing: '1.2px'
+  }}>
+    Best Offers For You
   </h2>
+  <p style={{
+    fontWeight: '400',
+    color: '#666',
+    fontSize: 'clamp(1rem, 2vw, 1.25rem)',
+    marginBottom: '1.5rem',
+    maxWidth: '600px',
+    marginLeft: 'auto',
+    marginRight: 'auto',
+    lineHeight: '1.4'
+  }}>
+    Discover the latest deals and discounts tailored just for you. Grab them before they're gone!
+  </p>
   <RecommendedOffersCarousel offers={finalFeaturedOffers} />
 </section>
+
 
 
             {/* Stats Section */}

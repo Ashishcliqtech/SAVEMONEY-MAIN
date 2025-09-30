@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Card, LoadingCard } from '../../../components/ui';
 import { Category } from '../../../types';
+import { Link } from 'react-router-dom';
 
 interface CategoryGridProps {
   categories: Category[];
@@ -71,32 +72,32 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({ categories, isLoadin
         const textColor = textColors[index % textColors.length];
         
         return (
-          <motion.div
-            key={category._id || category.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <Card className="text-center group cursor-pointer h-full min-h-[180px] flex flex-col" hover>
-              <div className={`w-16 h-16 mx-auto rounded-2xl ${bgColor} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200`}>
-                <IconComponent className={`w-8 h-8 ${textColor}`} />
-              </div>
-              
-              <h3 className="font-semibold text-gray-900 mb-2 text-sm">{category.name}</h3>
-              
-              <div className="space-y-1 mt-auto">
-                <div className="text-xs text-gray-600">
-                  {category.storeCount || 0} stores
+          <Link to={`/categories/${category.id}`} key={category.id}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <Card className="text-center group cursor-pointer h-full min-h-[180px] flex flex-col" hover>
+                <div className={`w-16 h-16 mx-auto rounded-2xl ${bgColor} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-200`}>
+                  <IconComponent className={`w-8 h-8 ${textColor}`} />
                 </div>
-                <div className="text-xs text-green-600 font-medium">
-                  {category.offerCount || 0} offers
+                
+                <h3 className="font-semibold text-gray-900 mb-2 text-sm">{category.name}</h3>
+                
+                <div className="space-y-1 mt-auto">
+                  <div className="text-xs text-gray-600">
+                    {category.storeCount || 0} stores
+                  </div>
+                  <div className="text-xs text-green-600 font-medium">
+                    {category.offerCount || 0} offers
+                  </div>
                 </div>
-              </div>
-            </Card>
-          </motion.div>
+              </Card>
+            </motion.div>
+          </Link>
         );
       })}
     </div>
   );
 };
-

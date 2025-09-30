@@ -1,4 +1,4 @@
 // image.ts
-const savingsAppImage = "public/assets/saving.png";
+const savingsAppImage = "/assets/saving.png";
 
 export { savingsAppImage };

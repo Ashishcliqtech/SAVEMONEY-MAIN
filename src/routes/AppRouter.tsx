@@ -22,6 +22,8 @@ const HowItWorks = lazy(() => import('../pages/HowItWorks').then(module => ({ de
 const Blog = lazy(() => import('../pages/Blog').then(module => ({ default: module.Blog })));
 const Help = lazy(() => import('../pages/Help').then(module => ({ default: module.Help })));
 const Notifications = lazy(() => import('../pages/Notifications').then(module => ({ default: module.Notifications })));
+const CategoryPage = lazy(() => import('../pages/Categories/CategoryPage').then(module => ({ default: module.CategoryPage })));
+const StorePage = lazy(() => import('../pages/Stores/StorePage').then(module => ({ default: module.StorePage })));
 
 // Lazy load Admin pages
 const AdminDashboard = lazy(() => import('../pages/Admin').then(module => ({ default: module.AdminDashboard })));
@@ -104,6 +106,8 @@ export const AppRouter: React.FC = () => {
               <Route path={ROUTES.HOME} element={<Home />} />
               <Route path={ROUTES.STORES} element={<Stores />} />
               <Route path={ROUTES.CATEGORIES} element={<Categories />} />
+              <Route path="/categories/:id" element={<CategoryPage />} />
+              <Route path="/stores/:id" element={<StorePage />} />
               <Route path={ROUTES.OFFERS} element={<Offers />} />
               <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/blog" element={<Blog />} />

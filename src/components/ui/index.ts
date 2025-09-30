@@ -14,3 +14,4 @@ export * from './ImageUpload';
 export * from './FeatureCard';
 export * from './StatsCard';
 export * from './TestimonialCard';
+export { default as ErrorBoundary } from './ErrorBoundary';

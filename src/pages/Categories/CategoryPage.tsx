@@ -1,37 +1,34 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useOffers, useStores, useCategories } from '../../hooks/useApi';
-import { Card, LoadingSpinner, Button } from '../../components/ui';
+import { useCategory } from '../../hooks/useApi';
+import { Card, LoadingSpinner, ErrorState } from '../../components/ui';
 import { Store, Offer } from '../../types';
 import { ArrowLeft } from 'lucide-react';
 
 export const CategoryPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const { data, isLoading, isError, error } = useCategory(id);
 
-  const { data: offers, isLoading: isLoadingOffers } = useOffers();
-  const { data: stores, isLoading: isLoadingStores } = useStores();
-  const { data: categories, isLoading: isLoadingCategories } = useCategories();
-
-  // const category = categories?.find(c => c.id === id);
-
-  const category = Array.isArray(categories) ? categories.find(c => c.id === id) : undefined;
-
-const filteredOffers = Array.isArray(offers)
-  ? offers.filter((offer: Offer) => offer.category_id === id)
-  : [];
-
-const filteredStores = Array.isArray(stores)
-  ? stores.filter((store: Store) => store.category_id === id)
-  : [];
-
-
-  if (isLoadingOffers || isLoadingStores || isLoadingCategories) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <LoadingSpinner size="xl" text="Loading..." />
+        <LoadingSpinner size="xl" text="Loading Category..." />
       </div>
     );
   }
+
+  if (isError || !data) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <ErrorState 
+          title="Failed to Load Category" 
+          message={error?.message || 'We could not find the category you were looking for.'} 
+        />
+      </div>
+    );
+  }
+
+  const { category, stores, offers } = data;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -50,15 +47,15 @@ const filteredStores = Array.isArray(stores)
         <section className="mb-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Stores in {category?.name}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredStores.length > 0 ? (
-              filteredStores.map((store: Store) => (
-                <Link to={`/stores/${store.id}`} key={store.id}>
+            {stores && stores.length > 0 ? (
+              stores.map((store: Store) => (
+                <Link to={`/stores/${store._id}`} key={store._id}>
                   <Card hover className="h-full">
                     <div className="flex items-center space-x-4">
-                      <img src={store.logo} alt={store.name} className="w-16 h-16 rounded-lg object-contain" />
+                      <img src={store.logo} alt={store.name} className="w-16 h-16 rounded-lg object-contain bg-white" />
                       <div>
                         <h3 className="text-lg font-semibold">{store.name}</h3>
-                        <p className="text-sm text-gray-500">{store.offerCount} offers</p>
+                        <p className="text-sm text-gray-500">{store.totalOffers || 0} offers</p>
                       </div>
                     </div>
                   </Card>
@@ -73,15 +70,15 @@ const filteredStores = Array.isArray(stores)
         <section>
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Offers in {category?.name}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredOffers.length > 0 ? (
-              filteredOffers.map((offer: Offer) => (
-                <Card key={offer.id} className="h-full">
-                    <img src={offer.image} alt={offer.title} className="w-full h-40 object-cover rounded-t-lg" />
+            {offers && offers.length > 0 ? (
+              offers.map((offer: Offer) => (
+                <Card key={offer._id} className="h-full">
+                    <img src={offer.imageUrl} alt={offer.title} className="w-full h-40 object-cover rounded-t-lg" />
                     <div className="p-4">
                         <h3 className="text-lg font-semibold">{offer.title}</h3>
                         <p className="text-sm text-gray-500 mt-1">{offer.store?.name}</p>
                         <div className="mt-4">
-                            <span className="text-lg font-bold text-green-600">{offer.cashback_amount}</span>
+                            <span className="text-lg font-bold text-green-600">{offer.cashbackRate}% Cashback</span>
                         </div>
                     </div>
                 </Card>
@@ -95,3 +92,6 @@ const filteredStores = Array.isArray(stores)
     </div>
   );
 };
+
+
+

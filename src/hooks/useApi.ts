@@ -12,7 +12,7 @@ import {
 } from '../api';
 import { AxiosError } from 'axios';
 import { placeholderUsers, placeholderNotifications } from '../data/placeholderData';
-import { Category, ContentSection } from '../types';
+import { Category, ContentSection, Offer, Store } from '../types';
 import { RequestWithdrawalPayload } from '../api/wallet';
 import { CreateCategoryPayload, UpdateCategoryPayload } from '../api/categories';
 
@@ -80,6 +80,24 @@ export const useCategories = () => useQuery<Category[], Error>({
   },
   staleTime: 30 * 60 * 1000,
 });
+
+export const useCategory = (id: string | undefined) => {
+  return useQuery({
+    queryKey: ['category', id],
+    queryFn: async () => {
+      if (!id) return null;
+      try {
+        const { data } = await apiClient.get(`/categories/${id}`);
+        return data as { category: Category; stores: Store[]; offers: Offer[] };
+      } catch (error) {
+        handleApiError(error as AxiosError<any>);
+        throw error;
+      }
+    },
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
+  });
+};
 
 // --- Wallet Hooks ---
 export const useWallet = (userId?: string) => useQuery({

@@ -22,10 +22,11 @@ export const Home: React.FC = () => {
   const { data: popularStores, error: popularError } = usePopularStores();
   const { data: categories, isLoading: categoriesLoading, error: categoriesError } = useCategories();
 
-  const finalFeaturedOffers = featuredError || !featuredOffers || featuredOffers.length === 0 ? placeholderOffers : featuredOffers;
-  const finalTrendingOffers = trendingError || !trendingOffers || trendingOffers.length === 0 ? placeholderOffers : trendingOffers;
-  const finalPopularStores = popularError || !popularStores || popularStores.length === 0 ? placeholderStores : popularStores;
-  const finalCategories = categoriesError || !categories || categories.length === 0 ? [] : categories;
+ const finalFeaturedOffers = !featuredError && featuredOffers ? featuredOffers : [];
+const finalTrendingOffers = !trendingError && trendingOffers ? trendingOffers : [];
+const finalPopularStores = !popularError && popularStores ? popularStores : [];
+const finalCategories = !categoriesError && categories ? categories : [];
+
 
   // Mock data
   const featuredStats = [

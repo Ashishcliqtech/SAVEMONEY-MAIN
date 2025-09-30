@@ -52,6 +52,7 @@ export interface Offer {
     id: string;
     title: string;
     description: string;
+    url: string; // <-- This field is now added
     offerType: 'coupon' | 'deal' | 'cashback';
     couponCode?: string;
     store: Store; // Assuming it's populated

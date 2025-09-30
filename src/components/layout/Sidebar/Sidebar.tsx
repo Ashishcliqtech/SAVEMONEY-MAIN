@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Store, Grid3x3 as Grid3X3, Tag, Wallet, Users, User, HelpCircle, BookOpen, Settings, ShoppingBag, TrendingUp, MessageCircle, Bell, X, BarChart3, Globe } from 'lucide-react';
+import { 
+  Home, Store, Grid3x3, Tag, Wallet, Users, User, HelpCircle, 
+  BookOpen, Settings, ShoppingBag, TrendingUp, MessageCircle, 
+  Bell, X, BarChart3, Globe, ChevronDown, ChevronRight 
+} from 'lucide-react';
 import { ROUTES } from '../../../constants';
 import { useAuth } from '../../../hooks/useAuth';
 
@@ -17,6 +21,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) 
   const { user } = useAuth();
   const location = useLocation();
   
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['Browse']));
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  
   // Check if the current user is an admin
   const isAdmin = user?.role === 'admin';
 
@@ -26,7 +33,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) 
       items: [
         { href: ROUTES.HOME, label: 'Home', icon: Home },
         { href: ROUTES.STORES, label: t('navigation.stores'), icon: Store },
-        { href: ROUTES.CATEGORIES, label: t('navigation.categories'), icon: Grid3X3 },
+        { href: ROUTES.CATEGORIES, label: t('navigation.categories'), icon: Grid3x3 },
         { href: ROUTES.OFFERS, label: t('navigation.offers'), icon: Tag },
       ]
     },
@@ -51,11 +58,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) 
     // Conditionally render the 'Admin' section based on user role
     ...(isAdmin ? [{
       section: 'Admin',
+      collapsible: true,
       items: [
         { href: '/admin', label: 'Admin Dashboard', icon: Settings },
         { href: '/admin/users', label: 'Users', icon: Users },
         { href: '/admin/stores', label: 'Stores', icon: Store },
-        { href: '/admin/categories', label: 'Categories', icon: Grid3X3 },
+        { href: '/admin/categories', label: 'Categories', icon: Grid3x3 },
         { href: '/admin/offers', label: 'Offers', icon: Tag },
         { href: '/admin/content', label: 'Content', icon: Globe },
         { href: '/admin/notifications', label: 'Notifications', icon: Bell },
@@ -70,105 +78,246 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) 
 
   const isActiveRoute = (href: string) => location.pathname === href;
 
-  const sidebarVariants = {
-    open: { x: 0, transition: { duration: 0.3, ease: 'easeInOut' } },
-    closed: { x: '-100%', transition: { duration: 0.3, ease: 'easeInOut' } }
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(section)) {
+        newSet.delete(section);
+      } else {
+        newSet.add(section);
+      }
+      return newSet;
+    });
   };
 
-  const contentVariants = {
-    open: { opacity: 1, x: 0, transition: { duration: 0.3, delay: 0.1 } },
-    closed: { opacity: isMobile ? 0 : 1, x: isMobile ? -20 : 0, transition: { duration: 0.2 } }
+  // Handle touch gestures for mobile swipe to close
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (isMobile) {
+      setTouchStart(e.touches[0].clientX);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchStart || !isMobile) return;
+    
+    const touchEnd = e.touches[0].clientX;
+    const diff = touchStart - touchEnd;
+    
+    // Swipe left to close
+    if (diff > 50) {
+      onToggle();
+      setTouchStart(null);
+    }
+  };
+
+  // Close sidebar on escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onToggle();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen, onToggle]);
+
+  // Prevent body scroll when mobile sidebar is open
+  useEffect(() => {
+    if (isMobile && isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobile, isOpen]);
+
+  const sidebarVariants = {
+    open: { 
+      x: 0, 
+      transition: { 
+        type: 'spring', 
+        stiffness: 300, 
+        damping: 30 
+      } 
+    },
+    closed: { 
+      x: '-100%', 
+      transition: { 
+        type: 'spring', 
+        stiffness: 300, 
+        damping: 30 
+      } 
+    }
+  };
+
+  const overlayVariants = {
+    open: { opacity: 1 },
+    closed: { opacity: 0 }
   };
 
   return (
     <>
+      {/* Overlay for mobile */}
       <AnimatePresence>
         {isMobile && isOpen && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            variants={overlayVariants}
+            initial="closed"
+            animate="open"
+            exit="closed"
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
             onClick={onToggle}
           />
         )}
       </AnimatePresence>
 
+      {/* Sidebar */}
       <motion.aside
         variants={sidebarVariants}
         animate={isOpen ? 'open' : 'closed'}
-        className="fixed left-0 top-0 h-full bg-white border-r border-gray-200 z-50 shadow-lg"
-        style={{ width: '280px' }}
+        initial={false}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        className={`fixed left-0 top-0 h-full bg-white border-r border-gray-200 z-50 shadow-xl ${
+          isMobile ? 'w-[280px] xs:w-[320px]' : 'w-[280px]'
+        }`}
       >
         <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <motion.div variants={contentVariants} initial="closed" animate="open" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-teal-600 rounded-lg flex items-center justify-center">
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b border-gray-200 flex-shrink-0">
+            <Link 
+              to={ROUTES.HOME} 
+              className="flex items-center space-x-2 group"
+              onClick={isMobile ? onToggle : undefined}
+            >
+              <div className="w-9 h-9 bg-gradient-to-br from-purple-600 to-teal-600 rounded-lg flex items-center justify-center group-hover:shadow-lg transition-shadow">
                 <ShoppingBag className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-bold text-gray-900">SaveMoney</span>
-            </motion.div>
+            </Link>
             {isMobile && (
-              <button onClick={onToggle} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+              <button 
+                onClick={onToggle} 
+                className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors touch-manipulation"
+                aria-label="Close sidebar"
+              >
                 <X className="w-5 h-5 text-gray-600" />
               </button>
             )}
           </div>
 
-          <nav className="flex-1 overflow-y-auto py-4">
-            {navigationItems.map((section) => (
-              <div key={section.section} className="mb-6">
-                <motion.div variants={contentVariants} initial="closed" animate="open" className="px-4 mb-2">
-                  <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    {section.section}
-                  </h3>
-                </motion.div>
-                <div className="space-y-1 px-2">
-                  {section.items.map((item) => {
-                    const isActive = isActiveRoute(item.href);
-                    return (
-                      <Link
-                        key={item.href}
-                        to={item.href}
-                        onClick={isMobile ? onToggle : undefined}
-                        className={`flex items-center px-3 py-3 rounded-lg transition-all duration-200 group ${
-                          isActive
-                            ? 'bg-purple-50 text-purple-700'
-                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                        }`}
+          {/* Navigation */}
+          <nav className="flex-1 overflow-y-auto py-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+            {navigationItems.map((section) => {
+              const isExpanded = expandedSections.has(section.section);
+              const hasCollapsible = section.collapsible && section.items.length > 5;
+              
+              return (
+                <div key={section.section} className="mb-6 last:mb-0">
+                  {/* Section Header */}
+                  <div className="px-4 mb-2">
+                    {hasCollapsible ? (
+                      <button
+                        onClick={() => toggleSection(section.section)}
+                        className="flex items-center justify-between w-full text-left group"
                       >
-                        <item.icon
-                          className={`w-5 h-5 flex-shrink-0 ${
-                            isActive ? 'text-purple-600' : 'text-gray-400 group-hover:text-gray-600'
-                          }`}
-                        />
-                        <motion.span variants={contentVariants} initial="closed" animate="open" className="ml-3 font-medium">
-                          {item.label}
-                        </motion.span>
-                      </Link>
-                    );
-                  })}
+                        <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                          {section.section}
+                        </h3>
+                        {isExpanded ? (
+                          <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                        )}
+                      </button>
+                    ) : (
+                      <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        {section.section}
+                      </h3>
+                    )}
+                  </div>
+
+                  {/* Section Items */}
+                  <AnimatePresence initial={false}>
+                    {(!hasCollapsible || isExpanded) && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="space-y-1 px-2 overflow-hidden"
+                      >
+                        {section.items.map((item) => {
+                          const isActive = isActiveRoute(item.href);
+                          return (
+                            <Link
+                              key={item.href}
+                              to={item.href}
+                              onClick={isMobile ? onToggle : undefined}
+                              className={`flex items-center px-3 py-3 rounded-lg transition-all duration-200 group touch-manipulation ${
+                                isActive
+                                  ? 'bg-purple-50 text-purple-700 shadow-sm'
+                                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 active:bg-gray-100'
+                              }`}
+                            >
+                              <item.icon
+                                className={`w-5 h-5 flex-shrink-0 ${
+                                  isActive 
+                                    ? 'text-purple-600' 
+                                    : 'text-gray-400 group-hover:text-gray-600'
+                                }`}
+                              />
+                              <span className="ml-3 font-medium text-sm">
+                                {item.label}
+                              </span>
+                              {isActive && (
+                                <motion.div
+                                  layoutId="activeIndicator"
+                                  className="ml-auto w-1.5 h-1.5 rounded-full bg-purple-600"
+                                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                                />
+                              )}
+                            </Link>
+                          );
+                        })}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </nav>
 
+          {/* User Profile Footer */}
           {user && (
-            <div className="border-t border-gray-200 p-4">
-              <div className="flex items-center space-x-3">
+            <div className="border-t border-gray-200 p-4 flex-shrink-0 bg-gray-50">
+              <Link 
+                to={ROUTES.PROFILE}
+                onClick={isMobile ? onToggle : undefined}
+                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-white active:bg-gray-100 transition-colors touch-manipulation group"
+              >
                 <img
                   src={user.avatar || `https://ui-avatars.com/api/?name=${user.name}&background=f97316&color=fff`}
                   alt={user.name}
-                  className="w-10 h-10 rounded-full object-cover"
+                  className="w-10 h-10 rounded-full object-cover ring-2 ring-white group-hover:ring-purple-200 transition-all"
                 />
-                <motion.div variants={contentVariants} initial="closed" animate="open" className="flex-1 min-w-0">
-                  <div className="font-medium text-gray-900 truncate">{user.name}</div>
-                  <div className="text-sm text-gray-500 truncate">{user.email}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-gray-900 truncate text-sm">
+                    {user.name}
+                  </div>
+                  <div className="text-xs text-gray-500 truncate">{user.email}</div>
                   {user.role === 'admin' && (
-                    <div className="text-xs text-orange-600 font-semibold">Admin</div>
+                    <div className="text-xs text-orange-600 font-semibold mt-0.5">
+                      Admin
+                    </div>
                   )}
-                </motion.div>
-              </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 flex-shrink-0" />
+              </Link>
             </div>
           )}
         </div>
@@ -176,4 +325,3 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) 
     </>
   );
 };
-

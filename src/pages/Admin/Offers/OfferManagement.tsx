@@ -9,6 +9,7 @@ import { Offer, Store, Category } from '../../../types';
 const initialFormState = {
   title: '',
   description: '',
+  url: '', // <-- Added URL field here
   store: '',
   category: '',
   cashbackRate: 0,
@@ -318,6 +319,13 @@ export const OfferManagement: React.FC = () => {
                 value={offerForm.title || ''}
                 onChange={(e) => setOfferForm(prev => ({ ...prev, title: e.target.value }))}
                 placeholder="Enter offer title"
+              />
+              {/* NEW INPUT FIELD FOR OFFER URL */}
+              <Input
+                label="Offer URL"
+                value={offerForm.url || ''}
+                onChange={(e) => setOfferForm(prev => ({...prev, url: e.target.value }))}
+                placeholder="https://example.com/product-deal"
               />
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">

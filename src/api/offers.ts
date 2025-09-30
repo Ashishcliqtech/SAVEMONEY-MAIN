@@ -19,6 +19,11 @@ export interface OfferPaginatedResponse {
   currentPage: number;
 }
 
+// Updated response type for trackOfferClick
+export interface TrackClickResponse {
+    redirectUrl: string;
+}
+
 export const offersApi = {
   // Public
   getAllOffers: (params: GetAllOffersParams): Promise<OfferPaginatedResponse> =>
@@ -39,7 +44,7 @@ export const offersApi = {
   getOfferById: (id: string): Promise<Offer> =>
     apiClient.get(`/offers/${id}`).then(res => res.data),
 
-  trackOfferClick: (id: string): Promise<{ msg: string }> =>
+  trackOfferClick: (id: string): Promise<TrackClickResponse> =>
     apiClient.post(`/offers/${id}/track`, {}).then(res => res.data),
 
   // Admin

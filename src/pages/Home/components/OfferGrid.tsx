@@ -4,6 +4,8 @@ import { Clock, Copy, ExternalLink } from 'lucide-react';
 import { Card, Button, Badge } from '../../../components/ui';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../../hooks/useAuth'; // Import useAuth
+import { offersApi } from '../../../api'; // Import offersApi
 
 interface OfferGridProps {
   offers: any[];
@@ -11,10 +13,38 @@ interface OfferGridProps {
 
 export const OfferGrid: React.FC<OfferGridProps> = memo(({ offers }) => {
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuth(); // Get authentication status
 
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
     toast.success('Coupon code copied!');
+  };
+
+  // New function to handle tracking and redirecting
+  const handleOfferClick = async (offer: any) => {
+    // If the user is not logged in, just redirect them to the store
+    if (!isAuthenticated) {
+      window.open(offer.url, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    try {
+      // Show a loading toast for better UX
+      const toastId = toast.loading('Redirecting to store...');
+      
+      // Call the backend to track the click
+      const response = await offersApi.trackOfferClick(offer.id);
+      
+      // Use the redirect URL from the backend if available, otherwise fallback to the offer's URL
+      const redirectUrl = response.redirectUrl || offer.url;
+      
+      toast.dismiss(toastId);
+      window.open(redirectUrl, '_blank', 'noopener,noreferrer');
+    } catch (error) {
+      console.error("Failed to track offer click:", error);
+      // Fallback: redirect the user anyway so the flow isn't broken
+      window.open(offer.url, '_blank', 'noopener,noreferrer');
+    }
   };
 
   return (
@@ -103,12 +133,14 @@ export const OfferGrid: React.FC<OfferGridProps> = memo(({ offers }) => {
                     >
                       {offer.couponCode}
                     </Button>
-                    <Button variant="primary" size="sm" icon={ExternalLink}>
+                    {/* UPDATED onClick HANDLER */}
+                    <Button variant="primary" size="sm" icon={ExternalLink} onClick={() => handleOfferClick(offer)}>
                       {t('offers.shopNow')}
                     </Button>
                   </div>
                 ) : (
-                  <Button variant="primary" size="sm" fullWidth icon={ExternalLink}>
+                  // UPDATED onClick HANDLER
+                  <Button variant="primary" size="sm" fullWidth icon={ExternalLink} onClick={() => handleOfferClick(offer)}>
                     {t('offers.getOffer')}
                   </Button>
                 )}

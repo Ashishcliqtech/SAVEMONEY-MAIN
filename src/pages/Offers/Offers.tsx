@@ -13,9 +13,11 @@ import {
   ErrorState,
   LoadingCard,
 } from '../../components/ui';
-import { useOffers, useCategories } from '../../hooks/useSupabase.tsx';
+import { useOffers, useCategories } from '../../hooks/useApi';
 import toast from 'react-hot-toast';
-import { Offer } from '../../types';
+import { Offer, Category } from '../../types';
+import { useAuth } from '../../hooks/useAuth';
+import { offersApi } from '../../api';
 
 const INITIAL_FILTERS = {
   category: '',
@@ -30,12 +32,18 @@ const INITIAL_FILTERS = {
 
 export const Offers: React.FC = () => {
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filters, setFilters] = useState(INITIAL_FILTERS);
 
   const { data: offersData, isLoading, error } = useOffers(filters);
-  const { data: categories, isLoading: categoriesLoading, error: categoriesError } = useCategories();
+  const { data: categoriesData, isLoading: categoriesLoading } = useCategories();
+  
+  const offers = offersData?.offers || [];
+  const categories = categoriesData || [];
+  const totalPages = offersData?.totalPages || 1;
+
 
   const handleSearch = (query: string) => {
     setFilters(prev => ({ ...prev, search: query, page: 1 }));
@@ -58,6 +66,28 @@ export const Offers: React.FC = () => {
     toast.success('Coupon code copied!');
   };
 
+  const handleOfferClick = async (offer: Offer) => {
+    const offerUrl = offer.url || offer.store.url;
+
+    if (!isAuthenticated) {
+      window.open(offerUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
+
+    const toastId = toast.loading('Redirecting to store...');
+    try {
+      const response = await offersApi.trackOfferClick(offer._id);
+      const redirectUrl = response.redirectUrl || offerUrl;
+      toast.dismiss(toastId);
+      window.open(redirectUrl, '_blank', 'noopener,noreferrer');
+    } catch (err) {
+      toast.dismiss(toastId);
+      toast.error('Could not track click, redirecting anyway.');
+      console.error("Failed to track offer click:", err);
+      window.open(offerUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   const renderContent = () => {
     if (isLoading) {
         return (
@@ -75,7 +105,7 @@ export const Offers: React.FC = () => {
       return <ErrorState title="Failed to Load Offers" message="We couldn't fetch the offers right now. Please try again later." />;
     }
 
-    if (!offersData || !offersData.offers || offersData.offers.length === 0) {
+    if (!offers || offers.length === 0) {
       return <EmptyState title="No Offers Found" message="Try adjusting your search or filters." />;
     }
 
@@ -86,9 +116,9 @@ export const Offers: React.FC = () => {
               ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' 
               : 'space-y-4'
           }`}>
-            {offersData.offers.map((offer: Offer, index: number) => (
+            {offers.map((offer: Offer, index: number) => (
               <motion.div
-                key={offer.id}
+                key={offer._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
@@ -119,20 +149,19 @@ export const Offers: React.FC = () => {
                   </div>
 
                   <div className="space-y-3 flex-1 flex flex-col">
-  <div className="flex items-center space-x-2 mb-2">
-    <img
-      src={
-        offer.store?.logo ||
-        'https://images.pexels.com/photos/6214476/pexels-photo-6214476.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop'
-      }
-      alt={offer.store?.name || 'Store'}
-      className="w-6 h-6 rounded-full object-cover"
-    />
-    <span className="text-sm font-medium text-gray-600">
-      {offer.store?.name || 'Unknown Store'}
-    </span>
-  </div>
-
+                    <div className="flex items-center space-x-2 mb-2">
+                      <img
+                        src={
+                          offer.store?.logo ||
+                          'https://placehold.co/40x40/eee/ccc?text=Logo'
+                        }
+                        alt={offer.store?.name || 'Store'}
+                        className="w-6 h-6 rounded-full object-cover"
+                      />
+                      <span className="text-sm font-medium text-gray-600">
+                        {offer.store?.name || 'Unknown Store'}
+                      </span>
+                    </div>
 
                     <div>
                       <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 text-base leading-tight">
@@ -171,12 +200,12 @@ export const Offers: React.FC = () => {
                           >
                             {offer.couponCode.length > 8 ? `${offer.couponCode.substring(0, 8)}...` : offer.couponCode}
                           </Button>
-                          <Button variant="primary" size="sm" icon={ExternalLink}>
+                          <Button variant="primary" size="sm" icon={ExternalLink} onClick={() => handleOfferClick(offer)}>
                             {t('offers.shopNow')}
                           </Button>
                         </div>
                       ) : (
-                        <Button variant="primary" size="sm" fullWidth icon={ExternalLink}>
+                        <Button variant="primary" size="sm" fullWidth icon={ExternalLink} onClick={() => handleOfferClick(offer)}>
                           {t('offers.getOffer')}
                         </Button>
                       )}
@@ -186,7 +215,7 @@ export const Offers: React.FC = () => {
               </motion.div>
             ))}
         </div>
-        {offersData.total > filters.limit && (
+        {offersData && offersData.total > filters.limit && (
           <Pagination
             currentPage={filters.page}
             totalPages={Math.ceil(offersData.total / filters.limit)}
@@ -229,8 +258,8 @@ export const Offers: React.FC = () => {
               disabled={categoriesLoading}
             >
               <option value="">All Categories</option>
-              {categories && categories.map((category) => (
-                <option key={category.id} value={category.id}>
+              {categories && categories.map((category: Category) => (
+                <option key={category._id} value={category._id}>
                   {category.name}
                 </option>
               ))}
@@ -282,7 +311,7 @@ export const Offers: React.FC = () => {
         <div className="flex items-center justify-between mb-6">
           {!isLoading && offersData && (
              <p className="text-gray-600">
-                Showing {offersData.offers.length} of {offersData.total} offers
+                Showing {offers.length} of {offersData.total} offers
             </p>
           )}
           

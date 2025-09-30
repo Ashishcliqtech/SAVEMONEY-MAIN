@@ -1,4 +1,5 @@
 import React from 'react';
+import { BrowserRouter as Router } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AppRouter } from './routes';
 import { AuthProvider } from './hooks/useAuth.tsx';
@@ -8,47 +9,49 @@ import './utils/i18n';
 
 function App() {
   return (
-    <AuthProvider>
-      <div className="overflow-x-hidden w-full max-w-full">
-        <GlobalStyles />
-        <React.Suspense 
-          fallback={
-            <LoadingSpinner 
-              key="loading-spinner-app"
-              size="xl" 
-              text="Loading SaveMoney..." 
-              fullScreen 
-              color="text-orange-500"
-            />
-          }
-        >
-          <AppRouter />
-        </React.Suspense>
-        <Toaster
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              borderRadius: '12px',
-              background: '#363636',
-              color: '#fff',
-              fontSize: '14px',
-              maxWidth: '400px',
-            },
-            success: {
+    <Router>
+      <AuthProvider>
+        <div className="overflow-x-hidden w-full max-w-full">
+          <GlobalStyles />
+          <React.Suspense 
+            fallback={
+              <LoadingSpinner 
+                key="loading-spinner-app"
+                size="xl" 
+                text="Loading SaveMoney..." 
+                fullScreen 
+                color="text-orange-500"
+              />
+            }
+          >
+            <AppRouter />
+          </React.Suspense>
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
               style: {
-                background: '#10b981',
+                borderRadius: '12px',
+                background: '#363636',
+                color: '#fff',
+                fontSize: '14px',
+                maxWidth: '400px',
               },
-            },
-            error: {
-              style: {
-                background: '#ef4444',
+              success: {
+                style: {
+                  background: '#10b981',
+                },
               },
-            },
-          }}
-        />
-      </div>
-    </AuthProvider>
+              error: {
+                style: {
+                  background: '#ef4444',
+                },
+              },
+            }}
+          />
+        </div>
+      </AuthProvider>
+    </Router>
   );
 }
 

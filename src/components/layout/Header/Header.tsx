@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, Search, Bell, Wallet, ChevronDown, User, LogOut, X, TrendingUp, Users, Currency } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Menu, Search, Bell, Wallet, User, LogOut, X, Currency } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
 import { useWallet } from '../../../hooks/useSupabase';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -16,8 +16,7 @@ export const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
   const { user, logout, isAuthenticated } = useAuth();
   const { data: wallet, isLoading } = useWallet(user?.id);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-  const profileMenuRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   const formatBalance = () => {
     if (isLoading) {
@@ -33,31 +32,15 @@ export const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
         setIsMobileSearchOpen(false);
-        setIsProfileMenuOpen(false);
       }
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
-        setIsProfileMenuOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   const mobileMenuVariants = {
     open: { opacity: 1, y: 0, transition: { ease: "easeOut" } },
     closed: { opacity: 0, y: "-100%", transition: { ease: "easeIn" } },
-  };
-
-  const dropdownVariants = {
-    open: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.2, ease: "easeOut" } },
-    closed: { opacity: 0, y: 10, scale: 0.95, transition: { duration: 0.1, ease: "easeIn" } },
   };
 
   return (
@@ -80,16 +63,6 @@ export const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
                 <span className="hidden sm:inline text-xl font-bold text-gray-900">SaveMoney</span>
             </Link>
           </div>
-
-          {/* Center: Mobile Logo */}
-          {/* <div className="lg:hidden absolute left-1/2 -translate-x-1/2">
-             <Link to={ROUTES.HOME} className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-teal-600 rounded-lg flex items-center justify-center">
-                    <ShoppingBag className="w-5 h-5 text-white" />
-                </div>
-                <span className="hidden xs:inline text-xl font-bold text-gray-900">SaveMoney</span>
-            </Link>
-          </div> */}
 
           {/* Right Side: Actions */}
           <div className="flex items-center space-x-2 sm:space-x-4">
@@ -117,57 +90,18 @@ export const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
                   <button className="p-2 rounded-full text-gray-500 hover:text-gray-900 hover:bg-gray-100">
                     <Bell className="h-6 w-6" />
                   </button>
-
-                  <div className="relative" ref={profileMenuRef}>
-                    <button onClick={() => setIsProfileMenuOpen(prev => !prev)} className="flex items-center space-x-2">
+                  
+                  <button onClick={() => navigate(ROUTES.PROFILE)} className="p-1 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
                       <img
                         className="h-9 w-9 rounded-full object-cover"
                         src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.name}&background=f97316&color=fff`}
                         alt={user?.name}
                       />
-                      <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
-                    </button>
-                    <AnimatePresence>
-                      {isProfileMenuOpen && (
-                        <motion.div
-                          variants={dropdownVariants}
-                          initial="closed"
-                          animate="open"
-                          exit="closed"
-                          className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-20 origin-top-right"
-                        >
-                          <div className="px-4 py-3 border-b">
-                            <p className="text-sm font-semibold text-gray-900 truncate">{user?.name}</p>
-                            <p className="text-sm text-gray-500 truncate">{user?.email}</p>
-                          </div>
-                          <div className="py-1">
-                            <Link to={ROUTES.DASHBOARD} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
-                              <TrendingUp className="w-4 h-4 mr-3"/>
-                              Dashboard
-                            </Link>
-                            <Link to={ROUTES.WALLET} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
-                              <Wallet className="w-4 h-4 mr-3"/>
-                              Wallet
-                            </Link>
-                            <Link to={ROUTES.REFERRALS} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
-                              <Users className="w-4 h-4 mr-3"/>
-                              Referrals
-                            </Link>
-                            <Link to="/profile" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
-                              <User className="w-4 h-4 mr-3"/>
-                              Profile
-                            </Link>
-                          </div>
-                          <div className="py-1 border-t">
-                            <button onClick={() => { logout(); setIsProfileMenuOpen(false); }} className="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                              <LogOut className="w-4 h-4 mr-3" />
-                              Logout
-                            </button>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                  </button>
+
+                  <button onClick={logout} className="p-2 rounded-full text-gray-500 hover:text-gray-900 hover:bg-gray-100" aria-label="Logout">
+                    <LogOut className="h-6 w-6" />
+                  </button>
                 </>
               ) : (
                 <div className="flex items-center space-x-2">
@@ -194,55 +128,18 @@ export const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
                       {formatBalance()}
                     </span>
                   </Link>
-                  <div className="relative" ref={profileMenuRef}>
-                    <button onClick={() => setIsProfileMenuOpen(prev => !prev)} className="p-1 rounded-full">
-                        <img
-                            className="h-8 w-8 rounded-full object-cover"
-                            src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.name}&background=f97316&color=fff`}
-                            alt={user?.name}
-                        />
-                    </button>
-                     <AnimatePresence>
-                      {isProfileMenuOpen && (
-                        <motion.div
-                          variants={dropdownVariants}
-                          initial="closed"
-                          animate="open"
-                          exit="closed"
-                          className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-20 origin-top-right"
-                        >
-                          <div className="px-4 py-3 border-b">
-                            <p className="text-sm font-semibold text-gray-900 truncate">{user?.name}</p>
-                            <p className="text-sm text-gray-500 truncate">{user?.email}</p>
-                          </div>
-                          <div className="py-1">
-                            <Link to={ROUTES.DASHBOARD} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
-                              <TrendingUp className="w-4 h-4 mr-3"/>
-                              Dashboard
-                            </Link>
-                            <Link to={ROUTES.WALLET} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
-                              <Wallet className="w-4 h-4 mr-3"/>
-                              Wallet
-                            </Link>
-                            <Link to={ROUTES.REFERRALS} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
-                              <Users className="w-4 h-4 mr-3"/>
-                              Referrals
-                            </Link>
-                            <Link to="/profile" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsProfileMenuOpen(false)}>
-                              <User className="w-4 h-4 mr-3"/>
-                              Profile
-                            </Link>
-                          </div>
-                          <div className="py-1 border-t">
-                            <button onClick={() => { logout(); setIsProfileMenuOpen(false); }} className="w-full text-left flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50">
-                              <LogOut className="w-4 h-4 mr-3" />
-                              Logout
-                            </button>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
+                  
+                  <button onClick={() => navigate(ROUTES.PROFILE)} className="p-1 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                      <img
+                          className="h-8 w-8 rounded-full object-cover"
+                          src={user?.avatar || `https://ui-avatars.com/api/?name=${user?.name}&background=f97316&color=fff`}
+                          alt={user?.name}
+                      />
+                  </button>
+
+                  <button onClick={logout} className="p-2 rounded-full text-gray-500 hover:text-gray-900 hover:bg-gray-100" aria-label="Logout">
+                    <LogOut className="h-5 w-5" />
+                  </button>
                 </>
               ) : (
                 <div className="flex items-center space-x-1.5">
@@ -283,5 +180,3 @@ export const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
     </header>
   );
 };
-
-

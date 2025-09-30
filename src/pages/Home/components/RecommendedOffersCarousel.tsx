@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Copy, ExternalLink, ShieldCheck, TrendingUp, Clock, Play, Pause, AlertTriangle } from 'lucide-react';
 import { useFeaturedOffers } from '../../../hooks/useApi';
@@ -110,9 +109,10 @@ export const RecommendedOffersCarousel: React.FC<RecommendedOffersCarouselProps>
     return null;
   };
 
+  // MODIFICATION: Adjusted loading/error state height to match new carousel height
   if (isLoading) {
     return (
-      <div className="w-full h-[650px] bg-slate-900 flex items-center justify-center">
+      <div className="w-full h-[550px] bg-slate-900 flex items-center justify-center">
         <LoadingSpinner size="lg" text="Loading Top Offers..." />
       </div>
     );
@@ -120,7 +120,7 @@ export const RecommendedOffersCarousel: React.FC<RecommendedOffersCarouselProps>
 
   if (error) {
     return (
-      <div className="w-full h-[650px] bg-slate-900 flex flex-col items-center justify-center text-red-400">
+      <div className="w-full h-[550px] bg-slate-900 flex flex-col items-center justify-center text-red-400">
         <AlertTriangle className="w-12 h-12 mb-4" />
         <h3 className="text-xl font-semibold">Failed to Load Offers</h3>
         <p className="text-red-300">There was a problem fetching the featured offers. Please try again later.</p>
@@ -143,7 +143,8 @@ export const RecommendedOffersCarousel: React.FC<RecommendedOffersCarouselProps>
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <div className="relative h-[450px] sm:h-[500px] lg:h-[600px] xl:h-[650px]">
+      {/* MODIFICATION: Decreased height for a more cinematic, premium feel on all screen sizes */}
+      <div className="relative h-[480px] sm:h-[520px] lg:h-[550px]">
         {offers.map((offer, index) => {
           const discount = calculateDiscount(offer);
           return (
@@ -165,18 +166,21 @@ export const RecommendedOffersCarousel: React.FC<RecommendedOffersCarouselProps>
                   className="w-full h-full object-cover"
                   loading={index === 0 ? 'eager' : 'lazy'}
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/30" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-blue-900/20" />
+                {/* MODIFICATION: Softer gradient for a more subtle overlay */}
+                <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10" />
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-900/10 to-blue-900/10" />
               </div>
 
               {/* Content */}
               <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex flex-col justify-center h-full py-8 lg:py-16">
-                  <div className="w-full lg:w-3/5 xl:w-1/2 space-y-4 sm:space-y-6">
+                {/* MODIFICATION: Changed to `justify-end` and adjusted padding to ground the content at the bottom */}
+                <div className="flex flex-col justify-end h-full pt-8 pb-16 sm:pb-20 lg:pb-24">
+                  <div className="w-full lg:w-3/5 xl:w-1/2 space-y-4 sm:space-y-5">
                     {/* Store Info */}
                     <div className="flex items-center gap-3 mb-2 sm:mb-4">
-                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-white/10 backdrop-blur-sm p-2 flex items-center justify-center border border-white/20">
+                      {/* MODIFICATION: More subtle border for the glassmorphism effect */}
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-white/10 backdrop-blur-sm p-2 flex items-center justify-center border border-white/15">
                         <img 
                           src={offer.store.logo} 
                           alt={`${offer.store.name} logo`} 
@@ -199,14 +203,13 @@ export const RecommendedOffersCarousel: React.FC<RecommendedOffersCarouselProps>
                     )}
 
                     {/* Title */}
-                    <h2 className="text-white font-bold text-2xl sm:text-3xl lg:text-4xl xl:text-5xl leading-tight">
-                      <span className="bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+                    <h2 className="text-white font-bold text-3xl sm:text-4xl lg:text-5xl leading-tight drop-shadow-md">
                         {offer.title}
-                      </span>
                     </h2>
 
                     {/* Description */}
-                    <p className="text-gray-200 text-base sm:text-lg lg:text-xl max-w-2xl leading-relaxed">
+                    {/* MODIFICATION: Lighter text color for slightly better contrast and readability */}
+                    <p className="text-gray-300 text-base sm:text-lg lg:text-xl max-w-2xl leading-relaxed">
                       {offer.description}
                     </p>
                     

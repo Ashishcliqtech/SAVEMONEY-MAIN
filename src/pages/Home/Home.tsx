@@ -11,7 +11,6 @@ import { RecommendedOffersCarousel } from './components/RecommendedOffersCarouse
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../../constants';
 import { useFeaturedOffers, usePopularStores, useTrendingOffers, useCategories } from '../../hooks/useApi';
-import { placeholderOffers, placeholderStores } from '../../data/placeholderData';
 import { savingsAppImage } from '../../lib/image';
 
 export const Home: React.FC = () => {
@@ -136,22 +135,24 @@ const finalCategories = !categoriesError && categories ? categories : [];
       </section>
 
       {/* Stats Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-          {featuredStats.map((stat, index) => (
-            <StatsCard
-              key={stat.label}
-              title={stat.label}
-              value={stat.value}
-              icon={stat.icon}
-              color={stat.color}
-              bgColor={stat.bgColor}
-              trend={stat.trend}
-              delay={index * 0.1}
-            />
-          ))}
+
+       <section className="bg-gradient-to-br from-purple-50 to-teal-50 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900">{t('home.topStores')}</h2>
+            <p className="text-gray-600 mt-2">Shop from your favorite brands and earn cashback</p>
+          </div>
+          <StoreCarousel stores={finalPopularStores} />
+          <div className="text-center mt-8">
+            <Link to={ROUTES.STORES}>
+              <Button variant="primary" size="lg" icon={ArrowRight} iconPosition="right">
+                View All Stores
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
+      
 
       {/* Featured Deals */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -169,23 +170,7 @@ const finalCategories = !categoriesError && categories ? categories : [];
         <OfferGrid offers={finalFeaturedOffers} />
       </section>
 
-      {/* Top Stores */}
-      <section className="bg-gradient-to-br from-purple-50 to-teal-50 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900">{t('home.topStores')}</h2>
-            <p className="text-gray-600 mt-2">Shop from your favorite brands and earn cashback</p>
-          </div>
-          <StoreCarousel stores={finalPopularStores} />
-          <div className="text-center mt-8">
-            <Link to={ROUTES.STORES}>
-              <Button variant="primary" size="lg" icon={ArrowRight} iconPosition="right">
-                View All Stores
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
+     
 
       {/* Popular Categories */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -315,6 +300,23 @@ const finalCategories = !categoriesError && categories ? categories : [];
               />
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+          {featuredStats.map((stat, index) => (
+            <StatsCard
+              key={stat.label}
+              title={stat.label}
+              value={stat.value}
+              icon={stat.icon}
+              color={stat.color}
+              bgColor={stat.bgColor}
+              trend={stat.trend}
+              delay={index * 0.1}
+            />
+          ))}
         </div>
       </section>
 

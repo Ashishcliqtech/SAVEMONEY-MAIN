@@ -12,10 +12,18 @@ export const CategoryPage: React.FC = () => {
   const { data: stores, isLoading: isLoadingStores } = useStores();
   const { data: categories, isLoading: isLoadingCategories } = useCategories();
 
-  const category = categories?.find(c => c.id === id);
+  // const category = categories?.find(c => c.id === id);
 
-  const filteredOffers = offers?.filter((offer: Offer) => offer.category_id === id) || [];
-  const filteredStores = stores?.filter((store: Store) => store.category_id === id) || [];
+  const category = Array.isArray(categories) ? categories.find(c => c.id === id) : undefined;
+
+const filteredOffers = Array.isArray(offers)
+  ? offers.filter((offer: Offer) => offer.category_id === id)
+  : [];
+
+const filteredStores = Array.isArray(stores)
+  ? stores.filter((store: Store) => store.category_id === id)
+  : [];
+
 
   if (isLoadingOffers || isLoadingStores || isLoadingCategories) {
     return (

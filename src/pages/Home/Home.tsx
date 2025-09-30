@@ -134,24 +134,52 @@ const finalCategories = !categoriesError && categories ? categories : [];
         <RecommendedOffersCarousel offers={finalFeaturedOffers} />
       </section>
 
-      {/* Stats Section */}
+            {/* Stats Section */}
+      <section className="relative bg-gradient-to-br from-purple-50 to-teal-50 py-16">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    
+    {/* Header */}
+    <div className="text-center mb-12">
+      <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
+        {t('home.topStores')}
+      </h2>
+      <p className="mt-3 text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
+        Shop from your favorite brands and earn cashback instantly
+      </p>
+    </div>
 
-       <section className="bg-gradient-to-br from-purple-50 to-teal-50 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900">{t('home.topStores')}</h2>
-            <p className="text-gray-600 mt-2">Shop from your favorite brands and earn cashback</p>
-          </div>
-          <StoreCarousel stores={finalPopularStores} />
-          <div className="text-center mt-8">
-            <Link to={ROUTES.STORES}>
-              <Button variant="primary" size="lg" icon={ArrowRight} iconPosition="right">
-                View All Stores
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
+    {/* Store Carousel */}
+    <StoreCarousel stores={finalPopularStores} />
+
+    {/* Button Section */}
+    {!popularError && (
+      <div className="flex justify-center mt-10">
+        <Link to={ROUTES.STORES} className="w-full sm:w-auto">
+          <Button
+            variant="primary"
+            size="lg"
+            icon={ArrowRight}
+            iconPosition="right"
+            disabled={!finalPopularStores.length} // disabled when loading
+            className="w-full sm:w-auto rounded-2xl px-8 py-4 font-semibold shadow-lg 
+                       bg-gradient-to-r from-purple-600 to-teal-500 text-white 
+                       hover:from-purple-700 hover:to-teal-600 
+                       transition-all duration-300 transform hover:scale-105 
+                       disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            View All Stores
+          </Button>
+        </Link>
+      </div>
+    )}
+  </div>
+
+  {/* Decorative Background Elements */}
+  <div className="absolute top-0 left-0 w-40 h-40 bg-purple-300/30 rounded-full blur-3xl -z-10"></div>
+  <div className="absolute bottom-0 right-0 w-52 h-52 bg-teal-300/30 rounded-full blur-3xl -z-10"></div>
+</section>
+
+
       
 
       {/* Featured Deals */}

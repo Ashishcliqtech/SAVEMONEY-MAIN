@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, Search, Bell, Wallet, ChevronDown, User, LogOut, X, TrendingUp, Users, ShoppingBag } from 'lucide-react';
+import { Menu, Search, Bell, Wallet, ChevronDown, User, LogOut, X, TrendingUp, Users, Currency } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
 import { useWallet } from '../../../hooks/useSupabase';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -75,21 +75,21 @@ export const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
             </button>
             <Link to={ROUTES.HOME} className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-teal-600 rounded-lg flex items-center justify-center">
-                    <ShoppingBag className="w-5 h-5 text-white" />
+                    <Currency className="w-5 h-5 text-white" />
                 </div>
                 <span className="hidden sm:inline text-xl font-bold text-gray-900">SaveMoney</span>
             </Link>
           </div>
 
           {/* Center: Mobile Logo */}
-          <div className="lg:hidden absolute left-1/2 -translate-x-1/2">
+          {/* <div className="lg:hidden absolute left-1/2 -translate-x-1/2">
              <Link to={ROUTES.HOME} className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-gradient-to-br from-purple-600 to-teal-600 rounded-lg flex items-center justify-center">
                     <ShoppingBag className="w-5 h-5 text-white" />
                 </div>
                 <span className="hidden xs:inline text-xl font-bold text-gray-900">SaveMoney</span>
             </Link>
-          </div>
+          </div> */}
 
           {/* Right Side: Actions */}
           <div className="flex items-center space-x-2 sm:space-x-4">

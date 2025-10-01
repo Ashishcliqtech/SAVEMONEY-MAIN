@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { User, Mail, Phone, Calendar, Settings, Bell, Shield, Globe, CreditCard as Edit, Save, Camera } from 'lucide-react';
-import { Card, Button, Input, Badge } from '../../components/ui';
+import { Card, Button, Input, Badge, LoadingSpinner, ErrorState } from '../../components/ui';
 import { useLanguage } from '../../hooks';
 import { useAuth } from '../../hooks/useAuth';
 import toast from 'react-hot-toast';
@@ -87,11 +87,11 @@ export const Profile: React.FC = () => {
   };
 
   if (authLoading || isLoading) {
-    return <div>Loading...</div>;
+    return <LoadingSpinner size="xl" text="Loading your profile..." fullScreen />;
   }
 
   if (authError || error) {
-    return <div>Error: {authError || error}</div>;
+    return <ErrorState title="Failed to Load Profile" message={authError || error} onRetry={fetchProfile} fullScreen />;
   }
 
   return (
@@ -205,7 +205,8 @@ export const Profile: React.FC = () => {
                     {t('profile.notifications')}
                   </label>
                   <div className="space-y-3">
-                    {[n                      { key: 'email', label: 'Email Notifications', description: 'Receive deal alerts and updates via email' },
+                    {[
+                      { key: 'email', label: 'Email Notifications', description: 'Receive deal alerts and updates via email' },
                       { key: 'push', label: 'Push Notifications', description: 'Get instant notifications on your device' },
                       { key: 'sms', label: 'SMS Notifications', description: 'Receive important updates via SMS' },
                     ].map((item) => (

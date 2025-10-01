@@ -11,7 +11,6 @@ import {
   LoadingSpinner,
   EmptyState,
   ErrorState,
-  LoadingCard,
 } from '../../components/ui';
 import { useOffers, useCategories } from '../../hooks/useApi';
 import toast from 'react-hot-toast';
@@ -90,15 +89,7 @@ export const Offers: React.FC = () => {
 
   const renderContent = () => {
     if (isLoading) {
-        return (
-          <div className={`mb-8 ${
-            viewMode === 'grid' 
-              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' 
-              : 'space-y-4'
-          }`}>
-            <LoadingCard count={filters.limit} />
-          </div>
-        )
+        return <LoadingSpinner size="xl" text="Fetching best offers..." fullScreen />
     }
 
     if (error) {

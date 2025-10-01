@@ -90,6 +90,13 @@ export const Wallet: React.FC = () => {
       default: return CreditCard;
     }
   };
+  
+  const formatCurrency = (amount: number | null | undefined) => {
+    if (amount === null || typeof amount === 'undefined') {
+      return 'N/A';
+    }
+    return `₹${amount.toLocaleString()}`;
+  };
 
   if (isLoading) {
     return <LoadingSpinner size="xl" text="Loading your wallet..." fullScreen color="text-orange-500" />;
@@ -106,9 +113,9 @@ export const Wallet: React.FC = () => {
   });
 
   const stats = [
-    { label: t('wallet.available'), value: `₹${wallet?.availableCashback?.toLocaleString() || '0'}`, icon: WalletIcon, color: 'text-green-600', bgColor: 'bg-green-100' },
-    { label: t('wallet.pending'), value: `₹${wallet?.pendingCashback?.toLocaleString() || '0'}`, icon: Clock, color: 'text-orange-600', bgColor: 'bg-orange-100' },
-    { label: t('wallet.withdrawn'), value: `₹${wallet?.withdrawnCashback?.toLocaleString() || '0'}`, icon: TrendingUp, color: 'text-purple-600', bgColor: 'bg-purple-100' },
+    { label: t('wallet.available'), value: formatCurrency(wallet?.availableCashback), icon: WalletIcon, color: 'text-green-600', bgColor: 'bg-green-100' },
+    { label: t('wallet.pending'), value: formatCurrency(wallet?.pendingCashback), icon: Clock, color: 'text-orange-600', bgColor: 'bg-orange-100' },
+    { label: t('wallet.withdrawn'), value: formatCurrency(wallet?.withdrawnCashback), icon: TrendingUp, color: 'text-purple-600', bgColor: 'bg-purple-100' },
   ];
 
   return (
@@ -139,7 +146,7 @@ export const Wallet: React.FC = () => {
               <div className="text-center">
                 <WalletIcon className="w-16 h-16 mx-auto mb-4 opacity-90" />
                 <div className="text-sm opacity-90 mb-2">Total Balance</div>
-                <div className="text-3xl font-bold mb-6">₹{wallet?.totalCashback?.toLocaleString() || '0'}</div>
+                <div className="text-3xl font-bold mb-6">{formatCurrency(wallet?.totalCashback)}</div>
                 <Button variant="secondary" size="lg" fullWidth icon={Download} onClick={() => setShowWithdrawModal(true)} disabled={!wallet?.availableCashback || wallet.availableCashback < 10}>
                   {t('wallet.withdrawButton')}
                 </Button>

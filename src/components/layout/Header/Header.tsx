@@ -87,9 +87,9 @@ export const Header: React.FC<HeaderProps> = ({ onSidebarToggle }) => {
                     </span>
                   </div>
 
-                  <button className="p-2 rounded-full text-gray-500 hover:text-gray-900 hover:bg-gray-100">
+                  {/* <button className="p-2 rounded-full text-gray-500 hover:text-gray-900 hover:bg-gray-100">
                     <Bell className="h-6 w-6" />
-                  </button>
+                  </button> */}
                   
                   <button onClick={() => navigate(ROUTES.PROFILE)} className="p-1 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
                       <img

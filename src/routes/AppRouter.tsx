@@ -24,6 +24,8 @@ const Help = lazy(() => import('../pages/Help/Help').then(module => ({ default: 
 const Notifications = lazy(() => import('../pages/Notifications/Notifications').then(module => ({ default: module.Notifications })));
 const CategoryPage = lazy(() => import('../pages/Categories/CategoryPage').then(module => ({ default: module.CategoryPage })));
 const StorePage = lazy(() => import('../pages/Stores/StorePage').then(module => ({ default: module.StorePage })));
+const StoreOffersPage = lazy(() => import('../pages/Stores/StoreOffersPage').then(module => ({ default: module.StoreOffersPage })));
+
 
 // Granular lazy loading for Admin pages
 const AdminDashboard = lazy(() => import('../pages/Admin/Dashboard').then(module => ({ default: module.AdminDashboard })));
@@ -87,6 +89,7 @@ export const AppRouter: React.FC = () => {
             <Route path={ROUTES.CATEGORIES} element={<Categories />} />
             <Route path="/categories/:id" element={<CategoryPage />} />
             <Route path="/stores/:id" element={<StorePage />} />
+            <Route path="/stores/:id/offers" element={<StoreOffersPage />} />
             <Route path={ROUTES.OFFERS} element={<Offers />} />
             <Route path="/how-it-works" element={<HowItWorks />} />
             <Route path="/blog" element={<Blog />} />

@@ -1,21 +1,48 @@
-
-import React from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { useCategory } from '../../hooks/useApi';
-import { Card, LoadingSpinner, ErrorState, Button, Badge } from '../../components/ui';
-import { Store, Offer } from '../../types';
-import { ArrowLeft, Clock, Copy, ExternalLink, Star } from 'lucide-react';
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
+import { Clock, Copy, ExternalLink, Grid2x2 as Grid, List } from 'lucide-react';
+import {
+  Card,
+  Button,
+  Badge,
+  Pagination,
+  LoadingSpinner,
+  EmptyState,
+  ErrorState,
+  LoadingCard,
+} from '../../components/ui';
+import { useOffers } from '../../hooks/useApi';
+import toast from 'react-hot-toast';
+import { Offer } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
 import { offersApi } from '../../api';
-import toast from 'react-hot-toast';
-import { motion } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router-dom';
 
-export const CategoryPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const { data, isLoading, isError, error } = useCategory(id);
-  const { isAuthenticated } = useAuth();
+const INITIAL_FILTERS = {
+  search: '',
+  sortBy: 'popularity' as 'cashback' | 'expiry' | 'popularity',
+  sortOrder: 'desc' as 'asc' | 'desc',
+  page: 1,
+  limit: 12,
+};
+
+export const StoreOffersPage: React.FC = () => {
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
+  const { id: storeId } = useParams<{ id: string }>();
+
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [filters, setFilters] = useState(INITIAL_FILTERS);
+
+  const { data: offersData, isLoading, error } = useOffers({ ...filters, store: storeId });
+
+  const offers = offersData?.offers || [];
+  const totalPages = offersData?.totalPages || 1;
+
+  const handlePageChange = (page: number) => {
+    setFilters(prev => ({ ...prev, page }));
+  };
 
   const handleCopyCode = (code: string) => {
     navigator.clipboard.writeText(code);
@@ -44,102 +71,36 @@ export const CategoryPage: React.FC = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <LoadingSpinner size="xl" text="Loading Category..." />
-      </div>
-    );
-  }
-
-  if (isError || !data) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <ErrorState 
-          title="Failed to Load Category" 
-          message={error?.message || 'We could not find the category you were looking for.'} 
-        />
-      </div>
-    );
-  }
-
-  const { category, stores, offers } = data;
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <section className="bg-gradient-to-br from-purple-600 to-indigo-600 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Link to="/categories" className="flex items-center space-x-2 text-indigo-200 hover:text-white mb-4">
-            <ArrowLeft size={20} />
-            <span>Back to Categories</span>
-          </Link>
-          <h1 className="text-4xl font-bold">{category?.name || 'Category'}</h1>
-          <p className="text-xl text-indigo-100 mt-2">{category?.description || 'Explore offers and stores in this category.'}</p>
-        </div>
-      </section>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <section className="mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Stores in {category?.name}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {stores && stores.length > 0 ? (
-              stores.map((store: Store) => (
-                <Link to={`/stores/${store._id}/offers`} key={store._id}>
-                  <Card className="group cursor-pointer overflow-hidden h-full flex flex-col" hover>
-                        <div className="relative mb-4">
-                        <img
-                            src={store.logo}
-                            alt={store.name}
-                            className="w-full h-40 object-cover rounded-lg"
-                        />
-                        {store.isPopular && (
-                            <Badge variant="warning" size="sm" className="absolute top-2 left-2">
-                            🔥 Popular
-                            </Badge>
-                        )}
-                        <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-sm font-semibold">
-                            {store.cashback_rate}% back
-                        </div>
-                        </div>
-                        <div className="space-y-3 flex-1 flex flex-col">
-                        <div>
-                            <h3 className="font-semibold text-lg text-gray-900 group-hover:text-purple-600 transition-colors mb-1">
-                            {store.name}
-                            </h3>
-                        </div>
-                        <p className="text-sm text-gray-600 line-clamp-2 flex-1">
-                            {store.description}
-                        </p>
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-1">
-                            <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                            <span className="text-sm text-gray-600">4.5</span>
-                            </div>
-                            <span className="text-sm text-gray-500">
-                            {store.totalOffers} offers
-                            </span>
-                        </div>
-                        <div className="mt-auto">
-                            <Button variant="primary" size="sm" fullWidth icon={ExternalLink}>
-                            Visit Store
-                            </Button>
-                        </div>
-                        </div>
-                    </Card>
-                </Link>
-              ))
-            ) : (
-              <p>No stores found for this category.</p>
-            )}
+  const renderContent = () => {
+    if (isLoading) {
+        return (
+          <div className={`mb-8 ${
+            viewMode === 'grid' 
+              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' 
+              : 'space-y-4'
+          }`}>
+            <LoadingCard count={filters.limit} />
           </div>
-        </section>
+        )
+    }
 
-        <section>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Offers in {category?.name}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {offers && offers.length > 0 ? (
-              offers.map((offer: Offer, index: number) => (
-                <motion.div
+    if (error) {
+      return <ErrorState title="Failed to Load Offers" message="We couldn't fetch the offers right now. Please try again later." />;
+    }
+
+    if (!offers || offers.length === 0) {
+      return <EmptyState title="No Offers Found" message="There are no offers available for this store at the moment." />;
+    }
+
+    return (
+      <>
+        <div className={`mb-8 ${
+            viewMode === 'grid' 
+              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' 
+              : 'space-y-4'
+          }`}>
+            {offers.map((offer: Offer, index: number) => (
+              <motion.div
                 key={offer._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -234,13 +195,61 @@ export const CategoryPage: React.FC = () => {
                     </div>
                   </div>
                 </Card>
-                </motion.div>
-              ))
-            ) : (
-              <p>No offers found for this category.</p>
-            )}
+              </motion.div>
+            ))}
+        </div>
+        {offersData && offersData.total > filters.limit && (
+          <Pagination
+            currentPage={filters.page}
+            totalPages={Math.ceil(offersData.total / filters.limit)}
+            onPageChange={handlePageChange}
+          />
+        )}
+      </>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
+      <section className="bg-gradient-to-br from-orange-500 to-red-600 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-4xl lg:text-5xl font-bold mb-4">
+              Offers for {offers.length > 0 && offers[0].store.name}
+            </h1>
+            <p className="text-xl text-orange-100 mb-8">
+              Discover the best deals, coupons, and cashback offers
+            </p>
           </div>
-        </section>
+        </div>
+      </section>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex items-center justify-between mb-6">
+          {!isLoading && offersData && (
+             <p className="text-gray-600">
+                Showing {offers.length} of {offersData.total} offers
+            </p>
+          )}
+          
+          <div className="flex items-center space-x-2">
+            <Button
+              variant={viewMode === 'grid' ? 'primary' : 'ghost'}
+              size="sm"
+              icon={Grid}
+              onClick={() => setViewMode('grid')}
+            />
+            <Button
+              variant={viewMode === 'list' ? 'primary' : 'ghost'}
+              size="sm"
+              icon={List}
+              onClick={() => setViewMode('list')}
+            />
+          </div>
+        </div>
+        
+        {renderContent()}
+
       </div>
     </div>
   );

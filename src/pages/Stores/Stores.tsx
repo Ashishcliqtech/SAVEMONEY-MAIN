@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { Search, Filter, Grid2x2 as Grid, List, ExternalLink, Star } from 'lucide-react';
 import {
   Card,
@@ -12,9 +13,9 @@ import {
   EmptyState,
   ErrorState,
   LoadingCard,
-} from '@/components/ui';
-import { useStores, useCategories } from '@/hooks/useSupabase';
-import { Store } from '@/types';
+} from '../../components/ui';
+import { useStores, useCategories } from '../../hooks/useSupabase';
+import { Store } from '../../types';
 
 export const Stores: React.FC = () => {
   const { t } = useTranslation();
@@ -80,87 +81,89 @@ export const Stores: React.FC = () => {
                 transition={{ delay: index * 0.05 }}
                 className="h-full"
               >
-                {viewMode === 'grid' ? (
-                  <Card className="group cursor-pointer overflow-hidden h-full flex flex-col" hover>
-                    <div className="relative mb-4">
-                      <img
-                        src={store.logo}
-                        alt={store.name}
-                        className="w-full h-40 object-cover rounded-lg"
-                      />
-                      {store.isPopular && (
-                        <Badge variant="warning" size="sm" className="absolute top-2 left-2">
-                          🔥 Popular
-                        </Badge>
-                      )}
-                      <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-sm font-semibold">
-                        {store.cashbackRate}% back
-                      </div>
-                    </div>
-                    <div className="space-y-3 flex-1 flex flex-col">
-                      <div>
-                        <h3 className="font-semibold text-lg text-gray-900 group-hover:text-purple-600 transition-colors mb-1">
-                          {store.name}
-                        </h3>
-                        <p className="text-sm text-gray-500">{store.category?.name || 'General'}</p>
-                      </div>
-                      <p className="text-sm text-gray-600 line-clamp-2 flex-1">
-                        {store.description}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-1">
-                          <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                          <span className="text-sm text-gray-600">4.5</span>
-                        </div>
-                        <span className="text-sm text-gray-500">
-                          {store.totalOffers} offers
-                        </span>
-                      </div>
-                      <div className="mt-auto">
-                        <Button variant="primary" size="sm" fullWidth icon={ExternalLink}>
-                          {t('stores.visitStore')}
-                        </Button>
-                      </div>
-                    </div>
-                  </Card>
-                ) : (
-                  <Card className="group cursor-pointer h-full" hover>
-                    <div className="flex items-center space-x-4">
-                      <img
-                        src={store.logo}
-                        alt={store.name}
-                        className="w-16 h-16 rounded-lg object-cover"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-2 mb-1">
-                          <h3 className="font-semibold text-lg text-gray-900 group-hover:text-purple-600 transition-colors">
-                            {store.name}
-                          </h3>
-                          {store.isPopular && (
-                            <Badge variant="warning" size="sm">
-                              🔥 Popular
+                <Link to={`/stores/${store._id}/offers`}>
+                    {viewMode === 'grid' ? (
+                    <Card className="group cursor-pointer overflow-hidden h-full flex flex-col" hover>
+                        <div className="relative mb-4">
+                        <img
+                            src={store.logo}
+                            alt={store.name}
+                            className="w-full h-40 object-cover rounded-lg"
+                        />
+                        {store.isPopular && (
+                            <Badge variant="warning" size="sm" className="absolute top-2 left-2">
+                            🔥 Popular
                             </Badge>
-                          )}
+                        )}
+                        <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-sm font-semibold">
+                            {store.cashback_rate}% back
                         </div>
-                        <p className="text-sm text-gray-500 mb-2">{store.category?.name || 'General'}</p>
-                        <p className="text-sm text-gray-600 line-clamp-1">
-                          {store.description}
+                        </div>
+                        <div className="space-y-3 flex-1 flex flex-col">
+                        <div>
+                            <h3 className="font-semibold text-lg text-gray-900 group-hover:text-purple-600 transition-colors mb-1">
+                            {store.name}
+                            </h3>
+                            <p className="text-sm text-gray-500">{store.category?.name || 'General'}</p>
+                        </div>
+                        <p className="text-sm text-gray-600 line-clamp-2 flex-1">
+                            {store.description}
                         </p>
-                      </div>
-                      <div className="text-right space-y-2">
-                        <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-                          {store.cashbackRate}% back
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-1">
+                            <Star className="w-4 h-4 text-yellow-400 fill-current" />
+                            <span className="text-sm text-gray-600">4.5</span>
+                            </div>
+                            <span className="text-sm text-gray-500">
+                            {store.totalOffers} offers
+                            </span>
                         </div>
-                        <div className="text-sm text-gray-500">
-                          {store.totalOffers} offers
+                        <div className="mt-auto">
+                            <Button variant="primary" size="sm" fullWidth icon={ExternalLink}>
+                            {t('stores.visitStore')}
+                            </Button>
                         </div>
-                        <Button variant="primary" size="sm" icon={ExternalLink}>
-                          {t('stores.visitStore')}
-                        </Button>
-                      </div>
-                    </div>
-                  </Card>
-                )}
+                        </div>
+                    </Card>
+                    ) : (
+                    <Card className="group cursor-pointer h-full" hover>
+                        <div className="flex items-center space-x-4">
+                        <img
+                            src={store.logo}
+                            alt={store.name}
+                            className="w-16 h-16 rounded-lg object-cover"
+                        />
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center space-x-2 mb-1">
+                            <h3 className="font-semibold text-lg text-gray-900 group-hover:text-purple-600 transition-colors">
+                                {store.name}
+                            </h3>
+                            {store.isPopular && (
+                                <Badge variant="warning" size="sm">
+                                🔥 Popular
+                                </Badge>
+                            )}
+                            </div>
+                            <p className="text-sm text-gray-500 mb-2">{store.category?.name || 'General'}</p>
+                            <p className="text-sm text-gray-600 line-clamp-1">
+                            {store.description}
+                            </p>
+                        </div>
+                        <div className="text-right space-y-2">
+                            <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+                            {store.cashback_rate}% back
+                            </div>
+                            <div className="text-sm text-gray-500">
+                            {store.totalOffers} offers
+                            </div>
+                            <Button variant="primary" size="sm" icon={ExternalLink}>
+                            {t('stores.visitStore')}
+                            </Button>
+                        </div>
+                        </div>
+                    </Card>
+                    )}
+                </Link>
               </motion.div>
             ))}
           </div>

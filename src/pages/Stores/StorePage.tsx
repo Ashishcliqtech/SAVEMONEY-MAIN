@@ -1,67 +1,77 @@
-import React from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { useOffers, useStores } from '../../hooks/useApi';
-import { Card, LoadingSpinner, Button } from '../../components/ui';
-import { Offer } from '../../types';
-import { ArrowLeft } from 'lucide-react';
 
-export const StorePage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { storesApi } from '../../api/stores';
+import { Store, Offer } from '../../types';
+import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
+import { ErrorState } from '../../components/ui/ErrorState';
+import { Card } from '../../components/ui/Card/Card';
 
-  const { data: offers, isLoading: isLoadingOffers } = useOffers();
-  const { data: stores, isLoading: isLoadingStores } = useStores();
+const StorePage: React.FC = () => {
+    const { id } = useParams<{ id: string }>();
+    const [store, setStore] = useState<Store | null>(null);
+    const [offers, setOffers] = useState<Offer[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-  const store = stores?.find(s => s.id === id);
+    useEffect(() => {
+        const fetchStoreData = async () => {
+            if (!id) return;
+            try {
+                setLoading(true);
+                const response = await storesApi.getStoreById(id);
+                setStore(response.store);
+                setOffers(response.offers);
+            } catch (err) {
+                setError('Failed to fetch store data.');
+            } finally {
+                setLoading(false);
+            }
+        };
 
-  const filteredOffers = offers?.filter((offer: Offer) => offer.store_id === id) || [];
+        fetchStoreData();
+    }, [id]);
 
-  if (isLoadingOffers || isLoadingStores) {
+    if (loading) {
+        return <LoadingSpinner />;
+    }
+
+    if (error) {
+        return <ErrorState message={error} />;
+    }
+
+    if (!store) {
+        return <ErrorState message="Store not found." />;
+    }
+
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <LoadingSpinner size="xl" text="Loading offers..." />
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-       <section className="bg-gradient-to-br from-teal-600 to-cyan-600 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Link to="/stores" className="flex items-center space-x-2 text-cyan-200 hover:text-white mb-4">
-            <ArrowLeft size={20} />
-            <span>Back to Stores</span>
-          </Link>
-          <div className="flex items-center space-x-6">
-            <img src={store?.logo} alt={store?.name} className="w-24 h-24 rounded-xl bg-white p-2 object-contain" />
-            <div>
-                <h1 className="text-4xl font-bold">{store?.name}</h1>
-                <p className="text-xl text-cyan-100 mt-2">{store?.description}</p>
+        <div className="store-page">
+            <div className="store-header">
+                {store.banner_url && <img src={store.banner_url} alt={`${store.name} banner`} className="store-banner" />}
+                <div className="store-info">
+                    {store.logo && <img src={store.logo} alt={`${store.name} logo`} className="store-logo" />}
+                    <h1>{store.name}</h1>
+                    <p>{store.description}</p>
+                    <p>Cashback Rate: {store.cashback_rate}%</p>
+                </div>
             </div>
-          </div>
-        </div>
-      </section>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Offers from {store?.name}</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredOffers.length > 0 ? (
-            filteredOffers.map((offer: Offer) => (
-                <Card key={offer.id} className="h-full">
-                    <img src={offer.image} alt={offer.title} className="w-full h-40 object-cover rounded-t-lg" />
-                    <div className="p-4">
-                        <h3 className="text-lg font-semibold">{offer.title}</h3>
-                        <p className="text-sm text-gray-500 mt-1">{offer.description}</p>
-                        <div className="mt-4">
-                            <span className="text-lg font-bold text-green-600">{offer.cashback_amount}</span>
-                        </div>
-                    </div>
-                </Card>
-            ))
-          ) : (
-            <p>No offers found for this store.</p>
-          )}
+            <div className="store-offers">
+                <h2>Offers from {store.name}</h2>
+                <div className="offer-grid">
+                    {offers.map(offer => (
+                        <Card key={offer.id}>
+                            <img src={offer.imageUrl} alt={offer.title} />
+                            <h3>{offer.title}</h3>
+                            <p>{offer.description}</p>
+                            {offer.couponCode && <p>Coupon: {offer.couponCode}</p>}
+                            <a href={offer.url} target="_blank" rel="noopener noreferrer">Go to offer</a>
+                        </Card>
+                    ))}
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 };
+
+export default StorePage;

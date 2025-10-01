@@ -1,1 +1,3 @@
-export { Stores } from './Stores';
+export * from './Stores';
+export * from './StorePage';
+export * from './StoreOffersPage';

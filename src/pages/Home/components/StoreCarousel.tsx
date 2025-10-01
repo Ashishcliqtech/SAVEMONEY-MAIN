@@ -4,6 +4,7 @@ import { ExternalLink } from 'lucide-react';
 import { Card, LoadingCard } from '../../../components/ui';
 import { usePopularStores } from '../../../hooks/useSupabase';
 import { placeholderStores } from '../../../data/placeholderData';
+import { Link } from 'react-router-dom';
 
 interface StoreCarouselProps {
   stores?: any[];
@@ -12,7 +13,6 @@ interface StoreCarouselProps {
 export const StoreCarousel: React.FC<StoreCarouselProps> = memo(({ stores: propStores }) => {
   const { data: apiStores, isLoading, error } = usePopularStores();
   
-  // Use prop stores, API stores, or fallback to placeholder data
   const stores = propStores || 
     (error || !apiStores || apiStores.length === 0 ? placeholderStores : apiStores);
 
@@ -38,10 +38,10 @@ export const StoreCarousel: React.FC<StoreCarouselProps> = memo(({ stores: propS
     <div className="relative">
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-4 sm:gap-6">
         {stores.map((store, index) => {
-          if (!store) return null; // prevent null/undefined crash
+          if (!store) return null; 
 
           const {
-            id = index, // fallback key
+            _id = index, 
             name = 'Unknown Store',
             logo,
             category,
@@ -50,8 +50,8 @@ export const StoreCarousel: React.FC<StoreCarouselProps> = memo(({ stores: propS
           } = store || {};
 
           return (
+            <Link to={`/stores/${_id}/offers`} key={_id}>
             <motion.div
-              key={id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
@@ -70,7 +70,7 @@ export const StoreCarousel: React.FC<StoreCarouselProps> = memo(({ stores: propS
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           (e.currentTarget as HTMLImageElement).src =
-                            '/fallback-store.png'; // fallback image
+                            '/fallback-store.png'; 
                         }}
                       />
                     ) : (
@@ -101,6 +101,7 @@ export const StoreCarousel: React.FC<StoreCarouselProps> = memo(({ stores: propS
                 </div>
               </Card>
             </motion.div>
+            </Link>
           );
         })}
       </div>

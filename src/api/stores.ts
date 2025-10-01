@@ -1,5 +1,5 @@
 import { apiClient } from './client';
-import { Store } from '../types';
+import { Store, Offer } from '../types';
 
 // Assuming these types are in `src/types`
 export interface GetAllStoresParams {
@@ -18,6 +18,11 @@ export interface StorePaginatedResponse {
   currentPage: number;
 }
 
+export interface StoreWithOffersResponse {
+    store: Store;
+    offers: Offer[];
+}
+
 export const storesApi = {
   // Public
   getAllStores: (params: GetAllStoresParams): Promise<StorePaginatedResponse> =>
@@ -32,7 +37,7 @@ export const storesApi = {
   searchStores: (params: SearchStoresParams): Promise<Store[]> =>
     apiClient.get('/stores/search', { params }).then(res => res.data),
 
-  getStoreById: (id: string): Promise<Store> =>
+  getStoreById: (id: string): Promise<StoreWithOffersResponse> =>
     apiClient.get(`/stores/${id}`).then(res => res.data),
 
   // Admin

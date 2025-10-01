@@ -1,1 +1,2 @@
-export { Categories } from './Categories';
+export * from './Categories';
+export * from './CategoryPage';

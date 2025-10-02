@@ -8,11 +8,11 @@ export const getNotifications = (userId: string): Promise<Notification[]> => {
 };
 
 export const getNotificationSettings = (): Promise<NotificationSettings> => {
-    return apiClient.get('/user/notifications/settings');
+    return apiClient.get('/users/settings');
 };
 
 export const updateNotificationSettings = (settings: Partial<NotificationSettings>): Promise<NotificationSettings> => {
-    return apiClient.put('/user/notifications/settings', settings);
+    return apiClient.put('/users/settings', settings);
 };
 
 export const markNotificationAsRead = (id: string): Promise<{ msg: string }> => {

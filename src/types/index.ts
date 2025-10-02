@@ -131,7 +131,7 @@ export interface Notification {
   recipient: string; 
   title: string;
   message: string;
-  type: 'system' | 'offer' | 'wallet';
+  type: 'deal' | 'cashback' | 'withdrawal' | 'referral' | 'support' | 'system' | 'offer';
   actionUrl?: string;
   isRead: boolean;
   isClicked: boolean;
@@ -142,7 +142,7 @@ export interface NotificationData {
     recipient: string;
     title: string;
     message: string;
-    type: 'system' | 'offer' | 'wallet';
+    type: 'deal' | 'cashback' | 'withdrawal' | 'referral' | 'support' | 'system' | 'offer';
     actionUrl?: string;
 }
 

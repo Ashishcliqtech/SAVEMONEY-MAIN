@@ -155,8 +155,11 @@ export const useNotificationStats = () => {
 export const useCreateNotification = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (notificationData: NotificationData) => 
-      apiClient.post('/admin/notifications/send', notificationData),
+    mutationFn: (notificationData: NotificationData) => {
+      const { recipient, ...rest } = notificationData;
+      const payload = { ...rest, userId: recipient };
+      return apiClient.post('/admin/notifications/send', payload);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notificationStats'] });
       toast.success('Notification sent successfully!');

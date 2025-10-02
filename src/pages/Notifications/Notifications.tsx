@@ -26,7 +26,7 @@ import { useNavigate } from 'react-router-dom';
 // Main component for the Notifications page
 export const Notifications: React.FC = () => {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const navigate = useNavigate();
 
   // State management for filters and search
@@ -36,11 +36,19 @@ export const Notifications: React.FC = () => {
   const [isFilterSidebarOpen, setIsFilterSidebarOpen] = useState(false);
 
   // Fetching notification data using a custom hook
-  const { data: notificationsData, isLoading, isError, error, markAsRead, markAllAsRead, deleteNotification } = useUserNotifications(user?.id);
+  const { 
+    notifications: notificationsData, 
+    isLoading: isNotificationsLoading, 
+    isError, 
+    error, 
+    markAsRead, 
+    markAllAsRead, 
+    deleteNotification 
+  } = useUserNotifications(user?._id);
   
-  // Destructuring notification data
-  const notifications = notificationsData?.notifications || [];
-  const unreadCount = notificationsData?.unreadCount || 0;
+  // Processing notification data
+  const notifications = notificationsData || [];
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   // Helper function to get an icon based on notification type
   const getNotificationIcon = (type: string) => {
@@ -92,7 +100,7 @@ export const Notifications: React.FC = () => {
   ];
 
   // Loading state UI
-  if (isLoading) {
+  if (isAuthLoading || isNotificationsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <LoadingSpinner size="xl" text="Loading notifications..." />

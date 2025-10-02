@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { Card, Button, Input, Modal, ErrorState, LoadingSpinner } from '../../../components/ui';
 import { useNotificationStats, useCreateNotification } from '../../../hooks/useSupabase';
+import { useAllUsers } from '../../../hooks/useUsers';
 import { NotificationData } from '../../../types';
 import toast from 'react-hot-toast';
 
@@ -16,6 +17,7 @@ export const NotificationManagement: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const { data: stats, isLoading, isError, error } = useNotificationStats();
   const createNotificationMutation = useCreateNotification();
+  const { users, isLoading: isLoadingUsers } = useAllUsers();
 
   const [newNotification, setNewNotification] = useState<NotificationData>({
     recipient: '',
@@ -137,12 +139,23 @@ export const NotificationManagement: React.FC = () => {
           size="xl"
         >
           <div className="space-y-6">
-              <Input
-                label="Recipient User ID"
+          <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Recipient User
+              </label>
+              <select
                 value={newNotification.recipient}
                 onChange={(e) => setNewNotification({...newNotification, recipient: e.target.value})}
-                placeholder="Enter the User ID or 'all' for everyone"
-              />
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                disabled={isLoadingUsers}
+              >
+                <option value="">{isLoadingUsers ? 'Loading users...' : 'Select a user'}</option>
+                <option value="all">All Users</option>
+                {users && users.map(user => (
+                  <option key={user._id} value={user._id}>{user.name} ({user.email})</option>
+                ))}
+              </select>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Notification Title"
@@ -161,7 +174,11 @@ export const NotificationManagement: React.FC = () => {
                 >
                   <option value="system">System</option>
                   <option value="offer">Offer</option>
-                  <option value="wallet">Wallet</option>
+                  <option value="deal">Deal</option>
+                  <option value="cashback">Cashback</option>
+                  <option value="withdrawal">Withdrawal</option>
+                  <option value="referral">Referral</option>
+                  <option value="support">Support</option>
                 </select>
               </div>
             </div>

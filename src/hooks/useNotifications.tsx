@@ -22,7 +22,7 @@ export const useUserNotifications = (userId?: string) => {
   });
 
   const markAllAsReadMutation = useMutation({
-    mutationFn: () => apiClient.put(`/notifications/${userId}/read-all`),
+    mutationFn: () => apiClient.put(`/notifications/read-all`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
     },

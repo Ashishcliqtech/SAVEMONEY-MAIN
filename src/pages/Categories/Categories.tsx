@@ -98,6 +98,67 @@ export const Categories: React.FC = () => {
         </div>
       </section>
 
+      <section className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-8">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Most Popular Categories
+            </h2>
+            <p className="text-gray-600">
+              Categories with the highest user engagement and best offers
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {filteredCategories.slice(0, 3).map((category, index) => {
+              // Apply the same safe icon lookup logic here for popular categories
+              const IconComponent = (category.icon && Object.prototype.hasOwnProperty.call(iconMap, category.icon))
+                ? iconMap[category.icon]
+                : Sparkles;
+              const bgColor = bgColors[index % bgColors.length];
+              const textColor = textColors[index % textColors.length];
+
+              return (
+                <motion.div
+                  key={`popular-${category.id}`}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card className="text-center relative overflow-hidden" hover>
+                    <div className="absolute top-2 right-2">
+                      <Badge variant="warning" size="sm">
+                        🔥 Hot
+                      </Badge>
+                    </div>
+                    
+                    <div className={`w-16 h-16 mx-auto rounded-2xl ${bgColor} flex items-center justify-center mb-4`}>
+                      {IconComponent && <IconComponent className={`w-8 h-8 ${textColor}`} />}
+                    </div>
+                    
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      {category.name}
+                    </h3>
+                    
+                    <div className="flex items-center justify-center space-x-4 text-sm text-gray-600 mb-4">
+                      <span>{category.storeCount ?? 0} stores</span>
+                      <span>•</span>
+                      <span className="text-green-600 font-medium">
+                        {category.offerCount ?? 0} offers
+                      </span>
+                    </div>
+
+                    <Link to={`/categories/${category.id}`}>
+                      <Button variant="primary" size="sm" fullWidth>
+                        Shop Now
+                      </Button>
+                    </Link>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </div>
+        </section>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Controls */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8 space-y-4 sm:space-y-0">
@@ -192,66 +253,7 @@ export const Categories: React.FC = () => {
         </div>
 
         {/* Popular Categories Highlight */}
-        <section className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-8">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
-              Most Popular Categories
-            </h2>
-            <p className="text-gray-600">
-              Categories with the highest user engagement and best offers
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {filteredCategories.slice(0, 3).map((category, index) => {
-              // Apply the same safe icon lookup logic here for popular categories
-              const IconComponent = (category.icon && Object.prototype.hasOwnProperty.call(iconMap, category.icon))
-                ? iconMap[category.icon]
-                : Sparkles;
-              const bgColor = bgColors[index % bgColors.length];
-              const textColor = textColors[index % textColors.length];
-
-              return (
-                <motion.div
-                  key={`popular-${category.id}`}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Card className="text-center relative overflow-hidden" hover>
-                    <div className="absolute top-2 right-2">
-                      <Badge variant="warning" size="sm">
-                        🔥 Hot
-                      </Badge>
-                    </div>
-                    
-                    <div className={`w-16 h-16 mx-auto rounded-2xl ${bgColor} flex items-center justify-center mb-4`}>
-                      {IconComponent && <IconComponent className={`w-8 h-8 ${textColor}`} />}
-                    </div>
-                    
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      {category.name}
-                    </h3>
-                    
-                    <div className="flex items-center justify-center space-x-4 text-sm text-gray-600 mb-4">
-                      <span>{category.storeCount ?? 0} stores</span>
-                      <span>•</span>
-                      <span className="text-green-600 font-medium">
-                        {category.offerCount ?? 0} offers
-                      </span>
-                    </div>
-
-                    <Link to={`/categories/${category.id}`}>
-                      <Button variant="primary" size="sm" fullWidth>
-                        Shop Now
-                      </Button>
-                    </Link>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </div>
-        </section>
+        
       </div>
     </div>
   );

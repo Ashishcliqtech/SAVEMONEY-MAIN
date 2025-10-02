@@ -1,19 +1,20 @@
 import { createContext } from 'react';
 import { User } from '../types';
-import { SignupRequest } from '../api/auth';
+import { SendOtpPayload, VerifyOtpPayload } from '../api/auth';
+import { Socket } from 'socket.io-client';
 
 export interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  socket: Socket | null;
   login: (email: string, password: string) => Promise<User>;
-  signup: (data: SignupRequest) => Promise<void>;
-  verifyOTP: (email: string, otp: string) => Promise<User>;
-  completeSignupAfterOTP: (email: string, otp: string) => Promise<void>;
-  sendOTP: (email: string) => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;
-  loginWithGoogle: () => Promise<void>;
-  loginWithFacebook: () => Promise<void>;
+  signup: (signupData: SendOtpPayload) => Promise<void>;
+  verifyOtp: (payload: VerifyOtpPayload) => Promise<User>;
+  forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (password: string, token: string) => Promise<void>;
+  loginWithGoogle: () => void;
+  loginWithFacebook: () => void;
   logout: () => void;
 }
 

@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "allowJs": true,
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.test.ts",
+    "src/**/*.test.tsx",
+    "jest.config.cjs"
+  ]
+}

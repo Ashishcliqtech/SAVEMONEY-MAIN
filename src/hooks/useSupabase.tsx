@@ -1,83 +1,14 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { apiClient } from '../api';
-import { AxiosError } from 'axios';
-import { placeholderStores, placeholderOffers, placeholderCategories, placeholderUsers, placeholderNotifications } from '../data/placeholderData';
-
-// Type definitions
-interface Store {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  isPopular: boolean;
-}
-
-interface Offer {
-  id: string;
-  title: string;
-  description: string;
-  offerType: string;
-  category: string;
-  isTrending: boolean;
-  isExclusive: boolean;
-}
-
-interface Category {
-  id: string;
-  name: string;
-}
-
-interface Notification {
-  id: string;
-  isRead: boolean;
-  message: string;
-  createdAt: string;
-  type: 'offer' | 'system' | 'wallet';
-}
-
-interface StoreFilters {
-  search?: string;
-  category?: string;
-}
-
-interface OfferFilters {
-  search?: string;
-  offerType?: string;
-  category?: string;
-  limit?: number;
-  featured?: boolean;
-}
-
-interface WithdrawalData {
-    amount: number;
-    paymentMethod: string;
-}
-
-interface ApiError {
-  message: string;
-}
-
-// API Error Handling
-const handleApiError = (error: AxiosError<ApiError>) => {
-  const errorMessage = error.response?.data?.message || error.message || 'An unknown error occurred';
-  toast.error(errorMessage);
-  return Promise.reject(new Error(errorMessage));
-};
-
+import { placeholderStores, placeholderOffers, placeholderCategories } from '../data/placeholderData';
+import { Category, NotificationData, OfferFilters, StoreFilters, WithdrawalData } from '../types';
 
 // Store hooks
 export const useStores = (filters?: StoreFilters) => {
   return useQuery({
     queryKey: ['stores', filters],
-    queryFn: async () => {
-      try {
-        const { data } = await apiClient.get('/stores', { params: filters });
-        return data;
-      } catch (error) {
-        return handleApiError(error as AxiosError<ApiError>);
-      }
-    },
+    queryFn: () => apiClient.get('/stores', { params: filters }).then(res => res.data),
     staleTime: 5 * 60 * 1000,
   });
 };
@@ -85,14 +16,7 @@ export const useStores = (filters?: StoreFilters) => {
 export const useStore = (id: string) => {
   return useQuery({
     queryKey: ['store', id],
-    queryFn: async () => {
-      try {
-        const { data } = await apiClient.get(`/stores/${id}`);
-        return data;
-      } catch (error) {
-        return handleApiError(error as AxiosError<ApiError>);
-      }
-    },
+    queryFn: () => apiClient.get(`/stores/${id}`).then(res => res.data),
     enabled: !!id,
   });
 };
@@ -117,14 +41,7 @@ export const usePopularStores = () => {
 export const useOffers = (filters?: OfferFilters) => {
   return useQuery({
     queryKey: ['offers', filters],
-    queryFn: async () => {
-      try {
-        const { data } = await apiClient.get('/offers', { params: filters });
-        return data;
-      } catch (error) {
-        return handleApiError(error as AxiosError<ApiError>);
-      }
-    },
+    queryFn: () => apiClient.get('/offers', { params: filters }).then(res => res.data),
     staleTime: 2 * 60 * 1000,
   });
 };
@@ -132,14 +49,7 @@ export const useOffers = (filters?: OfferFilters) => {
 export const useOffer = (id: string) => {
   return useQuery({
     queryKey: ['offer', id],
-    queryFn: async () => {
-      try {
-        const { data } = await apiClient.get(`/offers/${id}`);
-        return data;
-      } catch (error) {
-        return handleApiError(error as AxiosError<ApiError>);
-      }
-    },
+    queryFn: () => apiClient.get(`/offers/${id}`).then(res => res.data),
     enabled: !!id,
   });
 };
@@ -198,15 +108,7 @@ export const useCategories = () => {
 export const useWallet = (userId?: string) => {
   return useQuery({
     queryKey: ['wallet', userId],
-    queryFn: async () => {
-      if (!userId) return null;
-      try {
-        const { data } = await apiClient.get(`/wallet/${userId}`);
-        return data;
-      } catch (error) {
-        return handleApiError(error as AxiosError<ApiError>);
-      }
-    },
+    queryFn: () => apiClient.get(`/wallet/${userId}`).then(res => res.data),
     enabled: !!userId,
     staleTime: 1 * 60 * 1000,
   });
@@ -215,15 +117,7 @@ export const useWallet = (userId?: string) => {
 export const useTransactions = (userId?: string, page = 1, limit = 20) => {
   return useQuery({
     queryKey: ['transactions', userId, page, limit],
-    queryFn: async () => {
-      if (!userId) return { transactions: [], total: 0, page, limit, totalPages: 0 };
-      try {
-        const { data } = await apiClient.get(`/transactions/${userId}`, { params: { page, limit } });
-        return data;
-      } catch (error) {
-        return handleApiError(error as AxiosError<ApiError>);
-      }
-    },
+    queryFn: () => apiClient.get(`/transactions/${userId}`, { params: { page, limit } }).then(res => res.data),
     enabled: !!userId,
   });
 };
@@ -232,14 +126,8 @@ export const useCreateWithdrawal = () => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async ({ withdrawData }: { withdrawData: WithdrawalData }) => {
-      try {
-        const { data } = await apiClient.post('/wallet/withdraw', withdrawData);
-        return data;
-      } catch (error) {
-        return handleApiError(error as AxiosError<ApiError>);
-      }
-    },
+    mutationFn: (withdrawData: WithdrawalData) => 
+      apiClient.post('/wallet/withdraw', withdrawData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['wallet'] });
       queryClient.invalidateQueries({ queryKey: ['withdrawals'] });
@@ -248,67 +136,30 @@ export const useCreateWithdrawal = () => {
   });
 };
 
-// Notification hooks
-export const useNotifications = (userId?: string) => {
-  const queryClient = useQueryClient();
-  
-  const query = useQuery({
-    queryKey: ['notifications', userId],
-    queryFn: async () => {
-      if (!userId) return { notifications: [], total: 0, unreadCount: 0 };
-      try {
-        const { data } = await apiClient.get(`/notifications/${userId}`);
-        return data;
-      } catch (error) {
-        console.error("Failed to fetch notifications. Using placeholder data.", error);
-        return {
-          notifications: placeholderNotifications,
-          total: placeholderNotifications.length,
-          unreadCount: placeholderNotifications.filter(n => !n.isRead).length,
-        };
-      }
-    },
-    enabled: !!userId,
-    staleTime: 1 * 60 * 1000,
-  });
-
-  const markAsRead = async (id: string) => {
-    try {
-      await apiClient.put(`/notifications/${id}/read`);
-      queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
-    } catch (error) {
-      console.error('Failed to mark notification as read:', error);
-    }
-  };
-
-  const markAllAsRead = async () => {
-    try {
-      await apiClient.put(`/notifications/read-all`);
-      queryClient.invalidateQueries({ queryKey: ['notifications', userId] });
-    } catch (error) {
-      console.error('Failed to mark all notifications as read:', error);
-    }
-  };
-
-  return {
-    ...query,
-    markAsRead,
-    markAllAsRead,
-  };
-};
-
 // Admin hooks
 export const useUsers = () => {
   return useQuery({
     queryKey: ['users'],
-    queryFn: async () => {
-      try {
-        const { data } = await apiClient.get('/admin/users');
-        return data;
-      } catch (error) {
-        console.error("Failed to fetch users. Using placeholder data.", error);
-        return placeholderUsers;
-      }
+    queryFn: () => apiClient.get('/admin/users').then(res => res.data),
+  });
+};
+
+export const useNotificationStats = () => {
+  return useQuery({
+    queryKey: ['notificationStats'],
+    queryFn: () => apiClient.get('/admin/notifications/stats').then(res => res.data),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+};
+
+export const useCreateNotification = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (notificationData: NotificationData) => 
+      apiClient.post('/admin/notifications/send', notificationData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notificationStats'] });
+      toast.success('Notification sent successfully!');
     },
   });
 };
@@ -330,8 +181,9 @@ export const useUpdateStore = () => {
   return useMutation({
     mutationFn: ({ id, updates }: { id: string; updates: FormData }) =>
       apiClient.put(`/admin/stores/${id}`, updates, { headers: { 'Content-Type': 'multipart/form-data' } }),
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['stores'] });
+      queryClient.invalidateQueries({ queryKey: ['store', variables.id] });
       toast.success('Store updated successfully!');
     },
   });
@@ -365,8 +217,9 @@ export const useUpdateOffer = () => {
   return useMutation({
     mutationFn: ({ id, updates }: { id: string; updates: FormData }) =>
       apiClient.put(`/admin/offers/${id}`, updates, { headers: { 'Content-Type': 'multipart/form-data' } }),
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['offers'] });
+      queryClient.invalidateQueries({ queryKey: ['offer', variables.id] });
       toast.success('Offer updated successfully!');
     },
   });
@@ -398,8 +251,9 @@ export const useUpdateCategory = () => {
     const queryClient = useQueryClient();
     return useMutation({
       mutationFn: ({ id, updates }: { id: string; updates: Partial<Category> }) => apiClient.put(`/admin/categories/${id}`, updates),
-      onSuccess: () => {
+      onSuccess: (data, variables) => {
         queryClient.invalidateQueries({ queryKey: ['categories'] });
+        queryClient.invalidateQueries({ queryKey: ['category', variables.id] });
         toast.success('Category updated successfully!');
       },
     });

@@ -124,3 +124,51 @@ export interface ContentSection {
 }
 
 export type Language = 'en' | 'hi';
+
+// Notification Types
+export interface Notification {
+  _id: string;
+  recipient: string; 
+  title: string;
+  message: string;
+  type: 'system' | 'offer' | 'wallet';
+  actionUrl?: string;
+  isRead: boolean;
+  isClicked: boolean;
+  createdAt: Date;
+}
+
+export interface NotificationData {
+    recipient: string;
+    title: string;
+    message: string;
+    type: 'system' | 'offer' | 'wallet';
+    actionUrl?: string;
+}
+
+export interface NotificationSettings {
+  deals: {
+    email: boolean;
+    push: boolean;
+  };
+  cashback: {
+    email: boolean;
+    push: boolean;
+  };
+  withdrawals: {
+    email: boolean;
+    push: boolean;
+  };
+  referral: {
+    email: boolean;
+    push: boolean;
+  };
+  support: {
+    email: boolean;
+    push: boolean;
+  };
+  system: {
+    email: boolean;
+    push: boolean;
+  };
+}

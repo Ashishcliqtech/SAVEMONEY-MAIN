@@ -11,10 +11,11 @@ All endpoints require a valid JWT passed in the `Authorization: Bearer <token>` 
 ### AI Message Model
 ```json
 {
-  "role": "String", // 'user' or 'model'
+  "role": "String", 
   "parts": [ { "text": "String" } ]
 }
 ```
+**Note:** When sending chat history to the backend or from the backend to the generative AI service, ensure that the message objects strictly adhere to this model. Extra fields, such as `_id` from a database, can cause validation errors and must be removed.
 
 ---
 
@@ -22,54 +23,86 @@ All endpoints require a valid JWT passed in the `Authorization: Bearer <token>` 
 
 ### 3.1. Get Chat History
 
--   **URL:** `/api/ai/chat/history`
--   **Method:** `GET`
--   **Authorization:** `isAuthenticated`
--   **Description:** Fetches the user's entire chat history with the AI. If no history exists, it creates a new empty history.
--   **Success Response (`200 OK`):**
-    ```json
+Retrieves the user's entire chat history.
+
+- **URL:** `/api/ai/chat/history`
+- **Method:** `GET`
+- **Success Response (200 OK):**
+
+```json
+{
+  "history": [
     {
-      "history": [
-        { "role": "user", "parts": [ { "text": "Hello!" } ] },
-        { "role": "model", "parts": [ { "text": "Hi there! How can I help you today?" } ] }
-      ]
+      "role": "user",
+      "parts": [ { "text": "Hello" } ]
+    },
+    {
+      "role": "model",
+      "parts": [ { "text": "Hi there! How can I help you today?" } ]
     }
-    ```
--   **Error Responses:**
-    -   `401 Unauthorized`: If the auth token is missing or invalid.
-    -   `500 Internal Server Error`: If there's a problem fetching from the database.
-      ```json
-      { "error": "Failed to retrieve chat history." }
-      ```
+  ]
+}
+```
 
 ### 3.2. Send Message
 
--   **URL:** `/api/ai/chat/send`
--   **Method:** `POST`
--   **Authorization:** `isAuthenticated`
--   **Description:** Sends a user's message to the backend, which then proxies it to the Gemini API. The user's message is added to the conversation history, and the AI's response is returned and also saved.
--   **Request Body:**
-    ```json
-    {
-      "message": "string"
-    }
-    ```
--   **Success Response (`200 OK`):** The AI's response.
-    ```json
-    {
-        "response": {
-             "role": "model", 
-             "parts": [ { "text": "I am doing great! Thanks for asking." } ]
-        }
-    }
-    ```
--   **Error Responses:**
-    -   `400 Bad Request`: If the `message` field is missing or empty.
-      ```json
-      { "error": "Message is required." }
-      ```
-    -   `401 Unauthorized`: If the auth token is missing or invalid.
-    -   `500 Internal Server Error`: If the server fails to communicate with the Gemini API or save the history.
-      ```json
-      { "error": "Failed to communicate with the AI." }
-      ```
+Sends a new message to the chatbot and gets a response. The backend service is responsible for retrieving the conversation history, appending the new user message, and sending it to the AI.
+
+- **URL:** `/api/ai/chat/send`
+- **Method:** `POST`
+- **Body:**
+
+```json
+{
+  "message": "What is the capital of France?"
+}
+```
+
+- **Success Response (200 OK):**
+
+```json
+{
+  "response": {
+    "role": "model",
+    "parts": [
+      {
+        "text": "The capital of France is Paris."
+      }
+    ]
+  }
+}
+```
+
+---
+
+## 4. Error Responses
+
+### 4.1. Bad Request (400)
+
+Returned when the request payload is malformed or invalid.
+
+```json
+{
+  "error": "Invalid request body"
+}
+```
+
+### 4.2. Unauthorized (401)
+
+Returned when the JWT is missing or invalid.
+
+```json
+{
+  "error": "Unauthorized"
+}
+```
+
+### 4.3. Internal Server Error (500)
+
+Returned for unexpected server-side errors, such as a failure to communicate with the AI service. The error from the generative AI service that prompted this fix would result in a 500 error to the client.
+
+```json
+{
+  "error": "Failed to get a response from the AI."
+}
+```

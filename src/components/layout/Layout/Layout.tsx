@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Header } from '../Header';
 import { Footer } from '../Footer';
 import { Sidebar } from '../Sidebar';
+import { ChatPopup } from '../../ui/LiveChat/ChatPopup';
 
 export const Layout: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -82,6 +83,7 @@ export const Layout: React.FC = () => {
         </main>
         {shouldShowFooter && <Footer />}
       </div>
+      <ChatPopup />
     </div>
   );
 };

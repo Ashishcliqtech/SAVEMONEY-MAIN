@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ReactNode, useContext } from 'react';
+import React, { useState, useEffect, ReactNode, useContext, useCallback } from 'react';
 import { User } from '../types';
 import { authApi, SendOtpPayload, VerifyOtpPayload } from '../api/auth';
 import { userApi } from '../api/user';
@@ -16,78 +16,57 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Effect to handle initial user load and socket connection
-  useEffect(() => {
-    const loadUserAndConnectSocket = async () => {
-      const token = localStorage.getItem('auth_token');
-      if (token) {
-        try {
-          const userData = await userApi.getProfile();
-          setUser(userData);
-          // Establish socket connection for the logged-in user
-          const newSocket = io(SOCKET_URL, { auth: { token } });
-          setSocket(newSocket);
-
-          newSocket.on('connect', () => {
-            console.log('Socket.io connected successfully.');
-            newSocket.emit('join', userData.id); // Join room with user ID
-          });
-
-          newSocket.on('disconnect', () => {
-            console.log('Socket.io disconnected.');
-          });
-
-        } catch (error) {
-          console.error("Session expired or token is invalid:", error);
-          localStorage.removeItem('auth_token');
-          setUser(null);
-          if (socket) {
-            socket.disconnect();
-            setSocket(null);
-          }
-        }
+  const loadUser = useCallback(async () => {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      try {
+        const userData = await userApi.getProfile();
+        setUser(userData);
+        setIsAuthenticated(true);
+      } catch (error) {
+        console.error("Session expired or token is invalid:", error);
+        localStorage.removeItem('auth_token');
+        setUser(null);
+        setIsAuthenticated(false);
       }
-      setIsLoading(false);
-    };
-
-    loadUserAndConnectSocket();
-    
-    // Cleanup on unmount
-    return () => {
-      if (socket) {
-        socket.disconnect();
-      }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    }
+    setIsLoading(false);
   }, []);
 
-  const connectSocket = (token: string, userData: User) => {
-    if (socket) {
-      socket.disconnect();
+  useEffect(() => {
+    loadUser();
+  }, [loadUser]);
+
+  useEffect(() => {
+    if (user && !socket) {
+      const token = localStorage.getItem('auth_token');
+      const newSocket = io(SOCKET_URL, { auth: { token } });
+      setSocket(newSocket);
+
+      newSocket.on('connect', () => {
+        console.log('Socket.io connected successfully.');
+        newSocket.emit('join', user.id);
+      });
+
+      newSocket.on('disconnect', () => {
+        console.log('Socket.io disconnected.');
+      });
+
+      return () => {
+        newSocket.disconnect();
+      };
     }
-    
-    const newSocket = io(SOCKET_URL, { auth: { token } });
-    setSocket(newSocket);
-
-    newSocket.on('connect', () => {
-      console.log('Socket.io connected successfully after login.');
-      newSocket.emit('join', userData.id);
-    });
-
-    newSocket.on('disconnect', () => {
-      console.log('Socket.io disconnected.');
-    });
-  };
+  }, [user, socket]);
 
   const login = async (email: string, password: string): Promise<User> => {
     setIsLoading(true);
     try {
       const response = await authApi.login({ email, password });
       localStorage.setItem('auth_token', response.token);
-      const userData = await userApi.getProfile();
-      setUser(userData);
-      connectSocket(response.token, userData);
+      await loadUser(); 
+      const userData = await userApi.getProfile(); 
       toast.success('Welcome back!');
       return userData;
     } catch (error) {
@@ -102,9 +81,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const response = await authApi.verifyOtp(payload);
       localStorage.setItem('auth_token', response.token);
+      await loadUser(); 
       const userData = await userApi.getProfile();
-      setUser(userData);
-      connectSocket(response.token, userData);
       toast.success('Account verified successfully!');
       return userData;
     } catch (error) {
@@ -117,6 +95,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('auth_token');
     setUser(null);
+    setIsAuthenticated(false);
     if (socket) {
       socket.disconnect();
       setSocket(null);
@@ -125,7 +104,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     window.location.href = '/';
   };
 
-  // ... other functions like signup, forgotPassword, etc. remain unchanged
   const signup = async (signupData: SendOtpPayload) => {
     setIsLoading(true);
     try {
@@ -166,9 +144,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   
   const value = {
     user,
-    isAuthenticated: !!user,
+    isAuthenticated,
     isLoading,
-    socket, // Expose socket instance
+    socket,
     login,
     signup,
     verifyOtp,

@@ -16,7 +16,13 @@ export const userApi = {
   getProfile: async (): Promise<User> => {
     try {
       const response = await apiClient.get('/user/profile');
-      return response.data;
+      // The backend is likely returning _id, but the frontend expects id.
+      // Let's manually map it to ensure consistency with the User type.
+      const userData = response.data;
+      if (userData && userData._id && !userData.id) {
+        userData.id = userData._id;
+      }
+      return userData;
     } catch (error) {
       throw new Error(handleApiError(error, 'Failed to fetch user profile.'));
     }

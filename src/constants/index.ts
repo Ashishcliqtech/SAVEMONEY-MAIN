@@ -14,6 +14,7 @@ export const ROUTES = {
   STORE_DETAIL: '/stores/:id',
   CATEGORY_DETAIL: '/categories/:id',
   OFFER_DETAIL: '/offers/:id',
+  LIVE_CHAT: '/support/live-chat',
 } as const;
 
 export const API_ENDPOINTS = {

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import {
@@ -16,9 +17,11 @@ import {
 } from 'lucide-react';
 import { Card, Button, Input, Badge } from '../../components/ui';
 import toast from 'react-hot-toast';
+import { ROUTES } from '../../constants';
 
 export const Support: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'faq' | 'contact' | 'tickets'>('faq');
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null);
   const [ticketForm, setTicketForm] = useState({
@@ -141,7 +144,7 @@ export const Support: React.FC = () => {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Live Chat</h3>
               <p className="text-gray-600 mb-4">Get instant help from our support team</p>
-              <Button variant="primary" size="sm" fullWidth>
+              <Button variant="primary" size="sm" fullWidth onClick={() => navigate(ROUTES.LIVE_CHAT)}>
                 Start Chat
               </Button>
             </Card>

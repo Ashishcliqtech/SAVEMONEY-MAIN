@@ -25,6 +25,7 @@ const Notifications = lazy(() => import('../pages/Notifications/Notifications').
 const CategoryPage = lazy(() => import('../pages/Categories/CategoryPage').then(module => ({ default: module.CategoryPage })));
 const StorePage = lazy(() => import('../pages/Stores/StorePage').then(module => ({ default: module.StorePage })));
 const StoreOffersPage = lazy(() => import('../pages/Stores/StoreOffersPage').then(module => ({ default: module.StoreOffersPage })));
+const AIChatbotPage = lazy(() => import('../pages/Support/AIChatbotPage').then(module => ({ default: module.AIChatbotPage })));
 
 
 // Granular lazy loading for Admin pages
@@ -39,7 +40,7 @@ const NotificationManagement = lazy(() => import('../pages/Admin/Notifications/N
 const ReportManagement = lazy(() => import('../pages/Admin/Reports/ReportManagement').then(module => ({ default: module.ReportManagement })));
 const SupportManagement = lazy(() => import('../pages/Admin/Support/SupportManagement').then(module => ({ default: module.SupportManagement })));
 const Analytics = lazy(() => import('../pages/Admin/Analytics/Analytics').then(module => ({ default: module.Analytics })));
-const AdminSettings = lazy(() => import('../pages/Admin/Settings/Settings').then(module => ({ default: module.Settings })));
+const AdminSettings = lazy(() => import('../pages/Admin/Settings/Settings').then(module => ({ default: module.AdminSettings })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -94,6 +95,7 @@ export const AppRouter: React.FC = () => {
             <Route path="/how-it-works" element={<HowItWorks />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/help" element={<Help />} />
+            <Route path={ROUTES.LIVE_CHAT} element={<AIChatbotPage />} />
 
             <Route element={<UserProtectedRoute />}>
               <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />

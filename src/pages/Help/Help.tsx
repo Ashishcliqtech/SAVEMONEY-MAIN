@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   HelpCircle,
@@ -15,8 +16,10 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { Card, Button, Badge, SearchBar } from '../../components/ui';
+import { ROUTES } from '../../constants';
 
 export const Help: React.FC = () => {
+  const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState('getting-started');
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -193,6 +196,7 @@ export const Help: React.FC = () => {
       bgColor: 'bg-green-100',
       availability: 'Available 24/7',
       action: 'Start Chat',
+      onClick: () => navigate(ROUTES.LIVE_CHAT),
     },
     {
       title: 'Email Support',
@@ -202,6 +206,7 @@ export const Help: React.FC = () => {
       bgColor: 'bg-blue-100',
       availability: 'Response within 24h',
       action: 'Send Email',
+      onClick: () => (window.location.href = 'mailto:support@savemoney.com'),
     },
     {
       title: 'Phone Support',
@@ -211,6 +216,7 @@ export const Help: React.FC = () => {
       bgColor: 'bg-purple-100',
       availability: 'Mon-Fri, 9AM-6PM',
       action: 'Call Now',
+      onClick: () => (window.location.href = 'tel:+1234567890'),
     },
   ];
 
@@ -271,7 +277,7 @@ export const Help: React.FC = () => {
                   <div className="text-sm text-gray-500 mb-4">
                     {option.availability}
                   </div>
-                  <Button variant="primary" size="sm" fullWidth>
+                  <Button variant="primary" size="sm" fullWidth onClick={option.onClick}>
                     {option.action}
                   </Button>
                 </Card>
@@ -417,10 +423,10 @@ export const Help: React.FC = () => {
                   Can't find what you're looking for? Our support team is here to help you 24/7.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Button variant="primary" icon={MessageCircle}>
+                  <Button variant="primary" icon={MessageCircle} onClick={() => navigate(ROUTES.LIVE_CHAT)}>
                     Start Live Chat
                   </Button>
-                  <Button variant="outline" icon={Mail}>
+                  <Button variant="outline" icon={Mail} onClick={() => (window.location.href = 'mailto:support@savemoney.com')}>
                     Send Email
                   </Button>
                 </div>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Mail, Lock, User, Phone, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, User, Phone, Eye, EyeOff, ArrowLeft, Gift } from 'lucide-react';
 import { Button, Input, Card, LoadingSpinner } from '../../components/ui';
 import { useAuth } from '../../hooks/useAuth';
 import { ROUTES } from '../../constants';
@@ -22,6 +22,7 @@ export const Signup: React.FC = () => {
     password: '',
     confirmPassword: '',
     acceptTerms: false,
+    referredByCode: '',
   });
   const [loading, setLoading] = useState(false);
   const [otp, setOtp] = useState('');
@@ -39,11 +40,12 @@ export const Signup: React.FC = () => {
     }
     setLoading(true);
     try {
-      await signup({ 
+      await signup({
         name: formData.name,
         email: formData.email,
         password: formData.password,
         phone: formData.phone,
+        referredByCode: formData.referredByCode,
        });
       setShowOtp(true);
     } catch (error) {
@@ -73,11 +75,11 @@ export const Signup: React.FC = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-teal-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         {loading && (
-          <LoadingSpinner 
+          <LoadingSpinner
             key="loading-spinner-otp"
-            size="xl" 
-            text="Verifying OTP..." 
-            fullScreen 
+            size="xl"
+            text="Verifying OTP..."
+            fullScreen
             color="text-orange-500"
           />
         )}
@@ -137,11 +139,11 @@ export const Signup: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-teal-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       {loading && (
-        <LoadingSpinner 
+        <LoadingSpinner
           key="loading-spinner-signup"
-          size="xl" 
-          text="Creating your account..." 
-          fullScreen 
+          size="xl"
+          text="Creating your account..."
+          fullScreen
           color="text-orange-500"
         />
       )}
@@ -218,6 +220,13 @@ export const Signup: React.FC = () => {
                 {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
+            <Input
+              label="Referral Code (Optional)"
+              type="text"
+              icon={Gift}
+              value={formData.referredByCode}
+              onChange={(e) => setFormData({ ...formData, referredByCode: e.target.value })}
+            />
             <div className="flex items-start">
               <input
                 id="acceptTerms"

@@ -1,66 +1,21 @@
 
-# Refer & Earn API Documentation
+# Refer & Earn API Documentation for Frontend Integration
 
 ## 1. Overview
 
-This document outlines the API endpoints and data models required to implement the "Refer & Earn" feature. The system allows users to refer friends using a unique code. When the referred friend signs up and completes a qualifying action (e.g., first purchase), both the referrer and the new user receive a bonus.
-
-This system needs to:
-- Generate a unique referral code for each user.
-- Track referrals from creation to completion.
-- Calculate and attribute earnings to the referrer.
-- Provide a dashboard for users to view their referral status.
+This document provides frontend developers with the necessary information to integrate with the "Refer & Earn" feature. The system allows users to refer friends using a unique code and earn rewards.
 
 ---
 
-## 2. Data Models
+## 2. Integrating Referral at Signup
 
-### Referral
-
-This model stores the relationship between a referrer and a referred user.
-
-| Field | Type | Description |
-| :--- | :--- | :--- |
-| `id` | `string` | Unique identifier for the referral record. |
-| `referrerId` | `string` | The ID of the user who made the referral. |
-| `referredId` | `string` | The ID of the new user who was referred. |
-| `status` | `enum` | The current status of the referral. Can be `PENDING`, `COMPLETED`, or `EXPIRED`. |
-| `createdAt` | `timestamp` | Timestamp when the referral was created. |
-| `completedAt` | `timestamp` | Timestamp when the referral status changed to `COMPLETED`. |
-
-### User
-
-The existing `User` model should be updated to include a unique referral code.
-
-| Field | Type | Description |
-| :--- | :--- | :--- |
-| `referralCode` | `string` | A unique, short, and user-friendly code (e.g., `JOHN-D4E8`). Should be generated upon user creation. |
-
----
-
-## 3. Backend Flow
-
-The referral process follows these steps:
-
-1.  **Sign Up:** A new user signs up. Optionally, they can provide a `referralCode`.
-2.  **Record Creation:** If a valid `referralCode` is provided, a new `Referral` record is created with a `PENDING` status. The `referrerId` is the user who owns the code, and `referredId` is the new user.
-3.  **Qualifying Action:** The new user completes a "qualifying action" (e.g., their first purchase above a certain amount).
-4.  **Status Update:** An internal service or webhook notifies the backend that the action is complete. The backend locates the corresponding `Referral` record and updates its status to `COMPLETED`.
-5.  **Reward Distribution:** Upon successful status update, the system credits the referral bonus to both the referrer and the referred user's wallets or earnings balance.
-
----
-
-## 4. API Endpoints
-
-### 4.1. Apply Referral Code at Signup
-
-This is not a separate endpoint but an extension of the existing user registration process.
+To attribute a new user to a referrer, the `referralCode` must be passed during the signup process.
 
 **Endpoint:** `POST /api/v1/auth/signup`
 
-#### Request Body
+### Request Body
 
-The request body for user signup should be modified to accept an optional `referralCode`.
+Include an optional `referralCode` field in the user registration payload.
 
 ```json
 {
@@ -71,24 +26,29 @@ The request body for user signup should be modified to accept an optional `refer
 }
 ```
 
-#### Backend Logic
+### Frontend Logic
 
--   When this endpoint is called, validate the `referralCode`.
--   If the code is valid, find the `referrerId` (the user who owns the code).
--   After creating the new user (`referredId`), create a `Referral` record in the database with `referrerId`, `referredId`, and `status: 'PENDING'`.
--   If the code is invalid, reject the signup with a `400 Bad Request` error and a clear message.
+-   Your signup form should have an optional input field for the referral code.
+-   If the user submits a code, include it in the request body.
+-   The backend will handle validation. If the code is invalid, the API will return a `400 Bad Request` error. Ensure you display a user-friendly error message in this case.
 
-### 4.2. Get Referral Dashboard Data
+---
 
-Retrieves the authenticated user's referral statistics and unique code.
+## 3. Referral Dashboard
+
+Authenticated users can view their referral statistics, earnings, and unique referral code on their dashboard.
 
 **Endpoint:** `GET /api/v1/referral/dashboard`
 
-**Authentication:** Required (JWT Bearer Token).
+**Authentication:** A valid JWT must be included in the `Authorization` header.
 
-#### Success Response (200 OK)
+```
+Authorization: Bearer <YOUR_JWT_TOKEN>
+```
 
-Returns an object containing the user's referral dashboard data.
+### Success Response (200 OK)
+
+The endpoint returns an object containing the user's referral data.
 
 ```json
 {
@@ -99,42 +59,52 @@ Returns an object containing the user's referral dashboard data.
 }
 ```
 
-#### Error Responses
+### Frontend Implementation
 
--   `401 Unauthorized`: If the user is not authenticated.
--   `404 Not Found`: If the user data cannot be found.
+-   Fetch this data when the user navigates to their "Refer & Earn" dashboard page.
+-   Display the `referralCode` and `referralLink` prominently so the user can easily share them.
+-   Show the `earnings` and `referredUsersCount` to track their referral success.
 
-### 4.3. [Internal] Update Referral on Purchase
+### Error Handling
 
-This is an internal endpoint or webhook triggered by your e-commerce or order management system after a new user completes their first qualifying purchase.
+-   **401 Unauthorized:** If the JWT is missing or invalid, redirect the user to the login page.
+-   **404 Not Found:** If the API returns a user not found error, handle it gracefully (e.g., show a "User account not found" message).
 
-**Endpoint:** `POST /api/v1/webhooks/first-purchase-completed`
+---
 
-**Authentication:** Secure API Key or internal service authentication.
+## 4. Referral History
 
-#### Request Body
+To display a detailed list of referred friends and their status.
 
-```json
-{
-  "userId": "uuid-of-the-new-user",
-  "orderId": "uuid-of-the-order",
-  "orderAmount": 1200.50
-}
-```
+**Endpoint:** `GET /api/v1/referral/history`
 
-#### Backend Logic
+**Authentication:** Required (JWT Bearer Token).
 
-1.  Verify the `userId` from the request body.
-2.  Check if this `userId` corresponds to a `referredId` in a `Referral` record with `PENDING` status.
-3.  If a pending referral exists, update its status to `COMPLETED`.
-4.  Credit the referral bonus to both the referrer and the referred user.
-5.  Log a transaction for both users for accounting purposes.
+### Success Response (200 OK)
 
-#### Success Response (200 OK)
+Returns an array of referral objects.
 
 ```json
 {
-  "status": "processed",
-  "message": "Referral completed successfully for user uuid-of-the-new-user."
+  "referrals": [
+    {
+      "referredUserName": "Friend One",
+      "status": "COMPLETED",
+      "rewardAmount": 100,
+      "date": "2023-10-26T10:00:00Z"
+    },
+    {
+      "referredUserName": "Friend Two",
+      "status": "PENDING",
+      "rewardAmount": 100,
+      "date": "2023-10-24T14:30:00Z"
+    }
+  ]
 }
 ```
+
+### Frontend Implementation
+
+-   Use this data to render a list or table of referrals.
+-   Display the status of each referral (`PENDING`, `COMPLETED`) to inform the user.
+-   This helps users track who has successfully signed up and completed the required action.

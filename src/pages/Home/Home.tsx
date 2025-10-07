@@ -4,13 +4,13 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Star, TrendingUp, Gift, Shield, Zap, Users, Award, Smartphone, CreditCard, Headphones as HeadphonesIcon } from 'lucide-react';
 import { Button, Card, Badge, StatsCard, FeatureCard, TestimonialCard } from '../../components/ui';
 import { HeroSection } from './components/HeroSection';
-import { StoreCarousel } from './components/StoreCarousel';
+import { FeaturedStores } from './components/FeaturedStores';
 import { CategoryGrid } from './components/CategoryGrid';
 import { OfferGrid } from './components/OfferGrid';
 import { RecommendedOffersCarousel } from './components/RecommendedOffersCarousel';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../../constants';
-import { useFeaturedOffers, usePopularStores, useTrendingOffers, useCategories } from '../../hooks/useApi';
+import { useFeaturedOffers, useTrendingOffers, useCategories } from '../../hooks/useApi';
 import { savingsAppImage } from '../../lib/image';
 
 export const Home: React.FC = () => {
@@ -18,12 +18,10 @@ export const Home: React.FC = () => {
 
   const { data: featuredOffers, error: featuredError } = useFeaturedOffers(4);
   const { data: trendingOffers, error: trendingError } = useTrendingOffers();
-  const { data: popularStores, error: popularError } = usePopularStores();
   const { data: categories, isLoading: categoriesLoading, error: categoriesError } = useCategories();
 
  const finalFeaturedOffers = !featuredError && featuredOffers ? featuredOffers : [];
 const finalTrendingOffers = !trendingError && trendingOffers ? trendingOffers : [];
-const finalPopularStores = !popularError && popularStores ? popularStores : [];
 const finalCategories = !categoriesError && categories ? categories : [];
 
 
@@ -157,69 +155,46 @@ const finalCategories = !categoriesError && categories ? categories : [];
 
 
 
-            {/* Stats Section */}
-      <section className="relative bg-gradient-to-br from-purple-50 to-teal-50 py-16">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    
-    {/* Header */}
-    <div className="text-center mb-12">
-      <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-        {t('home.topStores')}
-      </h2>
-      <p className="mt-3 text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
-        Shop from your favorite brands and earn cashback instantly
-      </p>
-    </div>
-
-    {/* Store Carousel */}
-    <StoreCarousel stores={finalPopularStores} />
-
-    {/* Button Section */}
-    {!popularError && (
-      <div className="flex justify-center mt-10">
-        <Link to={ROUTES.STORES} className="w-full sm:w-auto">
-          <Button
-            variant="primary"
-            size="lg"
-            icon={ArrowRight}
-            iconPosition="right"
-            disabled={!finalPopularStores.length} // disabled when loading
-            className="w-full sm:w-auto rounded-2xl px-8 py-4 font-semibold shadow-lg 
-                       bg-gradient-to-r from-purple-600 to-teal-500 text-white 
-                       hover:from-purple-700 hover:to-teal-600 
-                       transition-all duration-300 transform hover:scale-105 
-                       disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            View All Stores
-          </Button>
-        </Link>
-      </div>
-    )}
-  </div>
-
-  {/* Decorative Background Elements */}
-  <div className="absolute top-0 left-0 w-40 h-40 bg-purple-300/30 rounded-full blur-3xl -z-10"></div>
-  <div className="absolute bottom-0 right-0 w-52 h-52 bg-teal-300/30 rounded-full blur-3xl -z-10"></div>
-</section>
-
+      {/* Featured Stores Section */}
+      <FeaturedStores />
 
       
 
       {/* Featured Deals */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h2 className="text-3xl font-bold text-gray-900">{t('home.featuredDeals')}</h2>
-            <p className="text-gray-600 mt-2">Limited time exclusive offers just for you</p>
-          </div>
-          <Link to={ROUTES.OFFERS}>
-            <Button variant="outline" icon={ArrowRight} iconPosition="right">
-              {t('common.seeAll')}
-            </Button>
-          </Link>
-        </div>
-        <OfferGrid offers={finalFeaturedOffers} />
-      </section>
+      <section className="w-full bg-white py-10 md:py-16">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    {/* Header Section */}
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
+      <div>
+        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight">
+          {t('home.featuredDeals')}
+        </h2>
+        <p className="text-gray-600 mt-1 text-sm md:text-base">
+          Limited-time exclusive offers curated specially for you
+        </p>
+      </div>
+
+      {/* Optional "See All" Button */}
+      <Link
+        to={ROUTES.OFFERS}
+        className="self-start sm:self-auto transition-transform hover:scale-105"
+      >
+        <Button
+          variant="outline"
+          icon={ArrowRight}
+          iconPosition="right"
+          className="text-sm md:text-base border-gray-300 hover:border-primary hover:text-primary transition-colors duration-200"
+        >
+          {t('common.seeAll')}
+        </Button>
+      </Link>
+    </div>
+
+    {/* Offers Grid */}
+    <OfferGrid offers={finalFeaturedOffers} />
+  </div>
+</section>
+
 
      
 

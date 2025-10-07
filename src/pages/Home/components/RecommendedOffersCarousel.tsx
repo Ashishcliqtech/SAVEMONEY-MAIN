@@ -70,7 +70,7 @@ export const RecommendedOffersCarousel: React.FC = () => {
   useEffect(() => {
     if (!isAutoPlaying || isHovered || !offers || offers.length === 0) return;
 
-    const interval = setInterval(nextSlide, 6000);
+    const interval = setInterval(nextSlide, 3000);
     return () => clearInterval(interval);
   }, [isAutoPlaying, isHovered, nextSlide, offers]);
 

@@ -7,7 +7,7 @@ export interface SendOtpPayload {
     email: string;
     phone: string;
     password: string;
-    referredByCode?: string;
+    referralCode?: string;
 }
 
 export interface VerifyOtpPayload {

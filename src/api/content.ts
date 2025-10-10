@@ -2,16 +2,19 @@
 import { apiClient } from './client';
 import { ContentSection } from '../types';
 
-
 // Assuming these types are in `src/types`
 export interface GetAllContentParams {
   page?: string;
+  status?: 'published' | 'draft';
 }
 
 export const contentApi = {
   // Public
   getAllContent: (params: GetAllContentParams = {}): Promise<ContentSection[]> =>
     apiClient.get('/content', { params }).then(res => res.data),
+
+  getContentBySlug: (slug: string): Promise<ContentSection> =>
+    apiClient.get(`/content/${slug}`).then(res => res.data),
 
   // Admin
   createContentSection: (formData: FormData): Promise<ContentSection> => {

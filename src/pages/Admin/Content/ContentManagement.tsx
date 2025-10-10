@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Edit, Plus, Save, Trash2 } from 'lucide-react';
 import { Card, Button, Input, Modal, Badge, ImageUpload } from '../../../components/ui';
 import toast from 'react-hot-toast';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { contentApi } from '../../../api';
+import { 
+  useContentSections, 
+  useCreateContentSection, 
+  useUpdateContentSection, 
+  useDeleteContentSection 
+} from '../../../hooks/useContent';
 import { ContentSection } from '../../../types';
 
 // Helper to create a URL-friendly slug from a title
@@ -17,46 +21,11 @@ const createSlug = (title: string) => {
 };
 
 export const ContentManagement: React.FC = () => {
-  const queryClient = useQueryClient();
-  const { data: sections = [], isLoading, error } = useQuery({ 
-    queryKey: ['contentSectionsAdmin'], 
-    queryFn: () => contentApi.getAllContent({ status: 'all' }) // Fetch all statuses for admin
-  });
+  const { data: sections = [], isLoading, error } = useContentSections({});
 
-  const createMutation = useMutation({
-    mutationFn: contentApi.createContentSection,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contentSectionsAdmin'] });
-      toast.success('Content section created successfully!');
-      setShowModal(false);
-    },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.msg || 'Failed to create content section.');
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: ({ id, formData }: { id: string; formData: FormData }) => contentApi.updateContentSection(id, formData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contentSectionsAdmin'] });
-      toast.success('Content section updated successfully!');
-      setShowModal(false);
-    },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.msg || 'Failed to update content section.');
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: contentApi.deleteContentSection,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['contentSectionsAdmin'] });
-      toast.success('Content section deleted successfully!');
-    },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.msg || 'Failed to delete content section.');
-    },
-  });
+  const createMutation = useCreateContentSection();
+  const updateMutation = useUpdateContentSection();
+  const deleteMutation = useDeleteContentSection();
 
   const [showModal, setShowModal] = useState(false);
   const [selectedSection, setSelectedSection] = useState<Partial<ContentSection> | null>(null);
@@ -64,7 +33,6 @@ export const ContentManagement: React.FC = () => {
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value;
-    // Auto-generate slug only if it's a new section or the slug is empty
     if (!selectedSection?.id || !selectedSection?.slug) {
         setSelectedSection(prev => ({ 
             ...prev, 
@@ -83,15 +51,12 @@ export const ContentManagement: React.FC = () => {
     }
 
     const formData = new FormData();
-    
-    // Append all fields to FormData
     formData.append('title', selectedSection.title);
     formData.append('slug', selectedSection.slug);
     formData.append('page', selectedSection.page);
     formData.append('contentType', selectedSection.contentType);
     formData.append('status', selectedSection.status || 'draft');
 
-    // Stringify the content object before sending
     const contentString = typeof selectedSection.content === 'string' 
         ? selectedSection.content 
         : JSON.stringify(selectedSection.content, null, 2);
@@ -106,6 +71,7 @@ export const ContentManagement: React.FC = () => {
     } else {
         createMutation.mutate(formData);
     }
+    setShowModal(false);
   };
 
   const handleDelete = (id: string) => {

@@ -7,3 +7,4 @@ export * from './stores';
 export * from './wallet';
 export * from './user';
 export * from './client';
+export * from './search'

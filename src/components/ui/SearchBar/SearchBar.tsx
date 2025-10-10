@@ -1,169 +1,74 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Search, X } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
+import { FiSearch, FiLoader } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
+import { useSearch } from '../../../hooks/useSearch';
 
-interface SearchSuggestion {
-  id: string;
-  title: string;
-  type: 'store' | 'offer' | 'category';
-  image?: string;
-}
-
-interface SearchBarProps {
-  placeholder?: string;
-  onSearch: (query: string) => void;
-  suggestions?: SearchSuggestion[];
-  loading?: boolean;
-  className?: string;
-}
-
-export const SearchBar: React.FC<SearchBarProps> = ({
-  placeholder,
-  onSearch,
-  suggestions = [],
-  loading = false,
-  className = '',
-}) => {
-  const { t } = useTranslation();
+export function SearchBar() {
   const [query, setQuery] = useState('');
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(-1);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const suggestionsRef = useRef<HTMLDivElement>(null);
+  const [isFocused, setIsFocused] = useState(false);
+  const { data, isLoading, isError } = useSearch(query);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        suggestionsRef.current &&
-        !suggestionsRef.current.contains(event.target as Node) &&
-        !inputRef.current?.contains(event.target as Node)
-      ) {
-        setShowSuggestions(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setQuery(value);
-    setShowSuggestions(value.length > 0);
-    setSelectedIndex(-1);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!showSuggestions) return;
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setSelectedIndex(prev => 
-          prev < suggestions.length - 1 ? prev + 1 : prev
-        );
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setSelectedIndex(prev => prev > 0 ? prev - 1 : -1);
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (selectedIndex >= 0) {
-          handleSuggestionClick(suggestions[selectedIndex]);
-        } else {
-          handleSearch();
-        }
-        break;
-      case 'Escape':
-        setShowSuggestions(false);
-        setSelectedIndex(-1);
-        break;
-    }
-  };
-
-  const handleSearch = () => {
-    if (query.trim()) {
-      onSearch(query.trim());
-      setShowSuggestions(false);
-    }
-  };
-
-  const handleSuggestionClick = (suggestion: SearchSuggestion) => {
-    setQuery(suggestion.title);
-    onSearch(suggestion.title);
-    setShowSuggestions(false);
-  };
-
-  const clearSearch = () => {
-    setQuery('');
-    setShowSuggestions(false);
-    inputRef.current?.focus();
+  const handleFocus = () => setIsFocused(true);
+  const handleBlur = () => {
+    // We add a small delay here to allow the user to click on a search result
+    // before the dropdown disappears.
+    setTimeout(() => setIsFocused(false), 200);
   };
 
   return (
-    <div className={`relative w-full min-w-0 ${className}`}>
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+    <div className="relative w-full max-w-lg" onFocus={handleFocus} onBlur={handleBlur}>
+      <div className="flex items-center bg-white rounded-md shadow-md">
         <input
-          ref={inputRef}
           type="text"
           value={query}
-          onChange={handleInputChange}
-          onKeyDown={handleKeyDown}
-          onFocus={() => query && setShowSuggestions(true)}
-          placeholder={placeholder || t('home.searchPlaceholder')}
-          className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white shadow-sm"
+          onChange={(e) => setQuery(e.targe.value)}
+          placeholder="Search for stores, categories, and offers..."
+          className="w-full px-4 py-2 text-gray-700 rounded-l-md focus:outline-none"
         />
-        {query && (
-          <button
-            onClick={clearSearch}
-            className="absolute right-3 sm:right-4 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <X className="w-4 h-4 text-gray-400" />
-          </button>
-        )}
-        {loading && (
-          <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
-            <div className="animate-spin w-4 h-4 border-2 border-purple-600 border-t-transparent rounded-full" />
-          </div>
-        )}
+        <button
+          type="submit"
+          className="px-4 py-2 text-white bg-primary-500 rounded-r-md hover:bg-primary-600"
+        >
+          {isLoading ? <FiLoader className="animate-spin" /> : <FiSearch />}
+        </button>
       </div>
 
-      <AnimatePresence>
-        {showSuggestions && suggestions.length > 0 && (
-          <motion.div
-            ref={suggestionsRef}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-lg z-50 max-h-80 overflow-y-auto"
-          >
-            {suggestions.map((suggestion, index) => (
-              <button
-                key={suggestion.id}
-                onClick={() => handleSuggestionClick(suggestion)}
-                className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors flex items-center space-x-3 ${
-                  index === selectedIndex ? 'bg-purple-50' : ''
-                }`}
-              >
-                {suggestion.image && (
-                  <img
-                    src={suggestion.image}
-                    alt={suggestion.title}
-                    className="w-8 h-8 rounded-lg object-cover"
-                  />
-                )}
-                <div>
-                  <div className="font-medium text-gray-900">{suggestion.title}</div>
-                  <div className="text-sm text-gray-500 capitalize">{suggestion.type}</div>
-                </div>
-              </button>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {isFocused && query && (
+        <div className="absolute z-10 w-full mt-2 bg-white rounded-md shadow-lg max-h-96 overflow-y-auto">
+          {isError && <p className="p-4 text-red-500">Could not fetch results.</p>}
+          {data && (
+            <ul>
+              {data.stores.map((store) => (
+                <li key={store.id}>
+                  <Link to={`/stores/${store.slug}`} className="block px-4 py-2 hover:bg-gray-100">
+                    {store.name}
+                  </Link>
+                </li>
+              ))}
+              {data.categories.map((category) => (
+                <li key={category.id}>
+                  <Link
+                    to={`/categories/${category.slug}`}
+                    className="block px-4 py-2 hover:bg-gray-100"
+                  >
+                    {category.name}
+                  </Link>
+                </li>
+              ))}
+              {data.offers.map((offer) => (
+                <li key={offer.id}>
+                  <Link to={`/offers/${offer.id}`} className="block px-4 py-2 hover:bg-gray-100">
+                    {offer.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+          {data && !data.stores.length && !data.categories.length && !data.offers.length && (
+            <p className="p-4">No results found.</p>
+          )}
+        </div>
+      )}
     </div>
   );
-};
+}

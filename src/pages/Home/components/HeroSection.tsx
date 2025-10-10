@@ -1,97 +1,36 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
-import { ArrowRight, ShoppingBag, Percent } from 'lucide-react';
+import { ArrowRight, Percent } from 'lucide-react';
 import { Button } from '../../../components/ui';
 import { useContentSections } from '../../../hooks/useContent';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../../../constants';
+
+const HeroSectionSkeleton: React.FC = () => (
+  <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+    {/* Left side skeleton */}
+    <div className="space-y-6">
+      <div className="w-48 h-8 bg-white/30 rounded-full animate-pulse" />
+      <div className="w-full h-12 bg-white/30 rounded animate-pulse" />
+      <div className="w-full h-12 bg-white/30 rounded animate-pulse" />
+      <div className="w-4/5 h-8 bg-white/30 rounded animate-pulse" />
+      <div className="flex flex-col sm:flex-row gap-4 pt-4">
+        <div className="w-48 h-14 bg-white/30 rounded-lg animate-pulse" />
+        <div className="w-36 h-14 bg-white/20 rounded-lg animate-pulse" />
+      </div>
+    </div>
+    {/* Right side skeleton */}
+    <div className="w-full h-96 bg-white/20 rounded-3xl animate-pulse" />
+  </div>
+);
 
 export const HeroSection: React.FC = () => {
   const { t } = useTranslation();
   const { data: heroData, isLoading, error } = useContentSections({ page: 'homepage', status: 'published' });
 
   // Find the specific hero section from the array
-  const heroContent = heroData?.find(section => section.contentType === 'hero');
-
-  const renderContent = () => {
-    if (isLoading) {
-      return <div>Loading...</div>; // Or a more sophisticated skeleton loader
-    }
-
-    if (error || !heroContent) {
-      // Fallback to default static content
-      return (
-        <>
-          <div className="mb-6">
-            <span className="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium">
-              <Percent className="w-4 h-4 mr-2" />
-              Up to 25% Cashback
-            </span>
-          </div>
-          <h1 className="text-4xl lg:text-6xl font-bold leading-tight mb-6">
-            Save Money on Every Purchase
-          </h1>
-          <p className="text-xl text-purple-100 mb-8 leading-relaxed">
-            Get cashback and exclusive deals from 500+ top brands. Join 2M+ happy users!
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Button
-              variant="secondary"
-              size="lg"
-              icon={ArrowRight}
-              iconPosition="right"
-              className="bg-black text-purple-600 hover:bg-gray-100 font-bold px-8"
-              onClick={() => document.getElementById('recommended-offers')?.scrollIntoView({ behavior: 'smooth' })}
-            >
-              Start Saving Now
-            </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="border-white/30 text-white hover:bg-white/10 font-semibold"
-            >
-              How It Works
-            </Button>
-          </div>
-        </>
-      );
-    }
-
-    const { content } = heroContent;
-
-    return (
-      <>
-        <div className="mb-6">
-          <span className="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium">
-            <Percent className="w-4 h-4 mr-2" />
-            {content.badge || 'Up to 25% Cashback'}
-          </span>
-        </div>
-        <h1 className="text-4xl lg:text-6xl font-bold leading-tight mb-6">
-          {content.title || 'Save Money on Every Purchase'}
-        </h1>
-        <p className="text-xl text-purple-100 mb-8 leading-relaxed">
-          {content.subtitle || 'Get cashback and exclusive deals from 500+ top brands. Join 2M+ happy users!'}
-        </p>
-        {content.cta && (
-          <div className="flex flex-col sm:flex-row gap-4">
-            <Link to={ROUTES.OFFERS}>
-              <Button
-                variant="secondary"
-                size="lg"
-                icon={ArrowRight}
-                iconPosition="right"
-                className="bg-black text-purple-600 hover:bg-gray-100 font-bold px-8"
-              >
-                {content.cta.text}
-              </Button>
-            </Link>
-          </div>
-        )}
-      </>
-    );
-  };
+  const heroContent = heroData?.find((section) => section.contentType === 'hero');
 
   return (
     <section className="relative bg-gradient-to-br from-purple-600 via-purple-700 to-teal-600 text-white overflow-hidden">
@@ -103,79 +42,67 @@ export const HeroSection: React.FC = () => {
         <div className="absolute bottom-20 left-1/3 w-40 h-40 bg-purple-400/20 rounded-full blur-3xl" />
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* Content */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            {renderContent()}
-          </motion.div>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 min-h-[500px]">
+        {isLoading ? (
+          <HeroSectionSkeleton />
+        ) : heroContent ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Content */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              {heroContent.content && (
+                <>
+                  <div className="mb-6">
+                    <span className="inline-flex items-center px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-medium">
+                      <Percent className="w-4 h-4 mr-2" />
+                      {heroContent.content.badge}
+                    </span>
+                  </div>
+                  <h1 className="text-4xl lg:text-6xl font-bold leading-tight mb-6">
+                    {heroContent.content.title}
+                  </h1>
+                  <p className="text-xl text-purple-100 mb-8 leading-relaxed">
+                    {heroContent.content.subtitle}
+                  </p>
+                  {heroContent.content.cta && (
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      <Link to={ROUTES.OFFERS}>
+                        <Button
+                          variant="secondary"
+                          size="lg"
+                          icon={ArrowRight}
+                          iconPosition="right"
+                          className="bg-black text-purple-600 hover:bg-gray-100 font-bold px-8"
+                        >
+                          {heroContent.content.cta.text}
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+                </>
+              )}
+            </motion.div>
 
-          {/* Hero Image */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="relative"
-          >
-           {heroContent && heroContent.imageUrl && (
-              <img src={heroContent.imageUrl} alt="Hero Image" className="rounded-3xl shadow-2xl" />
-            )}
-            {!heroContent?.imageUrl && (
-                 <div className="relative bg-white/10 backdrop-blur-sm rounded-3xl p-6 border border-white/20">
-                 {/* Mock Mobile App Interface */}
-                 <div className="bg-white rounded-3xl shadow-2xl overflow-hidden max-w-sm mx-auto border-4 border-white/20">
-                   <div className="bg-gradient-to-r from-orange-500 to-red-500 p-4 text-white">
-                     <div className="text-xs font-medium opacity-90">🔥 TRENDING NOW</div>
-                     <div className="text-xl font-bold">UP TO 25% CASHBACK</div>
-                     <div className="text-xs opacity-90">+ EXTRA ₹500 BONUS</div>
-                   </div>
-                   <div className="p-6 space-y-4">
-                     <div className="flex items-center justify-between">
-                       <div className="flex items-center space-x-3">
-                         <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                           FK
-                         </div>
-                         <div>
-                           <div className="font-bold text-gray-900 text-sm">Flipkart</div>
-                           <div className="text-xs text-gray-500">Fashion Sale</div>
-                         </div>
-                       </div>
-                       <div className="text-right">
-                         <div className="text-green-600 font-bold">25% BACK</div>
-                         <div className="text-xs text-gray-500">Up to ₹2,000</div>
-                       </div>
-                     </div>
-                     
-                     <div className="flex items-center justify-between">
-                       <div className="flex items-center space-x-3">
-                         <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                           A
-                         </div>
-                         <div>
-                           <div className="font-bold text-gray-900 text-sm">Amazon</div>
-                           <div className="text-xs text-gray-500">Electronics</div>
-                         </div>
-                       </div>
-                       <div className="text-right">
-                         <div className="text-green-600 font-bold">15% BACK</div>
-                         <div className="text-xs text-gray-500">Up to ₹1,500</div>
-                       </div>
-                     </div>
-                     
-                     <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-3 rounded-lg text-center">
-                       <div className="text-sm font-bold">🎉 WELCOME BONUS</div>
-                       <div className="text-xs opacity-90">GET ₹100 ON SIGNUP</div>
-                     </div>
-                   </div>
-                 </div>
-               </div>
-            )}
-          </motion.div>
-        </div>
+            {/* Hero Image */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="relative"
+            >
+              {heroContent.imageUrl && (
+                <img
+                  src={heroContent.imageUrl}
+                  alt={heroContent.content?.title || 'Hero Image'}
+                  className="rounded-3xl shadow-2xl"
+                />
+              )}
+            </motion.div>
+          </div>
+        ) : null}
       </div>
     </section>
   );

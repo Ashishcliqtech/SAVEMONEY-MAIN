@@ -11,7 +11,7 @@ import {
   Heart,
   Package,
 } from 'lucide-react';
-import { Card, LoadingCard } from '../../../components/ui';
+import { Card } from '../../../components/ui';
 import { Category } from '../../../types';
 import { Link } from 'react-router-dom';
 
@@ -19,6 +19,19 @@ interface CategoryGridProps {
   categories: Category[];
   isLoading: boolean;
 }
+
+const CategorySkeleton: React.FC = () => (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 sm:gap-6">
+        {Array.from({ length: 8 }).map((_, index) => (
+            <div key={index} className="text-center group cursor-pointer h-full min-h-[180px] flex flex-col p-4 rounded-lg bg-gray-100 animate-pulse">
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-gray-200 mb-4" />
+                <div className="w-24 h-5 bg-gray-200 rounded mx-auto mb-2" />
+                <div className="w-16 h-4 bg-gray-200 rounded mx-auto" />
+                <div className="w-16 h-4 bg-gray-200 rounded mx-auto mt-1" />
+            </div>
+        ))}
+    </div>
+);
 
 export const CategoryGrid: React.FC<CategoryGridProps> = ({ categories, isLoading }) => {
   const iconMap: { [key: string]: React.ElementType } = {
@@ -55,13 +68,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({ categories, isLoadin
   ];
 
   if (isLoading) {
-    return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 sm:gap-6">
-        {Array.from({ length: 8 }).map((_, index) => (
-          <LoadingCard key={index} height="h-32" />
-        ))}
-      </div>
-    );
+    return <CategorySkeleton />;
   }
 
   return (

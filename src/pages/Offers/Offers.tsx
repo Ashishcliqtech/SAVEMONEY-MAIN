@@ -8,9 +8,9 @@ import {
   Badge,
   SearchBar,
   Pagination,
-  LoadingSpinner,
   EmptyState,
   ErrorState,
+  OfferCardSkeleton,
 } from '../../components/ui';
 import { useOffers, useCategories } from '../../hooks/useApi';
 import toast from 'react-hot-toast';
@@ -38,11 +38,10 @@ export const Offers: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false);
 
   const { data: offersData, isLoading, error } = useOffers(filters);
-  const { data: categoriesData, isLoading: categoriesLoading } = useCategories();
+  const { data: categoriesData } = useCategories();
 
   const offers = offersData?.offers || [];
   const categories = categoriesData || [];
-  const totalPages = offersData?.totalPages || 1;
 
   const handleSearch = (query: string) => {
     setFilters((prev) => ({ ...prev, search: query, page: 1 }));
@@ -83,7 +82,19 @@ export const Offers: React.FC = () => {
 
   const renderContent = () => {
     if (isLoading) {
-      return <LoadingSpinner size="xl" text="Fetching best offers..." fullScreen />;
+      return (
+        <div
+          className={`mb-8 ${
+            viewMode === 'grid'
+              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'
+              : 'space-y-4'
+          }`}
+        >
+          {Array.from({ length: filters.limit }).map((_, index) => (
+            <OfferCardSkeleton key={index} viewMode={viewMode} />
+          ))}
+        </div>
+      );
     }
     if (error) {
       return <ErrorState title="Failed to Load Offers" message="Please try again later." />;

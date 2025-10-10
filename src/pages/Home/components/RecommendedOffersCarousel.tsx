@@ -23,6 +23,33 @@ interface Offer {
   discountedPrice?: number;
 }
 
+const RecommendedOffersCarouselSkeleton: React.FC = () => (
+    <div className="w-full h-[500px] md:h-[600px] lg:h-[700px] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col justify-center md:justify-end h-full py-12 md:py-16 lg:py-24">
+                <div className="w-full md:w-4/5 lg:w-3/5 xl:w-1/2 space-y-3 sm:space-y-4 md:space-y-5">
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-xl bg-white/10 animate-pulse" />
+                        <div>
+                            <div className="w-32 h-5 bg-white/10 rounded animate-pulse mb-2" />
+                            <div className="w-24 h-4 bg-white/10 rounded animate-pulse" />
+                        </div>
+                    </div>
+                    <div className="w-48 h-12 bg-white/10 rounded-full animate-pulse" />
+                    <div className="w-full h-8 bg-white/10 rounded animate-pulse" />
+                    <div className="w-full h-8 bg-white/10 rounded animate-pulse" />
+                    <div className="w-4/5 h-8 bg-white/10 rounded animate-pulse" />
+                    <div className="w-full h-20 bg-white/10 rounded animate-pulse" />
+                    <div className="flex items-center gap-3 sm:gap-4 pt-2 sm:pt-4">
+                        <div className="w-36 h-14 bg-white/10 rounded-xl sm:rounded-2xl animate-pulse" />
+                        <div className="w-36 h-14 bg-white/10 rounded-xl sm:rounded-2xl animate-pulse" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+);
+
 export const RecommendedOffersCarousel: React.FC = () => {
   const { data: offers, isLoading, error } = useFeaturedOffers();
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -129,11 +156,7 @@ export const RecommendedOffersCarousel: React.FC = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="w-full h-[500px] md:h-[600px] lg:h-[700px] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
-        <LoadingSpinner size="lg" text="Loading Featured Offers..." />
-      </div>
-    );
+    return <RecommendedOffersCarouselSkeleton />;
   }
 
   if (error) {

@@ -8,7 +8,6 @@ import {
   Badge,
   Pagination,
   ErrorState,
-  LoadingCard,
   EmptyState,
 } from '../../components/ui';
 import { useOffers } from '../../hooks/useApi';
@@ -17,6 +16,7 @@ import { Offer } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
 import { offersApi } from '../../api';
 import { useParams } from 'react-router-dom';
+import StoreOffersPageSkeleton from './StoreOffersPageSkeleton';
 
 const INITIAL_FILTERS = {
   search: '',
@@ -72,15 +72,7 @@ export const StoreOffersPage: React.FC = () => {
 
   const renderContent = () => {
     if (isLoading) {
-        return (
-          <div className={`mb-8 ${
-            viewMode === 'grid' 
-              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6' 
-              : 'space-y-4'
-          }`}>
-            <LoadingCard count={filters.limit} />
-          </div>
-        )
+        return <StoreOffersPageSkeleton viewMode={viewMode} />
     }
 
     if (error) {

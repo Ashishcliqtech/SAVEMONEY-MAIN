@@ -11,7 +11,7 @@ import {
   Pagination,
   ErrorState,
   EmptyState,
-  LoadingCard,
+  StoreCardSkeleton,
 } from '../../components/ui';
 import { useStores, useCategories } from '../../hooks/useSupabase';
 import { Store } from '../../types';
@@ -52,7 +52,9 @@ export const Stores: React.FC = () => {
               ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6' 
               : 'space-y-4'
           }`}>
-            <LoadingCard count={filters.limit} />
+          {Array.from({ length: filters.limit }).map((_, index) => (
+            <StoreCardSkeleton key={index} viewMode={viewMode} />
+          ))}
         </div>
       );
     }

@@ -3,12 +3,12 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { storesApi } from '../../api/stores';
 import { Store, Offer } from '../../types';
-import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { ErrorState } from '../../components/ui/ErrorState';
 import { Card } from '../../components/ui/Card/Card';
 import { Button } from '../../components/ui';
 import { ExternalLink, Copy, Clock } from 'lucide-react';
 import toast from 'react-hot-toast';
+import StorePageSkeleton from './StorePageSkeleton';
 
 const StorePage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -43,11 +43,7 @@ const StorePage: React.FC = () => {
 
 
     if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
-                <LoadingSpinner size="lg" />
-            </div>
-        );
+        return <StorePageSkeleton />;
     }
 
     if (error) {

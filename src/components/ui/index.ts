@@ -15,4 +15,5 @@ export * from './FeatureCard';
 export * from './StatsCard';
 export * from './TestimonialCard';
 export * from './OfferCardSkeleton';
+export * from './StoreCardSkeleton';
 export { default as ErrorBoundary } from './ErrorBoundary';

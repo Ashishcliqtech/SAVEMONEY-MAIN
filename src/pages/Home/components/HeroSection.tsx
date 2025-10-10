@@ -91,13 +91,13 @@ export const HeroSection: React.FC = () => {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="relative"
+              className="relative h-96 w-full"
             >
               {heroContent.imageUrl && (
                 <img
                   src={heroContent.imageUrl}
                   alt={heroContent.content?.title || 'Hero Image'}
-                  className="rounded-3xl shadow-2xl"
+                  className="absolute inset-0 w-full h-full object-cover rounded-3xl shadow-2xl"
                 />
               )}
             </motion.div>

@@ -2,8 +2,9 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { offers } from '../../api';
-import { LoadingSpinner, ErrorState } from '../../components/ui';
+import { ErrorState } from '../../components/ui';
 import { Button } from '../../components/ui/Button';
+import OfferPageSkeleton from './OfferPageSkeleton';
 
 const OfferPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -15,7 +16,7 @@ const OfferPage: React.FC = () => {
   });
 
   if (isLoading) {
-    return <div className="flex justify-center items-center h-64"><LoadingSpinner /></div>;
+    return <OfferPageSkeleton />;
   }
 
   if (isError || !offer) {

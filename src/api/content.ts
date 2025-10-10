@@ -1,3 +1,4 @@
+// src/api/content.ts
 import { apiClient } from './client';
 import { ContentSection } from '../types';
 
@@ -18,7 +19,7 @@ export const contentApi = {
         headers: { 'Content-Type': 'multipart/form-data' },
     }).then(res => res.data);
   },
-  
+
   updateContentSection: (id: string, formData: FormData): Promise<ContentSection> => {
     return apiClient.put(`/admin/content/${id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },

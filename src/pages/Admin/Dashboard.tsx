@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import {
   Users,
@@ -6,82 +6,52 @@ import {
   Tag,
   Wallet,
   TrendingUp,
-  Clock,
-  UserCheck,
   ArrowRight,
   Bell,
   Settings,
   BarChart3,
   Globe,
   Shield,
+  CreditCard,
+  Briefcase,
+  GitMerge,
+  GitPullRequest,
+  UserCheck,
 } from 'lucide-react';
 import { Card, StatsCard, Button, Badge, LoadingSpinner } from '../../components/ui';
 import { Link } from 'react-router-dom';
-import { toast } from 'react-hot-toast';
-import { placeholderUsers } from '../../data/placeholderData';
+import { useDashboardStats, useRecentActivities } from '../../hooks/useApi';
+import { Activity } from '../../types';
+
+const timeAgo = (dateString: string) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  let interval = seconds / 31536000;
+  if (interval > 1) return `${Math.floor(interval)} years ago`;
+  interval = seconds / 2592000;
+  if (interval > 1) return `${Math.floor(interval)} months ago`;
+  interval = seconds / 86400;
+  if (interval > 1) return `${Math.floor(interval)} days ago`;
+  interval = seconds / 3600;
+  if (interval > 1) return `${Math.floor(interval)} hours ago`;
+  interval = seconds / 60;
+  if (interval > 1) return `${Math.floor(interval)} minutes ago`;
+  return `${Math.floor(seconds)} seconds ago`;
+};
 
 export const AdminDashboard: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: stats, isLoading: isLoadingStats } = useDashboardStats();
+  const { data: recentActivities, isLoading: isLoadingActivities } = useRecentActivities();
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-      toast.error('Admin stats are currently unavailable. Displaying placeholder data.');
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  const stats = [
-    {
-      title: 'Total Users',
-      value: placeholderUsers.length.toLocaleString(),
-      icon: Users,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-100',
-      trend: { value: '+12%', isPositive: true },
-    },
-    {
-      title: 'Active Stores',
-      value: '524',
-      icon: Store,
-      color: 'text-green-600',
-      bgColor: 'bg-green-100',
-      trend: { value: '+8', isPositive: true },
-    },
-    {
-      title: 'Total Offers',
-      value: '1,293',
-      icon: Tag,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-100',
-      trend: { value: '+23', isPositive: true },
-    },
-    {
-      title: 'Cashback Paid',
-      value: '₹12.4L',
-      icon: Wallet,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-100',
-      trend: { value: '+15%', isPositive: true },
-    },
-    {
-      title: 'Pending Withdrawals',
-      value: '47',
-      icon: Clock,
-      color: 'text-red-600',
-      bgColor: 'bg-red-100',
-      trend: { value: '-5', isPositive: true },
-    },
-    {
-      title: 'Monthly Revenue',
-      value: '₹2.8L',
-      icon: TrendingUp,
-      color: 'text-teal-600',
-      bgColor: 'bg-teal-100',
-      trend: { value: '+18%', isPositive: true },
-    },
-  ];
+  const activityIconMap: { [key: string]: React.FC<any> } = {
+    user: UserCheck,
+    offer: Tag,
+    transaction: Wallet,
+    store: Store,
+    withdrawal: CreditCard,
+  };
 
   const quickActions = [
     {
@@ -90,7 +60,7 @@ export const AdminDashboard: React.FC = () => {
       icon: Users,
       href: '/admin/users',
       color: 'bg-blue-500',
-      count: `${placeholderUsers.length} users`,
+      count: `${stats?.users || 0} users`,
     },
     {
       title: 'Store Management',
@@ -98,7 +68,7 @@ export const AdminDashboard: React.FC = () => {
       icon: Store,
       href: '/admin/stores',
       color: 'bg-green-500',
-      count: '524 stores',
+      count: `${stats?.stores || 0} stores`,
     },
     {
       title: 'Offer Management',
@@ -106,12 +76,12 @@ export const AdminDashboard: React.FC = () => {
       icon: Tag,
       href: '/admin/offers',
       color: 'bg-purple-500',
-      count: '1,293 offers',
+      count: `${stats?.offers || 0} offers`,
     },
     {
       title: 'Withdrawal Processing',
       description: 'Process & approve withdrawals',
-      icon: Wallet,
+      icon: CreditCard,
       href: '/admin/withdrawals',
       color: 'bg-orange-500',
       count: '47 pending',
@@ -150,16 +120,67 @@ export const AdminDashboard: React.FC = () => {
     },
   ];
 
-  const recentActivities = [
+  const statsList = [
     {
-      id: '1',
-      type: 'user',
-      message: 'New user registration: john.doe@example.com',
-      time: '2 minutes ago',
-      icon: UserCheck,
-      color: 'text-green-600',
+      title: 'Total Users',
+      value: stats?.users?.toLocaleString() || '0',
+      icon: Users,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-100',
     },
-  ];
+    {
+      title: 'Active Stores',
+      value: stats?.stores?.toLocaleString() || '0',
+      icon: Store,
+      color: 'text-green-600',
+      bgColor: 'bg-green-100',
+    },
+    {
+      title: 'Total Offers',
+      value: stats?.offers?.toLocaleString() || '0',
+      icon: Tag,
+      color: 'text-purple-600',
+      bgColor: 'bg-purple-100',
+    },
+    {
+      title: 'Total Cashback Paid',
+      value: `₹${stats?.totalCashback?.toLocaleString() || '0'}`,
+      icon: Wallet,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-100',
+    },
+    {
+      title: 'Clicks',
+      value: stats?.clicks?.toLocaleString() || '0',
+      icon: GitMerge,
+      color: 'text-red-600',
+      bgColor: 'bg-red-100',
+    },
+    {
+      title: 'Transactions',
+      value: stats?.transactions?.toLocaleString() || '0',
+      icon: Briefcase,
+      color: 'text-teal-600',
+      bgColor: 'bg-teal-100',
+    },
+     {
+      title: 'Referrals',
+      value: stats?.referrals?.toLocaleString() || '0',
+      icon: GitPullRequest,
+      color: 'text-indigo-600',
+      bgColor: 'bg-indigo-100',
+    },
+    {
+      title: 'Monthly Revenue',
+      value: '₹2.8L',
+      icon: TrendingUp,
+      color: 'text-pink-600',
+      bgColor: 'bg-pink-100',
+      trend: { value: '+18%', isPositive: true },
+    },
+  ]
+
+  const isLoading = isLoadingStats || isLoadingActivities;
 
   if (isLoading) {
     return <LoadingSpinner size="xl" text="Loading Admin Dashboard..." fullScreen />;
@@ -182,8 +203,8 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {stats.map((stat, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {statsList.map((stat, index) => (
             <StatsCard
               key={stat.title}
               title={stat.title}
@@ -235,23 +256,26 @@ export const AdminDashboard: React.FC = () => {
                 <Button variant="ghost" size="sm">View All</Button>
               </div>
               <div className="space-y-4">
-                {recentActivities.map((activity, index) => (
-                  <motion.div
-                    key={activity.id}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="flex items-start space-x-3"
-                  >
-                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <activity.icon className={`w-4 h-4 ${activity.color}`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900 leading-relaxed">{activity.message}</p>
-                      <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
-                    </div>
-                  </motion.div>
-                ))}
+                {recentActivities?.map((activity: Activity, index: number) => {
+                  const Icon = activityIconMap[activity.type] || Bell;
+                  return (
+                    <motion.div
+                      key={activity._id}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="flex items-start space-x-3"
+                    >
+                      <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <Icon className="w-4 h-4 text-gray-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-900 leading-relaxed">{activity.message}</p>
+                        <p className="text-xs text-gray-500 mt-1">{timeAgo(activity.createdAt)}</p>
+                      </div>
+                    </motion.div>
+                  );
+                })}
               </div>
             </Card>
           </div>

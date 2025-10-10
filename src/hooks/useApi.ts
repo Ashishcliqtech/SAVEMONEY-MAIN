@@ -12,7 +12,7 @@ import {
 } from '../api';
 import { AxiosError } from 'axios';
 import { placeholderUsers, placeholderNotifications } from '../data/placeholderData';
-import { Category, ContentSection, Offer, Store } from '../types';
+import { Category, ContentSection, Offer, Store, Activity } from '../types';
 import { RequestWithdrawalPayload } from '../api/wallet';
 import { CreateCategoryPayload, UpdateCategoryPayload } from '../api/categories';
 
@@ -340,3 +340,32 @@ export const useDeleteContentSection = () => {
     onError: (error: Error) => handleApiError(error),
   });
 };
+
+
+export const useDashboardStats = () => useQuery({
+    queryKey: ['dashboardStats'],
+    queryFn: async () => {
+      try {
+        const { data } = await apiClient.get('/admin/stats');
+        return data;
+      } catch (error) {
+        handleApiError(error as AxiosError<any>);
+        throw error;
+      }
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  export const useRecentActivities = () => useQuery<Activity[], Error>({
+  queryKey: ['recentActivities'],
+  queryFn: async () => {
+    try {
+      const { data } = await apiClient.get('/admin/activities');
+      return data;
+    } catch (error) {
+      handleApiError(error as AxiosError<any>);
+      throw error;
+    }
+  },
+  staleTime: 1 * 60 * 1000, // Refetch every minute
+});

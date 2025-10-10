@@ -8,8 +8,8 @@ import { User as UserType } from '../../../types';
 interface User extends UserType {
   status: 'active' | 'inactive' | 'banned';
   totalCashback?: number; // Made optional to prevent crashes
-  joinedDate: string;
-  lastLogin: string;
+  createdAt: string;
+  lastSeen?: string;
   avatar: string;
 }
 
@@ -175,12 +175,26 @@ export const UserManagement: React.FC = () => {
                       <td className="py-4 px-4">
                         <div className="flex items-center text-sm text-gray-500">
                           <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                          {new Date(user.joinedDate).toLocaleDateString()}
+                          {user.createdAt ? new Date(user.createdAt).toLocaleString('en-IN', {
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+}) : 'N/A'}
+
                         </div>
                       </td>
                       <td className="py-4 px-4">
                         <div className="text-sm text-gray-500">
-                          {new Date(user.lastLogin).toLocaleDateString()}
+                          {user.lastSeen ? new Date(user.lastSeen).toLocaleString('en-IN', {
+  day: '2-digit',
+  month: 'short',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+}) : 'N/A'}
+
                         </div>
                       </td>
                       <td className="py-4 px-4">

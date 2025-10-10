@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 export const useContentSections = () => {
   return useQuery<ContentSection[], Error>({
     queryKey: ['contentSections'],
-    queryFn: contentApi.getContentSections,
+    queryFn: () => contentApi.getAllContent(),
     staleTime: 5 * 60 * 1000,
   });
 };
@@ -14,8 +14,8 @@ export const useContentSections = () => {
 export const useCreateContentSection = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ data, imageFile }: { data: Partial<ContentSection>, imageFile?: File }) => 
-      contentApi.createContentSection(data, imageFile),
+    mutationFn: (formData: FormData) => 
+      contentApi.createContentSection(formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contentSections'] });
       toast.success('Content section created successfully!');
@@ -29,8 +29,8 @@ export const useCreateContentSection = () => {
 export const useUpdateContentSection = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data, imageFile }: { id: string; data: Partial<ContentSection>, imageFile?: File }) =>
-      contentApi.updateContentSection(id, data, imageFile),
+    mutationFn: ({ id, formData }: { id: string; formData: FormData }) =>
+      contentApi.updateContentSection(id, formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contentSections'] });
       toast.success('Content section updated successfully!');

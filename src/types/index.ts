@@ -109,19 +109,20 @@ export interface Withdrawal {
 
 // Content Section Type
 export interface ContentSection {
-    id: string;
-    name: string;
-    type: 'hero' | 'featured' | 'highlighted' | 'banner' | 'testimonial';
-    status: 'active' | 'inactive' | 'scheduled';
-    position: number;
-    devices: ('desktop' | 'tablet' | 'mobile')[];
-    lastModified: string;
-    page: string;
-    content: any; // JSON object
-    imageUrl?: string;
-    createdAt: string;
-    updatedAt: string;
+  _id: string; // Use _id from MongoDB
+  id: string; // Keep id for client-side convenience if needed
+  title: string; // Changed from name
+  slug: string; // Added slug
+  contentType: 'hero' | 'banner' | 'text' | 'faq' | 'testimonial'; // Changed from type
+  status: 'draft' | 'published';
+  page: string;
+  content: any; // Stays as a flexible JSON object
+  imageUrl?: string;
+  createdAt: string;
+  updatedAt: string;
 }
+
+
 
 export type Language = 'en' | 'hi';
 
@@ -171,4 +172,16 @@ export interface NotificationSettings {
     email: boolean;
     push: boolean;
   };
+}
+
+export interface Activity {
+  _id: string;
+  type: 'user' | 'offer' | 'transaction' | 'store' | 'withdrawal';
+  message: string;
+  user?: {
+    _id: string;
+    name: string;
+  };
+  createdAt: string;
+  updatedAt: string;
 }

@@ -4,11 +4,18 @@ import { Header } from '../Header';
 import { Footer } from '../Footer';
 import { Sidebar } from '../Sidebar';
 import { ChatPopup } from '../../ui/LiveChat/ChatPopup';
+import { Banner } from '../../ui';
+import { useContentSections } from '../../../hooks/useContent';
+import { ContentSection } from '../../../types';
 
 export const Layout: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isBannerVisible, setIsBannerVisible] = useState(true);
   const location = useLocation();
+  const { data: sections, isLoading, error } = useContentSections({ page: 'homepage', status: 'published' });
+
+  const bannerData: ContentSection | undefined = sections?.find(sec => sec.contentType === 'banner');
 
   const isAuthPage = ['/login', '/signup'].includes(location.pathname);
 
@@ -55,12 +62,19 @@ export const Layout: React.FC = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
+  const handleDismissBanner = () => {
+    setIsBannerVisible(false);
+  };
+
   if (isAuthPage) {
     return <Outlet />;
   }
 
+  const showBanner = !isLoading && !error && bannerData && isBannerVisible;
+
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex" style={{ paddingTop: showBanner ? '80px' : '0' }}>
+      {showBanner && <Banner bannerData={bannerData} onDismiss={handleDismissBanner} isSidebarOpen={isSidebarOpen} isMobile={isMobile}/>}
       <Sidebar
         isOpen={isSidebarOpen}
         onToggle={toggleSidebar}

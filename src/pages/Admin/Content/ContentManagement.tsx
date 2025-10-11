@@ -20,6 +20,52 @@ const createSlug = (title: string) => {
     .replace(/-+/g, '-');        // Remove duplicate hyphens
 };
 
+// Templates for different content types to guide the user
+const contentTypeTemplates = {
+  hero: {
+    title: "Hero Title",
+    subtitle: "Hero Subtitle",
+    cta: { text: "Call to Action", link: "/offers" },
+    image: "/assets/hero-image.png"
+  },
+  banner: {
+    title: "Special Banner Offer",
+    badge: "Limited Time",
+    cta: { text: "Learn More", link: "/about" },
+  },
+  text: {
+    heading: "Informational Section",
+    body: "Start writing your content here. You can include details, features, or any other information."
+  },
+  faq: {
+    items: [
+      { question: "What is the first frequently asked question?", answer: "This is the answer." },
+      { question: "What about the second one?", answer: "Here is the answer for the second question." }
+    ]
+  },
+  testimonial: {
+    items: [
+      { name: "Alex Johnson", feedback: "I'm very satisfied with the service. Highly recommended!", avatar: "/assets/avatars/alex.png" },
+      { name: "Maria Garcia", feedback: "Excellent experience from start to finish.", avatar: "/assets/avatars/maria.png" }
+    ]
+  }
+};
+
+const availablePages = [
+    'homepage',
+    'stores',
+    'categories',
+    'offers',
+    'how-it-works',
+    'blog',
+    'help',
+    'support',
+    'about-us',
+    'contact-us',
+    'terms-of-service',
+    'privacy-policy',
+];
+
 export const ContentManagement: React.FC = () => {
   const { data: sections = [], isLoading, error } = useContentSections({});
 
@@ -44,10 +90,42 @@ export const ContentManagement: React.FC = () => {
     }
   };
 
+  const handleContentTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newContentType = e.target.value as keyof typeof contentTypeTemplates;
+    setSelectedSection(prev => {
+        const isNew = !prev?.id;
+        const isContentEmpty = prev?.content && typeof prev.content === 'object' && Object.keys(prev.content).length === 0;
+
+        return {
+            ...prev,
+            contentType: newContentType,
+            content: isNew || isContentEmpty ? contentTypeTemplates[newContentType] : prev.content,
+        };
+    });
+  };
+
   const handleSave = () => {
     if (!selectedSection || !selectedSection.title || !selectedSection.slug || !selectedSection.content || !selectedSection.page || !selectedSection.contentType) {
         toast.error("Please fill out all required fields.");
         return;
+    }
+
+    let parsedContent;
+    const contentValue = selectedSection.content;
+
+    if (typeof contentValue === 'string') {
+        try {
+            if (contentValue.trim() === '') {
+                parsedContent = {};
+            } else {
+                parsedContent = JSON.parse(contentValue);
+            }
+        } catch (error) {
+            toast.error("The content field contains invalid JSON. Please correct it before saving.");
+            return;
+        }
+    } else {
+        parsedContent = contentValue;
     }
 
     const formData = new FormData();
@@ -56,11 +134,7 @@ export const ContentManagement: React.FC = () => {
     formData.append('page', selectedSection.page);
     formData.append('contentType', selectedSection.contentType);
     formData.append('status', selectedSection.status || 'draft');
-
-    const contentString = typeof selectedSection.content === 'string' 
-        ? selectedSection.content 
-        : JSON.stringify(selectedSection.content, null, 2);
-    formData.append('content', contentString);
+    formData.append('content', JSON.stringify(parsedContent, null, 2));
     
     if (imageFile) {
         formData.append('imageUrl', imageFile);
@@ -111,7 +185,7 @@ export const ContentManagement: React.FC = () => {
                     contentType: 'text',
                     status: 'draft',
                     page: 'homepage',
-                    content: {},
+                    content: contentTypeTemplates.text, // Pre-fill with default template
                 });
                 setImageFile(null);
                 setShowModal(true);
@@ -165,12 +239,26 @@ export const ContentManagement: React.FC = () => {
             <div className="space-y-4">
                 <Input label="Title" value={selectedSection?.title || ''} onChange={handleTitleChange} placeholder="e.g., Homepage Hero Banner" required />
                 <Input label="Slug" value={selectedSection?.slug || ''} onChange={(e) => setSelectedSection(prev => ({...prev, slug: e.target.value}))} placeholder="e.g., homepage-hero-banner" required />
-                <Input label="Page" value={selectedSection?.page || ''} onChange={(e) => setSelectedSection(prev => ({...prev, page: e.target.value}))} placeholder="e.g., homepage" required />
+                
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Page</label>
+                    <select 
+                        value={selectedSection?.page || 'homepage'} 
+                        onChange={(e) => setSelectedSection(prev => ({ ...prev, page: e.target.value }))} 
+                        className="w-full p-2 border rounded-md"
+                    >
+                        {availablePages.map(page => (
+                            <option key={page} value={page}>
+                                {page.charAt(0).toUpperCase() + page.slice(1).replace(/-/g, ' ')}
+                            </option>
+                        ))}
+                    </select>
+                </div>
                 
                 <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Content Type</label>
-                        <select value={selectedSection?.contentType || 'text'} onChange={(e) => setSelectedSection(prev => ({ ...prev, contentType: e.target.value as ContentSection['contentType'] }))} className="w-full p-2 border rounded-md">
+                        <select value={selectedSection?.contentType || 'text'} onChange={handleContentTypeChange} className="w-full p-2 border rounded-md">
                             <option value="hero">Hero</option>
                             <option value="banner">Banner</option>
                             <option value="text">Text</option>
@@ -196,7 +284,6 @@ export const ContentManagement: React.FC = () => {
                         onChange={(e) => setSelectedSection(prev => ({ ...prev, content: e.target.value }))}
                         rows={10} 
                         className="w-full p-2 border rounded-md font-mono text-sm"
-                        placeholder='{ "title": "Welcome", "subtitle": "Discover amazing deals..." }'
                     />
                 </div>
                 

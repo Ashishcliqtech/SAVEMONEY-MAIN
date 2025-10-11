@@ -1,6 +1,5 @@
 import React, { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Layout } from '../components/layout';
 import { LoadingSpinner } from '../components/ui';
 import { ROUTES } from '../constants';
@@ -42,16 +41,6 @@ const SupportManagement = lazy(() => import('../pages/Admin/Support/SupportManag
 const Analytics = lazy(() => import('../pages/Admin/Analytics/Analytics').then(module => ({ default: module.Analytics })));
 const AdminSettings = lazy(() => import('../pages/Admin/Settings/Settings').then(module => ({ default: module.AdminSettings })));
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 2,
-      refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes
-    },
-  },
-});
-
 const UserProtectedRoute: React.FC = () => {
   const { isLoading, isAuthenticated } = useAuth();
   if (isLoading) return <LoadingSpinner size="xl" text="Checking authentication..." fullScreen />;
@@ -68,7 +57,6 @@ const AdminProtectedRoute: React.FC = () => {
 
 export const AppRouter: React.FC = () => {
   return (
-    <QueryClientProvider client={queryClient}>
       <Suspense 
         fallback={
           <LoadingSpinner 
@@ -125,6 +113,5 @@ export const AppRouter: React.FC = () => {
           <Route path="*" element={<Navigate to={ROUTES.HOME} replace />} />
         </Routes>
       </Suspense>
-    </QueryClientProvider>
   );
 };

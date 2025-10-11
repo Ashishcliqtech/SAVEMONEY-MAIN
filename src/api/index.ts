@@ -8,3 +8,5 @@ export * from './wallet';
 export * from './user';
 export * from './client';
 export * from './search'
+export * from './support';
+export * from './contact';

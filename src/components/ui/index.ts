@@ -18,3 +18,5 @@ export * from './OfferCardSkeleton';
 export * from './StoreCardSkeleton';
 export * from './Banner'
 export { default as ErrorBoundary } from './ErrorBoundary';
+export * from './DataTable';
+export * from './Alert';

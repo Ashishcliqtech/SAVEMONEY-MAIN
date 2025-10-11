@@ -2,81 +2,93 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { X, ArrowRight, Star } from 'lucide-react';
 import { Button } from '../Button';
+import { useContentSections } from '../../../hooks/useContent';
 import { ContentSection } from '../../../types';
 import { Link } from 'react-router-dom';
-import { Badge } from '../Badge';
 
 interface BannerProps {
-  bannerData: ContentSection;
   onDismiss: () => void;
   isSidebarOpen: boolean;
   isMobile: boolean;
 }
 
-export const Banner: React.FC<BannerProps> = ({ bannerData, onDismiss, isSidebarOpen, isMobile }) => {
-  const content = typeof bannerData.content === 'object' && bannerData.content !== null
-    ? bannerData.content
-    : {};
+export const Banner: React.FC<BannerProps> = ({ onDismiss, isSidebarOpen, isMobile }) => {
+  const { data: bannerData, isLoading } = useContentSections({
+    page: 'homepage',
+    status: 'published',
+  });
 
-  const handleDismiss = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onDismiss();
-  };
+  const bannerContent: ContentSection | undefined = bannerData?.find(
+    (section) => section.contentType === 'banner'
+  );
 
-  const imageUrl = bannerData.imageUrl || content.image || '/assets/saving.png';
+  const content = bannerContent?.content as {
+    title?: string;
+    badge?: string;
+    description?: string;
+    cta?: { text?: string; link?: string; subtext?: string };
+    terms?: string;
+  } | undefined;
 
   const bannerClassName = [
-    'fixed top-0 right-0 z-50 bg-gradient-to-r from-gray-900 via-purple-900 to-indigo-900 text-white shadow-2xl overflow-hidden group',
+    'fixed top-0 right-0 z-50 text-white shadow-2xl overflow-hidden group',
     !isMobile && isSidebarOpen ? 'lg:left-64' : 'left-0',
-    'transition-all duration-300 ease-in-out' // Added transition for smooth movement
+    'transition-all duration-300 ease-in-out'
   ].join(' ');
+
+  if (isLoading || !bannerContent || !content) {
+    return null; 
+  }
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -200 }}
+      initial={{ opacity: 0, y: -150 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -200, transition: { duration: 0.3 } }}
-      transition={{ type: 'spring', stiffness: 100, damping: 20, mass: 1 }}
+      exit={{ opacity: 0, y: -150, transition: { duration: 0.4 } }}
+      transition={{ type: 'spring', stiffness: 80, damping: 20 }}
       className={bannerClassName}
+      style={{
+        backgroundImage: `url(${bannerContent.imageUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
     >
-      {/* Layered background for a premium feel */}
-      <div className="absolute inset-0 opacity-20 group-hover:opacity-30 transition-opacity duration-500">
-        {imageUrl && <img src={imageUrl} alt="Promotional background" className="w-full h-full object-cover object-center" />}
-      </div>
-      <div className="absolute inset-0 bg-gradient-to-r from-gray-900/80 via-purple-900/70 to-indigo-900/80"></div>
+      {/* Dark overlay for text readability */}
+      <div className="absolute inset-0 bg-black/60 group-hover:bg-black/70 transition-all duration-500" />
+      
+      {/* Glassmorphic content container */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-6 py-8">
 
-      <div className="relative px-6 sm:px-8 lg:px-12 py-8">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-          
-          {/* Main content section */}
-          <div className="flex-1 text-center md:text-left z-10">
+          <div className="flex-1 text-center lg:text-left">
             {content.badge && (
-              <Badge variant="solid" color="white" className="mb-4 text-sm font-bold bg-white/10 border border-white/20">
-                <Star className="w-4 h-4 mr-1.5 inline-block text-yellow-300" />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+                className="inline-flex items-center bg-white/10 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-bold mb-4 border border-white/20"
+              >
+                <Star className="w-5 h-5 mr-2 text-yellow-300 drop-shadow-lg" />
                 {content.badge}
-              </Badge>
+              </motion.div>
             )}
-            {/* Enhanced typography for better impact and readability */}
-            <h3 className="font-extrabold text-2xl sm:text-3xl lg:text-4xl tracking-tighter !leading-tight">
-              {content.title || bannerData.title}
+            <h3 className="font-extrabold text-3xl sm:text-4xl lg:text-5xl tracking-tight !leading-tight drop-shadow-md">
+              {content.title}
             </h3>
-            {content.subtitle && (
-              <p className="text-base sm:text-lg text-indigo-200 mt-2 max-w-2xl mx-auto md:mx-0">
-                {content.subtitle}
+            {content.description && (
+              <p className="text-base sm:text-lg text-gray-200 mt-3 max-w-3xl mx-auto lg:mx-0">
+                {content.description}
               </p>
             )}
           </div>
 
-          {/* CTA Button */}
-          <div className="flex-shrink-0 z-10 mt-4 md:mt-0">
-            {content.cta && content.cta.text && content.cta.link && (
-              <Link to={content.cta.link}>
+          <div className="flex-shrink-0 flex flex-col items-center lg:items-end gap-3 mt-4 lg:mt-0">
+            {content.cta && content.cta.text && (
+              <Link to="/offers" onClick={onDismiss}>
                 <Button
-                  variant="outline"
-                  size="lg" // Kept size="lg" but increased padding for a larger feel
-                  // Premium glassmorphism button style with enhanced hover effects.
-                  className="bg-white/10 hover:bg-white/20 border-2 border-white/30 text-white font-bold transition-all duration-300 transform hover:scale-105 shadow-lg backdrop-blur-sm rounded-full px-8 py-3"
+                  variant="solid"
+                  size="lg"
+                  className="bg-white text-gray-900 hover:bg-gray-200 font-bold transition-all duration-300 transform hover:scale-105 shadow-xl rounded-full px-8 py-4 w-full sm:w-auto"
                   icon={ArrowRight}
                   iconPosition="right"
                 >
@@ -84,16 +96,17 @@ export const Banner: React.FC<BannerProps> = ({ bannerData, onDismiss, isSidebar
                 </Button>
               </Link>
             )}
+            {content.cta?.subtext && <p className='text-xs text-gray-300 drop-shadow-sm'>{content.cta.subtext}</p>}
           </div>
         </div>
+        {content.terms && <p className='text-xs text-gray-400 pb-4 text-center lg:text-left drop-shadow-sm'>{content.terms}</p>}
       </div>
 
-      {/* Stylized dismiss button */}
       <Button
         variant="ghost"
         size="icon"
-        onClick={handleDismiss}
-        className="absolute top-3 right-3 z-20 text-indigo-200/70 hover:text-white hover:bg-white/10 rounded-full"
+        onClick={onDismiss}
+        className="absolute top-4 right-4 z-20 text-white/60 hover:text-white hover:bg-white/10 rounded-full transition-colors"
         aria-label="Dismiss banner"
       >
         <X className="h-6 w-6" />

@@ -18,6 +18,7 @@ import toast from 'react-hot-toast';
 import { AdminSupportTicketWithMessages } from '../../../types/support';
 import { format } from 'date-fns';
 import { TicketDetailView } from './components/TicketDetailView';
+import { ContactInquiries } from './components/ContactInquiries';
 
 type TicketInList = Omit<AdminSupportTicketWithMessages, 'messages'>;
 
@@ -155,6 +156,9 @@ export const SupportManagement: React.FC = () => {
                 />
             }
         </Modal>
+        
+          <ContactInquiries />
+        
       </div>
     </div>
   );

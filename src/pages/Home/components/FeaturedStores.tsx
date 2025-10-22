@@ -5,68 +5,80 @@ import { AlertTriangle, ArrowRight, Store, Sparkles, TrendingUp, ChevronLeft, Ch
 import { usePopularStores } from '../../../hooks/useApi'; 
 import { ROUTES } from '../../../constants';
 
-const FeaturedStoreCard = ({ store, index }: { store: any; index: number }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
-    transition={{ delay: index * 0.08, type: "spring", stiffness: 100 }}
-    className="flex-shrink-0 group"
-  >
-    <Link to={`/stores/${store.id}/offers`} className="block w-[140px] sm:w-[160px] md:w-[200px] lg:w-[220px]">
-      <div className="relative rounded-2xl lg:rounded-3xl overflow-hidden aspect-[3/4] shadow-xl hover:shadow-2xl transition-all duration-500">
-        {/* Image with zoom effect */}
-        <div className="absolute inset-0 overflow-hidden">
-          <img
-            src={store.logo}
-            alt={store.name}
-            loading="lazy"
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-125"
-          />
-        </div>
-        
-        {/* Gradient overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300" />
-        
-        {/* Shimmer effect on hover */}
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-        </div>
 
-        {/* Trending badge */}
-        {index < 3 && (
-          <motion.div
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ delay: 0.3 + index * 0.1, type: "spring" }}
-            className="absolute top-3 right-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow-lg"
-          >
-            <TrendingUp className="w-3 h-3" />
-            Hot
-          </motion.div>
-        )}
+const FeaturedStoreCard = ({ store, index }: { store: any; index: number }) => {
+  // Define a placeholder URL (using 3:4 aspect ratio)
+  const PLACEHOLDER_LOGO_URL = 'https://via.placeholder.com/300x400/e2e8f0/94a3b8?text=Store';
 
-        {/* Content */}
-        <div className="absolute inset-0 flex flex-col justify-end p-3 md:p-4 lg:p-5">
-          <div className="transform transition-transform duration-300 group-hover:translate-y-0 translate-y-1">
-            <h3 className="text-white font-bold text-sm md:text-base lg:text-lg tracking-wide drop-shadow-lg mb-1">
-              {store.name}
-            </h3>
-            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-              <span className="text-white/90 text-xs md:text-sm font-medium">
-                View Offers
-              </span>
-              <ArrowRight className="w-3 h-3 md:w-4 md:h-4 text-white/90 group-hover:translate-x-1 transition-transform" />
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.08, type: "spring", stiffness: 100 }}
+      className="flex-shrink-0 group"
+    >
+      <Link to={`/stores/${store.id}/offers`} className="block w-[140px] sm:w-[160px] md:w-[200px] lg:w-[220px]">
+        <div className="relative rounded-2xl lg:rounded-3xl overflow-hidden aspect-[3/4] shadow-xl hover:shadow-2xl transition-all duration-500">
+          {/* Image with zoom effect */}
+          <div className="absolute inset-0 overflow-hidden bg-gray-200"> {/* Added bg-gray-200 for containment fallback */}
+            <img
+              src={store.logo || PLACEHOLDER_LOGO_URL} // Use placeholder if store.logo is falsy
+              alt={store.name}
+              loading="lazy"
+              className={`w-full h-full transition-transform duration-700 group-hover:scale-125 ${
+                store.logo ? 'object-cover' : 'object-contain p-4' // Use object-contain for placeholder
+              }`}
+            />
+          </div>
+          
+          {/* Gradient overlays */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300" />
+          
+          {/* Shimmer effect on hover */}
+          <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+          </div>
+
+
+          {/* Trending badge */}
+          {index < 3 && (
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ delay: 0.3 + index * 0.1, type: "spring" }}
+              className="absolute top-3 right-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 shadow-lg"
+            >
+              <TrendingUp className="w-3 h-3" />
+              Hot
+            </motion.div>
+          )}
+
+
+          {/* Content */}
+          <div className="absolute inset-0 flex flex-col justify-end p-3 md:p-4 lg:p-5">
+            <div className="transform transition-transform duration-300 group-hover:translate-y-0 translate-y-1">
+              <h3 className="text-white font-bold text-sm md:text-base lg:text-lg tracking-wide drop-shadow-lg mb-1">
+                {store.name}
+              </h3>
+              <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                <span className="text-white/90 text-xs md:text-sm font-medium">
+                  View Offers
+                </span>
+                <ArrowRight className="w-3 h-3 md:w-4 md:h-4 text-white/90 group-hover:translate-x-1 transition-transform" />
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Border glow on hover */}
-        <div className="absolute inset-0 rounded-2xl lg:rounded-3xl border-2 border-transparent group-hover:border-purple-400/50 transition-all duration-300" />
-      </div>
-    </Link>
-  </motion.div>
-);
+
+          {/* Border glow on hover */}
+          <div className="absolute inset-0 rounded-2xl lg:rounded-3xl border-2 border-transparent group-hover:border-purple-400/50 transition-all duration-300" />
+        </div>
+      </Link>
+    </motion.div>
+  );
+};
+
 
 const SkeletonCard = ({ index }: { index: number }) => (
   <motion.div
@@ -78,6 +90,7 @@ const SkeletonCard = ({ index }: { index: number }) => (
     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-shimmer" />
   </motion.div>
 );
+
 
 const ErrorState = () => (
   <motion.div
@@ -109,6 +122,7 @@ const ErrorState = () => (
   </motion.div>
 );
 
+
 const EmptyState = () => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}
@@ -125,9 +139,13 @@ const EmptyState = () => (
   </motion.div>
 );
 
+
 export const FeaturedStores = () => {
   const { data: stores, isLoading, error } = usePopularStores(8);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Filter out null or undefined store items
+  const validStores = stores ? stores.filter(store => store != null) : [];
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollContainerRef.current) {
@@ -138,6 +156,7 @@ export const FeaturedStores = () => {
       });
     }
   };
+
 
   const renderContent = () => {
     if (isLoading) {
@@ -150,13 +169,16 @@ export const FeaturedStores = () => {
       );
     }
 
+
     if (error) {
       return <ErrorState />;
     }
 
-    if (!stores || stores.length === 0) {
+    // Use the filtered list for the empty state check
+    if (validStores.length === 0) {
       return <EmptyState />;
     }
+
 
     return (
       <div className="relative group/scroll">
@@ -169,6 +191,7 @@ export const FeaturedStores = () => {
           <ChevronLeft className="w-6 h-6 text-purple-600" />
         </button>
 
+
         {/* Scrollable container */}
         <div 
           ref={scrollContainerRef}
@@ -178,10 +201,12 @@ export const FeaturedStores = () => {
             msOverflowStyle: 'none',
           }}
         >
-          {stores.map((store, index) => (
+          {/* Map over the filtered list */}
+          {validStores.map((store, index) => (
             <FeaturedStoreCard key={store.id} store={store} index={index} />
           ))}
         </div>
+
 
         {/* Right scroll button */}
         <button
@@ -192,6 +217,7 @@ export const FeaturedStores = () => {
           <ChevronRight className="w-6 h-6 text-purple-600" />
         </button>
 
+
         {/* Gradient fade edges */}
         <div className="hidden md:block absolute left-0 top-0 bottom-2 w-12 bg-gradient-to-r from-white to-transparent pointer-events-none" />
         <div className="hidden md:block absolute right-0 top-0 bottom-2 w-12 bg-gradient-to-l from-white to-transparent pointer-events-none" />
@@ -199,11 +225,13 @@ export const FeaturedStores = () => {
     );
   };
 
+
   return (
     <section className="pt-8 md:pt-12 lg:pt-16 pb-4 md:pb-6 relative overflow-hidden">
       {/* Decorative background elements */}
       <div className="absolute top-0 left-0 w-64 h-64 bg-purple-100/30 rounded-full blur-3xl -z-10" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-fuchsia-100/20 rounded-full blur-3xl -z-10" />
+
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
@@ -241,8 +269,10 @@ export const FeaturedStores = () => {
           </Link>
         </motion.div>
 
+
         {/* Stats bar */}
-        {!isLoading && !error && stores && stores.length > 0 && (
+        {/* Use validStores.length for the check and the count */}
+        {!isLoading && !error && validStores.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -252,16 +282,16 @@ export const FeaturedStores = () => {
             <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-purple-50 rounded-full whitespace-nowrap">
               <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" />
               <span className="text-xs sm:text-sm font-medium text-purple-700">
-                {stores.length} Featured Stores
+                {validStores.length} Featured Stores
               </span>
             </div>
-            <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-fuchsia-50 rounded-full whitespace-nowrap">
+            <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-fuchsia-50 rounded-full whitespace-Nrap">
               <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 text-fuchsia-600" />
               <span className="text-xs sm:text-sm font-medium text-fuchsia-700">
                 Trending Now
               </span>
             </div>
-            <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-orange-50 rounded-full whitespace-nowrap">
+            <div className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-orange-50 rounded-full whitespace-nowrawrap">
               <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-orange-600" />
               <span className="text-xs sm:text-sm font-medium text-orange-700">
                 Best Deals
@@ -270,9 +300,11 @@ export const FeaturedStores = () => {
           </motion.div>
         )}
 
+
         {/* Content */}
         {renderContent()}
       </div>
+
 
       <style jsx>{`
         .scrollbar-hide::-webkit-scrollbar {

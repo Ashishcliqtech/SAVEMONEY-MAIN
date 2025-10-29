@@ -2,7 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, Store, Grid3x3 as Grid3X3, Tag, Wallet, Users, User, HelpCircle, BookOpen, Settings, ShoppingBag, TrendingUp, MessageCircle, Bell, X, BarChart3, Globe } from 'lucide-react';
+import { Home, Store, Grid3x3 as Grid3X3, Tag, Wallet, Users, User, HelpCircle, BookOpen, Settings, ShoppingBag, TrendingUp, MessageCircle, Bell, X, BarChart3, Globe, CheckCircle } from 'lucide-react';
 import { ROUTES } from '../../../constants';
 import { useAuth } from '../../../hooks/useAuth';
 
@@ -58,6 +58,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, isMobile }) 
         { href: '/admin/content', label: 'Content', icon: Globe },
         { href: '/admin/notifications', label: 'Notifications', icon: Bell },
         { href: '/admin/withdrawals', label: 'Withdrawals', icon: Wallet },
+        { href: '/admin/cashback', label: 'Cashback Approval', icon: CheckCircle },
         { href: '/admin/support', label: 'Support Tickets', icon: MessageCircle },
         { href: '/admin/reports', label: 'Reports', icon: BarChart3 },
         { href: '/admin/analytics', label: 'Analytics', icon: TrendingUp },

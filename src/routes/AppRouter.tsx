@@ -27,6 +27,7 @@ const StoreOffersPage = lazy(() => import('../pages/Stores/StoreOffersPage').the
 const AIChatbotPage = lazy(() => import('../pages/Support/AIChatbotPage').then(module => ({ default: module.AIChatbotPage })));
 
 
+
 // Granular lazy loading for Admin pages
 const AdminDashboard = lazy(() => import('../pages/Admin/Dashboard').then(module => ({ default: module.AdminDashboard })));
 const UserManagement = lazy(() => import('../pages/Admin/Users/UserManagement').then(module => ({ default: module.UserManagement })));
@@ -40,6 +41,7 @@ const ReportManagement = lazy(() => import('../pages/Admin/Reports/ReportManagem
 const SupportManagement = lazy(() => import('../pages/Admin/Support/SupportManagement').then(module => ({ default: module.SupportManagement })));
 const Analytics = lazy(() => import('../pages/Admin/Analytics/Analytics').then(module => ({ default: module.Analytics })));
 const AdminSettings = lazy(() => import('../pages/Admin/Settings/Settings').then(module => ({ default: module.AdminSettings })));
+const CashbackManagement = lazy(() => import('../pages/Admin/Cashback/CashbackManagement').then(module => ({ default: module.CashbackManagement })));
 
 const UserProtectedRoute: React.FC = () => {
   const { isLoading, isAuthenticated } = useAuth();
@@ -107,6 +109,7 @@ export const AppRouter: React.FC = () => {
               <Route path="/admin/support" element={<SupportManagement />} />
               <Route path="/admin/analytics" element={<Analytics />} />
               <Route path="/admin/settings" element={<AdminSettings />} />
+              <Route path="/admin/cashback" element={<CashbackManagement />} /> 
             </Route>
           </Route>
           

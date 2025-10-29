@@ -10,3 +10,4 @@ export { ReportManagement } from './Reports/ReportManagement';
 export { SupportManagement } from './Support/SupportManagement';
 export { Analytics } from './Analytics/Analytics';
 export { Settings } from './Settings/Settings';
+export { CashbackManagement } from './Cashback/CashbackManagement'; 
